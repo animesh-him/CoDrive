@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CoDrive</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
 
 <style>
+:root{
+  --grad: linear-gradient(270deg,#ff0066,#ff9900,#9933ff);
+}
+*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont;}
 body{
   margin:0;
-  font-family:'Poppins',sans-serif;
-  background:linear-gradient(270deg,#ff6a00,#ee0979,#ff6a00);
-  background-size:600% 600%;
-  animation:bg 18s ease infinite;
-  color:#fff;
   min-height:100vh;
+  background:var(--grad);
+  background-size:600% 600%;
+  animation:bgMove 12s ease infinite;
+  color:#fff;
 }
-@keyframes bg{
+@keyframes bgMove{
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
@@ -25,92 +26,94 @@ body{
 .container{
   max-width:520px;
   margin:auto;
-  padding:20px;
+  padding:16px;
 }
 h1{
-  font-family:'Pacifico',cursive;
   text-align:center;
-  font-size:3em;
+  font-family:cursive;
+  margin-bottom:10px;
 }
 .tabs{
   display:flex;
-  gap:6px;
+  gap:8px;
   justify-content:center;
-  margin-bottom:12px;
+  margin-bottom:14px;
 }
 .tabs button{
-  flex:1;
   border:none;
-  padding:8px;
+  padding:8px 14px;
   border-radius:20px;
-  background:rgba(255,255,255,.2);
+  cursor:pointer;
+  background:rgba(255,255,255,0.25);
   color:#fff;
 }
 .tabs button.active{
   background:#fff;
-  color:#ee0979;
+  color:#000;
+}
+.card{
+  background:rgba(0,0,0,0.25);
+  border-radius:16px;
+  padding:16px;
 }
 select,button{
   width:100%;
   padding:12px;
-  margin:6px 0;
-  border-radius:12px;
+  border-radius:10px;
   border:none;
-  font-size:1em;
+  margin-top:10px;
+  font-size:15px;
 }
 button{
   background:#fff;
-  color:#ee0979;
+  color:#000;
   font-weight:600;
+  cursor:pointer;
 }
-.card{
-  background:rgba(0,0,0,.28);
-  padding:12px;
-  border-radius:14px;
-  margin-top:12px;
+.results{
+  margin-top:16px;
+}
+.slot{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:6px 0;
 }
 .bar{
-  height:8px;
-  border-radius:6px;
-  background:rgba(255,255,255,.2);
-  overflow:hidden;
-  margin:4px 0 10px;
-}
-.bar span{
-  display:block;
-  height:100%;
+  height:10px;
   background:#fff;
-}
-footer{
-  text-align:center;
-  font-family:'Pacifico',cursive;
-  margin-top:28px;
+  border-radius:6px;
+  transition:width .4s ease;
 }
 .small{
-  font-size:.85em;
-  opacity:.85;
+  font-size:13px;
+  opacity:.9;
+}
+.footer{
+  text-align:center;
+  margin-top:16px;
+  font-family:cursive;
+  opacity:.8;
 }
 </style>
 </head>
 
 <body>
 <div class="container">
+  <h1>CoDrive</h1>
 
-<h1>CoDrive</h1>
+  <div class="tabs" id="tabs"></div>
 
-<div class="tabs" id="tabs"></div>
+  <div class="card">
+    <select id="from"></select>
+    <select id="to"></select>
+    <select id="time"></select>
+    <button onclick="submitRoute()">Select Route</button>
 
-<select id="from"></select>
-<select id="to"></select>
-<select id="time"></select>
+    <div class="results" id="results"></div>
+  </div>
 
-<button onclick="submitRoute()">Select Route</button>
-
-<div id="summary" class="card"></div>
-<div id="results"></div>
-
-<footer>Created by Animesh</footer>
-
+  <div class="footer">Created by Animesh</div>
 </div>
 
 <script>
@@ -118,119 +121,115 @@ const API="https://codrive-api.animesh-him.workers.dev";
 let currentDate="";
 
 async function loadLocations(){
-  const [fromRes,toRes]=await Promise.all([
-    fetch("from_locations.json"),
-    fetch("to_locations.json")
+  const [f,t]=await Promise.all([
+    fetch("from_locations.txt").then(r=>r.text()),
+    fetch("to_locations.txt").then(r=>r.text())
   ]);
-  const fromData=await fromRes.json();
-  const toData=await toRes.json();
+  fillSelect("from",f);
+  fillSelect("to",t);
+}
 
-  const from=document.getElementById("from");
-  const to=document.getElementById("to");
-
-  from.innerHTML="";
-  to.innerHTML='<option value="">Select Destination</option>';
-
-  fromData.forEach(x=>{
+function fillSelect(id,text){
+  const sel=document.getElementById(id);
+  sel.innerHTML="";
+  text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean).forEach(v=>{
     const o=document.createElement("option");
-    o.textContent=o.value=x;
-    from.appendChild(o);
-  });
-
-  toData.forEach(x=>{
-    const o=document.createElement("option");
-    o.textContent=o.value=x;
-    to.appendChild(o);
+    o.value=o.textContent=v;
+    sel.appendChild(o);
   });
 }
 
 function genDates(){
   const tabs=document.getElementById("tabs");
-  for(let i=0;i<6;i++){
-    const d=new Date();
-    d.setDate(d.getDate()-i);
-    const val=d.toISOString().slice(0,10);
+  tabs.innerHTML="";
+  const today=new Date();
+  const tomorrow=new Date(); tomorrow.setDate(today.getDate()+1);
+  [
+    {label:"Today",d:today},
+    {label:"Tomorrow",d:tomorrow}
+  ].forEach((obj,i)=>{
     const b=document.createElement("button");
-    b.textContent=i===0?"Today":i===1?"Yesterday":val;
+    const val=obj.d.toISOString().slice(0,10);
+    b.textContent=obj.label;
     b.onclick=()=>selectDate(val,b);
     if(i===0){b.classList.add("active");currentDate=val;}
     tabs.appendChild(b);
-  }
+  });
 }
-function selectDate(v,btn){
-  currentDate=v;
+
+function selectDate(val,btn){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
-  loadData();
+  currentDate=val;
+  genTimes();
+  refresh();
 }
+
 function genTimes(){
-  const t=document.getElementById("time");
+  const sel=document.getElementById("time");
+  sel.innerHTML="";
+  const now=new Date();
+  const isToday=currentDate===now.toISOString().slice(0,10);
+
   for(let h=0;h<24;h++){
     for(let m=0;m<60;m+=15){
-      const s=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-      const eM=(m+15)%60;
-      const eH=h+Math.floor((m+15)/60);
-      const e=`${String(eH).padStart(2,"0")}:${String(eM).padStart(2,"0")}`;
+      const start=new Date(currentDate+"T"+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":00");
+      const end=new Date(start.getTime()+15*60000);
+
+      if(isToday && end < now) continue;
+
+      const label=
+        start.toTimeString().slice(0,5)+" - "+
+        end.toTimeString().slice(0,5);
+
       const o=document.createElement("option");
-      o.value=`${s}-${e}`;
-      o.textContent=`${s} – ${e}`;
-      t.appendChild(o);
+      o.value=o.textContent=label;
+      sel.appendChild(o);
     }
   }
 }
-function canVote(k){
-  const last=localStorage.getItem(k);
-  if(last && Date.now()-last<60000) return false;
-  localStorage.setItem(k,Date.now());
-  return true;
-}
+
 async function submitRoute(){
-  const payload={
+  const body={
     date:currentDate,
     from:from.value,
     to:to.value,
     time:time.value
   };
-  const key=JSON.stringify(payload);
-  if(!canVote(key)) return alert("Please wait a minute.");
-  await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-  loadData();
+  await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+  refresh();
 }
-async function loadData(){
-  const res=await fetch(`${API}?date=${currentDate}`);
-  const data=await res.json();
-  const box=document.getElementById("results");
-  const sum=document.getElementById("summary");
-  box.innerHTML="";
-  sum.innerHTML="";
-  if(!data.length){sum.textContent="No selections yet.";return;}
-  const routes={};
+
+async function refresh(){
+  const q=`?date=${currentDate}&from=${from.value}&to=${to.value}`;
+  const data=await fetch(API+q).then(r=>r.json());
+  const res=document.getElementById("results");
+  res.innerHTML="<h3>Popularity</h3>";
+  if(!data.length){res.innerHTML+="<div class='small'>No selections yet</div>";return;}
+  const max=Math.max(...data.map(d=>d.count));
   data.forEach(d=>{
-    const k=`${d.from} → ${d.to}`;
-    routes[k]=routes[k]||[];
-    routes[k].push(d);
-  });
-  const popular=Object.entries(routes).sort((a,b)=>b[1].reduce((s,x)=>s+x.count,0)-a[1].reduce((s,x)=>s+x.count,0))[0];
-  sum.innerHTML=`<b>Popular today:</b><br>${popular[0]}`;
-  Object.keys(routes).forEach(k=>{
-    const arr=routes[k].sort((a,b)=>b.count-a.count);
-    const max=arr[0].count;
-    const c=document.createElement("div");
-    c.className="card";
-    c.innerHTML=`<b>${k}</b><br>`+arr.map(x=>`
-      <div class="small">${x.time} — ${x.count}</div>
-      <div class="bar"><span style="width:${(x.count/max)*100}%"></span></div>
-    `).join("");
-    box.appendChild(c);
+    const row=document.createElement("div");
+    row.className="slot";
+    const bar=document.createElement("div");
+    bar.className="bar";
+    bar.style.width=(d.count/max*100)+"%";
+    bar.style.flex="1";
+    row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
+    row.appendChild(bar);
+    res.appendChild(row);
   });
 }
+
+setInterval(refresh,60000);
 
 loadLocations();
 genDates();
 genTimes();
-loadData();
-setInterval(loadData,60000);
+refresh();
 </script>
-
 </body>
 </html>
