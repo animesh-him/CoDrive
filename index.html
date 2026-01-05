@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoDrive</title>
 
 <style>
 :root{
   --grad: linear-gradient(270deg,#ff0066,#ff9900,#9933ff);
 }
-*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont;}
+*{box-sizing:border-box;font-family:system-ui,-apple-system;}
 body{
   margin:0;
   min-height:100vh;
@@ -31,28 +31,27 @@ body{
 h1{
   text-align:center;
   font-family:cursive;
-  margin-bottom:10px;
 }
 .tabs{
   display:flex;
-  gap:8px;
   justify-content:center;
+  gap:8px;
   margin-bottom:14px;
 }
 .tabs button{
   border:none;
   padding:8px 14px;
   border-radius:20px;
-  cursor:pointer;
-  background:rgba(255,255,255,0.25);
+  background:rgba(255,255,255,.25);
   color:#fff;
+  cursor:pointer;
 }
 .tabs button.active{
   background:#fff;
   color:#000;
 }
 .card{
-  background:rgba(0,0,0,0.25);
+  background:rgba(0,0,0,.25);
   border-radius:16px;
   padding:16px;
 }
@@ -68,7 +67,6 @@ button{
   background:#fff;
   color:#000;
   font-weight:600;
-  cursor:pointer;
 }
 .results{
   margin-top:16px;
@@ -93,7 +91,7 @@ button{
   text-align:center;
   margin-top:16px;
   font-family:cursive;
-  opacity:.8;
+  opacity:.85;
 }
 </style>
 </head>
@@ -113,6 +111,7 @@ button{
     <div class="results" id="results"></div>
   </div>
 
+  <div class="footer" id="visits"></div>
   <div class="footer">Created by Animesh</div>
 </div>
 
@@ -125,17 +124,17 @@ async function loadLocations(){
     fetch("from_locations.txt").then(r=>r.text()),
     fetch("to_locations.txt").then(r=>r.text())
   ]);
-  fillSelect("from",f);
-  fillSelect("to",t);
+  fill("from",f);
+  fill("to",t);
 }
 
-function fillSelect(id,text){
-  const sel=document.getElementById(id);
-  sel.innerHTML="";
+function fill(id,text){
+  const s=document.getElementById(id);
+  s.innerHTML="";
   text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean).forEach(v=>{
     const o=document.createElement("option");
     o.value=o.textContent=v;
-    sel.appendChild(o);
+    s.appendChild(o);
   });
 }
 
@@ -147,10 +146,10 @@ function genDates(){
   [
     {label:"Today",d:today},
     {label:"Tomorrow",d:tomorrow}
-  ].forEach((obj,i)=>{
+  ].forEach((o,i)=>{
     const b=document.createElement("button");
-    const val=obj.d.toISOString().slice(0,10);
-    b.textContent=obj.label;
+    const val=o.d.toISOString().slice(0,10);
+    b.textContent=o.label;
     b.onclick=()=>selectDate(val,b);
     if(i===0){b.classList.add("active");currentDate=val;}
     tabs.appendChild(b);
@@ -173,15 +172,11 @@ function genTimes(){
 
   for(let h=0;h<24;h++){
     for(let m=0;m<60;m+=15){
-      const start=new Date(currentDate+"T"+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":00");
+      const start=new Date(`${currentDate}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:00`);
       const end=new Date(start.getTime()+15*60000);
+      if(isToday && end<now) continue;
 
-      if(isToday && end < now) continue;
-
-      const label=
-        start.toTimeString().slice(0,5)+" - "+
-        end.toTimeString().slice(0,5);
-
+      const label=start.toTimeString().slice(0,5)+" - "+end.toTimeString().slice(0,5);
       const o=document.createElement("option");
       o.value=o.textContent=label;
       sel.appendChild(o);
@@ -190,26 +185,35 @@ function genTimes(){
 }
 
 async function submitRoute(){
-  const body={
-    date:currentDate,
-    from:from.value,
-    to:to.value,
-    time:time.value
-  };
   await fetch(API,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(body)
+    body:JSON.stringify({
+      date:currentDate,
+      from:from.value,
+      to:to.value,
+      time:time.value
+    })
   });
   refresh();
 }
 
 async function refresh(){
   const q=`?date=${currentDate}&from=${from.value}&to=${to.value}`;
-  const data=await fetch(API+q).then(r=>r.json());
+  const raw=await fetch(API+q).then(r=>r.json());
+
+  const data=raw
+    .filter(d=>d.from===from.value && d.to===to.value && d.count>0)
+    .sort((a,b)=>b.count-a.count);
+
   const res=document.getElementById("results");
   res.innerHTML="<h3>Popularity</h3>";
-  if(!data.length){res.innerHTML+="<div class='small'>No selections yet</div>";return;}
+
+  if(!data.length){
+    res.innerHTML+="<div class='small'>No selections yet for this route</div>";
+    return;
+  }
+
   const max=Math.max(...data.map(d=>d.count));
   data.forEach(d=>{
     const row=document.createElement("div");
@@ -224,12 +228,18 @@ async function refresh(){
   });
 }
 
+async function countVisit(){
+  const r=await fetch(API+"?visit=1").then(r=>r.json());
+  visits.textContent=`${r.count} people finding their co-drive partner`;
+}
+
 setInterval(refresh,60000);
 
 loadLocations();
 genDates();
 genTimes();
 refresh();
+countVisit();
 </script>
 </body>
 </html>
