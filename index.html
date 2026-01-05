@@ -3,317 +3,176 @@
 <head>
 <meta charset="UTF-8">
 <title>CoDrive</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-/* ---------- GLOBAL ---------- */
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    min-height: 100vh;
-    color: #fff;
-    background: linear-gradient(270deg, #833ab4, #fd1d1d, #fcb045);
-    background-size: 600% 600%;
-    animation: gradientMove 15s ease infinite;
+body{
+  margin:0;
+  font-family:Poppins,sans-serif;
+  color:#fff;
+  background:linear-gradient(270deg,#833ab4,#fd1d1d,#fcb045);
+  background-size:600% 600%;
+  animation:bg 15s ease infinite;
 }
-
-@keyframes gradientMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+@keyframes bg{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
 }
-
-/* ---------- LAYOUT ---------- */
-.container {
-    max-width: 520px;
-    margin: auto;
-    padding: 20px;
+.container{max-width:520px;margin:auto;padding:16px}
+.card{
+  background:rgba(0,0,0,.35);
+  backdrop-filter:blur(12px);
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:14px;
 }
-
-.card {
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(12px);
-    border-radius: 18px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+h1{font-family:Pacifico;font-size:42px;text-align:center;margin:6px 0}
+.subtitle{text-align:center;font-size:14px;opacity:.9}
+label{font-weight:600;margin-top:10px;display:block}
+select,button{
+  width:100%;
+  margin-top:6px;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  font-size:14px;
 }
-
-/* ---------- HEADERS ---------- */
-h1 {
-    font-family: 'Pacifico', cursive;
-    text-align: center;
-    font-size: 42px;
-    margin: 10px 0 4px;
+select{background:rgba(255,255,255,.15);color:#fff}
+select option{color:#000}
+button{margin-top:14px;font-weight:600;cursor:pointer}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:10px}
+.tab{
+  padding:6px 14px;
+  border-radius:20px;
+  background:rgba(255,255,255,.2);
+  font-size:13px;
+  cursor:pointer;
+  white-space:nowrap;
 }
-
-.subtitle {
-    text-align: center;
-    font-size: 14px;
-    opacity: 0.9;
+.tab.active{background:#fff;color:#000}
+.item{
+  padding:10px 6px;
+  border-bottom:1px solid rgba(255,255,255,.2);
+  font-size:14px;
 }
-
-/* ---------- FORM ---------- */
-label {
-    display: block;
-    margin-top: 14px;
-    font-weight: 600;
-}
-
-select {
-    width: 100%;
-    margin-top: 6px;
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-    font-size: 14px;
-    outline: none;
-}
-
-select option {
-    color: #000;
-}
-
-button {
-    width: 100%;
-    margin-top: 18px;
-    padding: 14px;
-    border-radius: 14px;
-    border: none;
-    font-size: 16px;
-    font-weight: 600;
-    background: #fff;
-    color: #000;
-    cursor: pointer;
-}
-
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* ---------- TABS ---------- */
-.tabs {
-    display: flex;
-    overflow-x: auto;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
-.tab {
-    padding: 8px 14px;
-    border-radius: 20px;
-    background: rgba(255,255,255,0.2);
-    cursor: pointer;
-    white-space: nowrap;
-    font-size: 13px;
-}
-
-.tab.active {
-    background: #fff;
-    color: #000;
-}
-
-/* ---------- LIST ---------- */
-.list-item {
-    padding: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    font-size: 14px;
-}
-
-.list-item:last-child {
-    border-bottom: none;
-}
-
-/* ---------- FOOTER ---------- */
-.footer {
-    text-align: center;
-    font-family: 'Pacifico', cursive;
-    font-size: 16px;
-    opacity: 0.9;
-}
+.footer{text-align:center;font-family:Pacifico;margin-top:10px}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-    <h1>CoDrive</h1>
-    <div class="subtitle">Choose route & time • See what’s popular</div>
+<h1>CoDrive</h1>
+<div class="subtitle">Popular routes & time slots</div>
 
-    <!-- FORM -->
-    <div class="card">
-        <label>From</label>
-        <select id="fromSelect"></select>
+<div class="card">
+  <label>From</label>
+  <select id="from"></select>
 
-        <label>To</label>
-        <select id="toSelect"></select>
+  <label>To</label>
+  <select id="to"></select>
 
-        <label>Time Slot (15 min)</label>
-        <select id="timeSelect"></select>
+  <label>Time Slot (15 min)</label>
+  <select id="time"></select>
 
-        <button id="submitBtn" disabled>Select Route</button>
-    </div>
+  <button onclick="showRoute()">Select Route</button>
+</div>
 
-    <!-- DAY TABS -->
-    <div class="card">
-        <div class="tabs" id="dayTabs"></div>
-        <div id="popularList">Loading...</div>
-    </div>
+<div class="card">
+  <div class="tabs" id="tabs"></div>
+  <div id="results">Select a route to see popularity</div>
+</div>
 
-    <div class="footer">Created by Animesh</div>
+<div class="footer">Created by Animesh</div>
+
 </div>
 
 <script>
-/* =================== UTILITIES =================== */
+const fromSel = document.getElementById("from");
+const toSel = document.getElementById("to");
+const timeSel = document.getElementById("time");
+const results = document.getElementById("results");
+const tabs = document.getElementById("tabs");
 
-function todayISO(offset = 0) {
-    const d = new Date();
-    d.setDate(d.getDate() + offset);
-    return d.toISOString().slice(0,10);
+let selectedDate = today(0);
+let DATA = {};
+
+function today(offset){
+  const d=new Date(); d.setDate(d.getDate()+offset);
+  return d.toISOString().slice(0,10);
 }
 
-function safeFetch(url) {
-    return fetch(url + '?t=' + Date.now()).then(r => r.ok ? r.text() : '');
+async function loadText(file,sel){
+  const t=await fetch(file+"?t="+Date.now()).then(r=>r.text()).catch(()=> "");
+  sel.innerHTML="";
+  t.split("\n").filter(Boolean).forEach(v=>{
+    const o=document.createElement("option");
+    o.textContent=v.trim();
+    sel.appendChild(o);
+  });
 }
 
-/* =================== LOAD LOCATIONS =================== */
-
-async function loadLocations() {
-    const fromText = await safeFetch('from_locations.txt');
-    const toText = await safeFetch('to_locations.txt');
-
-    const fromSelect = document.getElementById('fromSelect');
-    const toSelect = document.getElementById('toSelect');
-
-    fromSelect.innerHTML = '';
-    toSelect.innerHTML = '';
-
-    fromText.split('\n').filter(Boolean).forEach(l => {
-        const o = document.createElement('option');
-        o.textContent = l.trim();
-        fromSelect.appendChild(o);
-    });
-
-    toText.split('\n').filter(Boolean).forEach(l => {
-        const o = document.createElement('option');
-        o.textContent = l.trim();
-        toSelect.appendChild(o);
-    });
-}
-
-/* =================== TIME SLOTS =================== */
-
-function loadTimeSlots() {
-    const sel = document.getElementById('timeSelect');
-    sel.innerHTML = '';
-
-    for (let h = 0; h < 24; h++) {
-        for (let m = 0; m < 60; m += 15) {
-            const start = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-            const endMin = m + 15;
-            const endH = (h + Math.floor(endMin / 60)) % 24;
-            const endM = endMin % 60;
-            const end = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}`;
-            const opt = document.createElement('option');
-            opt.textContent = `${start}-${end}`;
-            sel.appendChild(opt);
-        }
+function loadTimes(){
+  for(let h=0;h<24;h++){
+    for(let m=0;m<60;m+=15){
+      const s=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+      const eM=m+15,eH=(h+Math.floor(eM/60))%24;
+      const e=`${String(eH).padStart(2,"0")}:${String(eM%60).padStart(2,"0")}`;
+      const o=document.createElement("option");
+      o.textContent=`${s}-${e}`;
+      timeSel.appendChild(o);
     }
+  }
 }
 
-/* =================== DAY TABS =================== */
-
-let selectedDay = todayISO(0);
-
-function loadTabs() {
-    const tabs = document.getElementById('dayTabs');
-    tabs.innerHTML = '';
-
-    for (let i = -5; i <= 1; i++) {
-        const d = todayISO(i);
-        const tab = document.createElement('div');
-        tab.className = 'tab' + (d === selectedDay ? ' active' : '');
-        tab.textContent = d === todayISO(0) ? 'Today' : d;
-        tab.onclick = () => {
-            selectedDay = d;
-            loadTabs();
-            loadPopular();
-        };
-        tabs.appendChild(tab);
-    }
+async function loadData(){
+  DATA = await fetch("data.json?t="+Date.now())
+    .then(r=>r.ok?r.json():{})
+    .catch(()=>({}));
 }
 
-/* =================== LOAD POPULAR =================== */
-
-async function loadPopular() {
-    const box = document.getElementById('popularList');
-    box.innerHTML = 'Loading...';
-
-    try {
-        const res = await fetch('data.json?t=' + Date.now());
-        if (!res.ok) throw 0;
-        const data = await res.json();
-
-        const dayData = data[selectedDay];
-        if (!dayData) {
-            box.innerHTML = '<div class="list-item">No data</div>';
-            return;
-        }
-
-        box.innerHTML = '';
-        Object.entries(dayData).forEach(([route, times]) => {
-            Object.entries(times).forEach(([time, count]) => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.textContent = `${route} • ${time} • ${count}`;
-                box.appendChild(div);
-            });
-        });
-
-    } catch {
-        box.innerHTML = '<div class="list-item">No data</div>';
-    }
+function loadTabs(){
+  tabs.innerHTML="";
+  for(let i=-5;i<=1;i++){
+    const d=today(i);
+    const t=document.createElement("div");
+    t.className="tab"+(d===selectedDate?" active":"");
+    t.textContent=d===today(0)?"Today":d;
+    t.onclick=()=>{selectedDate=d;loadTabs();showRoute()};
+    tabs.appendChild(t);
+  }
 }
 
-/* =================== SUBMIT =================== */
+function showRoute(){
+  const key = `${fromSel.value} -> ${toSel.value}`;
+  const dayData = DATA[selectedDate]?.[key];
+  if(!dayData){results.innerHTML="<div class='item'>No data yet</div>";return;}
 
-document.getElementById('submitBtn').onclick = () => {
-    const from = fromSelect.value;
-    const to = toSelect.value;
-    const time = timeSelect.value;
-    const date = selectedDay;
+  const sorted = Object.entries(dayData)
+    .sort((a,b)=>b[1]-a[1]);
 
-    const url =
-`https://github.com/animesh-him/CoDrive/actions/workflows/collect.yml
-?from=${encodeURIComponent(from)}
-&to=${encodeURIComponent(to)}
-&time=${encodeURIComponent(time)}
-&date=${date}`;
-
-    window.open(url, '_blank');
-};
-
-/* =================== INIT =================== */
-
-async function init() {
-    await loadLocations();
-    loadTimeSlots();
-    loadTabs();
-    loadPopular();
-
-    document.getElementById('submitBtn').disabled = false;
+  results.innerHTML="";
+  sorted.forEach(([time,count])=>{
+    const d=document.createElement("div");
+    d.className="item";
+    d.textContent=`${time}  •  ${count} people`;
+    results.appendChild(d);
+  });
 }
 
+async function init(){
+  await loadText("from_locations.txt",fromSel);
+  await loadText("to_locations.txt",toSel);
+  loadTimes();
+  await loadData();
+  loadTabs();
+}
 init();
-setInterval(loadPopular, 60000);
+setInterval(loadData,60000);
 </script>
+
 </body>
 </html>
