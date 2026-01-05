@@ -259,7 +259,7 @@ async function refresh(){
 /* ---------- VISIT COUNTER ---------- */
 async function countVisit(){
   const r=await fetch(API+"?visit=1").then(r=>r.json());
-  visits.textContent=`${r.total} people finding their co-drive partner`;
+  visits.textContent=`People finding their co-drive partner`;
 }
 
 /* ---------- INIT ---------- */
