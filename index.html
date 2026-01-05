@@ -119,6 +119,17 @@ button{
 const API="https://codrive-api.animesh-him.workers.dev";
 let currentDate="";
 
+/* ---------- IST DATE HELPERS ---------- */
+function getISTNow(){
+  return new Date(Date.now() + 330 * 60000);
+}
+function getISTDate(offset=0){
+  const d = getISTNow();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0,10);
+}
+
+/* ---------- LOAD LOCATIONS ---------- */
 async function loadLocations(){
   const [f,t]=await Promise.all([
     fetch("from_locations.txt").then(r=>r.text()),
@@ -138,20 +149,22 @@ function fill(id,text){
   });
 }
 
+/* ---------- DATE TABS (IST SAFE) ---------- */
 function genDates(){
   const tabs=document.getElementById("tabs");
   tabs.innerHTML="";
-  const today=new Date();
-  const tomorrow=new Date(); tomorrow.setDate(today.getDate()+1);
-  [
-    {label:"Today",d:today},
-    {label:"Tomorrow",d:tomorrow}
-  ].forEach((o,i)=>{
+  const dates=[
+    {label:"Today", value:getISTDate(0)},
+    {label:"Tomorrow", value:getISTDate(1)}
+  ];
+  dates.forEach((o,i)=>{
     const b=document.createElement("button");
-    const val=o.d.toISOString().slice(0,10);
     b.textContent=o.label;
-    b.onclick=()=>selectDate(val,b);
-    if(i===0){b.classList.add("active");currentDate=val;}
+    b.onclick=()=>selectDate(o.value,b);
+    if(i===0){
+      b.classList.add("active");
+      currentDate=o.value;
+    }
     tabs.appendChild(b);
   });
 }
@@ -164,17 +177,18 @@ function selectDate(val,btn){
   refresh();
 }
 
+/* ---------- TIME SLOTS (IST SAFE) ---------- */
 function genTimes(){
   const sel=document.getElementById("time");
   sel.innerHTML="";
-  const now=new Date();
-  const isToday=currentDate===now.toISOString().slice(0,10);
+  const now=getISTNow();
+  const isToday=currentDate===getISTDate(0);
 
   for(let h=0;h<24;h++){
     for(let m=0;m<60;m+=15){
       const start=new Date(`${currentDate}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:00`);
       const end=new Date(start.getTime()+15*60000);
-      if(isToday && end<now) continue;
+      if(isToday && end <= now) continue;
 
       const label=start.toTimeString().slice(0,5)+" - "+end.toTimeString().slice(0,5);
       const o=document.createElement("option");
@@ -184,6 +198,7 @@ function genTimes(){
   }
 }
 
+/* ---------- SUBMIT ---------- */
 async function submitRoute(){
   await fetch(API,{
     method:"POST",
@@ -198,8 +213,9 @@ async function submitRoute(){
   refresh();
 }
 
+/* ---------- POPULARITY ---------- */
 async function refresh(){
-  const q=`?date=${currentDate}&from=${from.value}&to=${to.value}`;
+  const q=`?date=${currentDate}&from=${encodeURIComponent(from.value)}&to=${encodeURIComponent(to.value)}`;
   const raw=await fetch(API+q).then(r=>r.json());
 
   const data=raw
@@ -228,11 +244,13 @@ async function refresh(){
   });
 }
 
+/* ---------- VISIT COUNTER (FIXED) ---------- */
 async function countVisit(){
-  const r=await fetch(API+"?visit=1").then(r=>r.json());
-  visits.textContent=`People finding their co-drive partner`;
+  const r = await fetch(API+"?visit=1").then(r=>r.json());
+  visits.textContent = `People finding their co-drive partner`;
 }
 
+/* ---------- INIT ---------- */
 setInterval(refresh,60000);
 
 loadLocations();
