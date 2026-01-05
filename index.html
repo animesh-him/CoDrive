@@ -1,64 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>CoDrive</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
 
 <style>
 body{
   margin:0;
-  font-family:Poppins,sans-serif;
-  color:#fff;
-  background:linear-gradient(270deg,#833ab4,#fd1d1d,#fcb045);
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(270deg,#ff6a00,#ee0979,#ff6a00);
   background-size:600% 600%;
-  animation:bg 15s ease infinite;
+  animation:bg 18s ease infinite;
+  color:#fff;
+  min-height:100vh;
 }
 @keyframes bg{
   0%{background-position:0% 50%}
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
 }
-.container{max-width:520px;margin:auto;padding:16px}
-.card{
-  background:rgba(0,0,0,.35);
-  backdrop-filter:blur(12px);
-  border-radius:18px;
-  padding:16px;
-  margin-bottom:14px;
+.container{
+  max-width:520px;
+  margin:auto;
+  padding:20px;
 }
-h1{font-family:Pacifico;font-size:42px;text-align:center;margin:6px 0}
-.subtitle{text-align:center;font-size:14px;opacity:.9}
-label{font-weight:600;margin-top:10px;display:block}
-select,button{
-  width:100%;
-  margin-top:6px;
-  padding:12px;
-  border-radius:10px;
+h1{
+  font-family:'Pacifico',cursive;
+  text-align:center;
+  font-size:3em;
+}
+.tabs{
+  display:flex;
+  gap:6px;
+  justify-content:center;
+  margin-bottom:12px;
+}
+.tabs button{
+  flex:1;
   border:none;
-  font-size:14px;
-}
-select{background:rgba(255,255,255,.15);color:#fff}
-select option{color:#000}
-button{margin-top:14px;font-weight:600;cursor:pointer}
-.tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:10px}
-.tab{
-  padding:6px 14px;
+  padding:8px;
   border-radius:20px;
   background:rgba(255,255,255,.2);
-  font-size:13px;
-  cursor:pointer;
-  white-space:nowrap;
+  color:#fff;
 }
-.tab.active{background:#fff;color:#000}
-.item{
-  padding:10px 6px;
-  border-bottom:1px solid rgba(255,255,255,.2);
-  font-size:14px;
+.tabs button.active{
+  background:#fff;
+  color:#ee0979;
 }
-.footer{text-align:center;font-family:Pacifico;margin-top:10px}
+select,button{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border-radius:12px;
+  border:none;
+  font-size:1em;
+}
+button{
+  background:#fff;
+  color:#ee0979;
+  font-weight:600;
+}
+.card{
+  background:rgba(0,0,0,.28);
+  padding:12px;
+  border-radius:14px;
+  margin-top:12px;
+}
+.bar{
+  height:8px;
+  border-radius:6px;
+  background:rgba(255,255,255,.2);
+  overflow:hidden;
+  margin:4px 0 10px;
+}
+.bar span{
+  display:block;
+  height:100%;
+  background:#fff;
+}
+footer{
+  text-align:center;
+  font-family:'Pacifico',cursive;
+  margin-top:28px;
+}
+.small{
+  font-size:.85em;
+  opacity:.85;
+}
 </style>
 </head>
 
@@ -66,111 +97,138 @@ button{margin-top:14px;font-weight:600;cursor:pointer}
 <div class="container">
 
 <h1>CoDrive</h1>
-<div class="subtitle">Popular routes & time slots</div>
 
-<div class="card">
-  <label>From</label>
-  <select id="from"></select>
+<div class="tabs" id="tabs"></div>
 
-  <label>To</label>
-  <select id="to"></select>
+<select id="from"></select>
+<select id="to"></select>
+<select id="time"></select>
 
-  <label>Time Slot (15 min)</label>
-  <select id="time"></select>
+<button onclick="submitRoute()">Select Route</button>
 
-  <button onclick="showRoute()">Select Route</button>
-</div>
+<div id="summary" class="card"></div>
+<div id="results"></div>
 
-<div class="card">
-  <div class="tabs" id="tabs"></div>
-  <div id="results">Select a route to see popularity</div>
-</div>
-
-<div class="footer">Created by Animesh</div>
+<footer>Created by Animesh</footer>
 
 </div>
 
 <script>
-const fromSel = document.getElementById("from");
-const toSel = document.getElementById("to");
-const timeSel = document.getElementById("time");
-const results = document.getElementById("results");
-const tabs = document.getElementById("tabs");
+const API="https://codrive-api.animesh-him.workers.dev";
+let currentDate="";
 
-let selectedDate = today(0);
-let DATA = {};
+async function loadLocations(){
+  const [fromRes,toRes]=await Promise.all([
+    fetch("from_locations.json"),
+    fetch("to_locations.json")
+  ]);
+  const fromData=await fromRes.json();
+  const toData=await toRes.json();
 
-function today(offset){
-  const d=new Date(); d.setDate(d.getDate()+offset);
-  return d.toISOString().slice(0,10);
-}
+  const from=document.getElementById("from");
+  const to=document.getElementById("to");
 
-async function loadText(file,sel){
-  const t=await fetch(file+"?t="+Date.now()).then(r=>r.text()).catch(()=> "");
-  sel.innerHTML="";
-  t.split("\n").filter(Boolean).forEach(v=>{
+  from.innerHTML="";
+  to.innerHTML='<option value="">Select Destination</option>';
+
+  fromData.forEach(x=>{
     const o=document.createElement("option");
-    o.textContent=v.trim();
-    sel.appendChild(o);
+    o.textContent=o.value=x;
+    from.appendChild(o);
+  });
+
+  toData.forEach(x=>{
+    const o=document.createElement("option");
+    o.textContent=o.value=x;
+    to.appendChild(o);
   });
 }
 
-function loadTimes(){
+function genDates(){
+  const tabs=document.getElementById("tabs");
+  for(let i=0;i<6;i++){
+    const d=new Date();
+    d.setDate(d.getDate()-i);
+    const val=d.toISOString().slice(0,10);
+    const b=document.createElement("button");
+    b.textContent=i===0?"Today":i===1?"Yesterday":val;
+    b.onclick=()=>selectDate(val,b);
+    if(i===0){b.classList.add("active");currentDate=val;}
+    tabs.appendChild(b);
+  }
+}
+function selectDate(v,btn){
+  currentDate=v;
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  loadData();
+}
+function genTimes(){
+  const t=document.getElementById("time");
   for(let h=0;h<24;h++){
     for(let m=0;m<60;m+=15){
       const s=`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-      const eM=m+15,eH=(h+Math.floor(eM/60))%24;
-      const e=`${String(eH).padStart(2,"0")}:${String(eM%60).padStart(2,"0")}`;
+      const eM=(m+15)%60;
+      const eH=h+Math.floor((m+15)/60);
+      const e=`${String(eH).padStart(2,"0")}:${String(eM).padStart(2,"0")}`;
       const o=document.createElement("option");
-      o.textContent=`${s}-${e}`;
-      timeSel.appendChild(o);
+      o.value=`${s}-${e}`;
+      o.textContent=`${s} – ${e}`;
+      t.appendChild(o);
     }
   }
 }
-
+function canVote(k){
+  const last=localStorage.getItem(k);
+  if(last && Date.now()-last<60000) return false;
+  localStorage.setItem(k,Date.now());
+  return true;
+}
+async function submitRoute(){
+  const payload={
+    date:currentDate,
+    from:from.value,
+    to:to.value,
+    time:time.value
+  };
+  const key=JSON.stringify(payload);
+  if(!canVote(key)) return alert("Please wait a minute.");
+  await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  loadData();
+}
 async function loadData(){
-  DATA = await fetch("data.json?t="+Date.now())
-    .then(r=>r.ok?r.json():{})
-    .catch(()=>({}));
-}
-
-function loadTabs(){
-  tabs.innerHTML="";
-  for(let i=-5;i<=1;i++){
-    const d=today(i);
-    const t=document.createElement("div");
-    t.className="tab"+(d===selectedDate?" active":"");
-    t.textContent=d===today(0)?"Today":d;
-    t.onclick=()=>{selectedDate=d;loadTabs();showRoute()};
-    tabs.appendChild(t);
-  }
-}
-
-function showRoute(){
-  const key = `${fromSel.value} -> ${toSel.value}`;
-  const dayData = DATA[selectedDate]?.[key];
-  if(!dayData){results.innerHTML="<div class='item'>No data yet</div>";return;}
-
-  const sorted = Object.entries(dayData)
-    .sort((a,b)=>b[1]-a[1]);
-
-  results.innerHTML="";
-  sorted.forEach(([time,count])=>{
-    const d=document.createElement("div");
-    d.className="item";
-    d.textContent=`${time}  •  ${count} people`;
-    results.appendChild(d);
+  const res=await fetch(`${API}?date=${currentDate}`);
+  const data=await res.json();
+  const box=document.getElementById("results");
+  const sum=document.getElementById("summary");
+  box.innerHTML="";
+  sum.innerHTML="";
+  if(!data.length){sum.textContent="No selections yet.";return;}
+  const routes={};
+  data.forEach(d=>{
+    const k=`${d.from} → ${d.to}`;
+    routes[k]=routes[k]||[];
+    routes[k].push(d);
+  });
+  const popular=Object.entries(routes).sort((a,b)=>b[1].reduce((s,x)=>s+x.count,0)-a[1].reduce((s,x)=>s+x.count,0))[0];
+  sum.innerHTML=`<b>Popular today:</b><br>${popular[0]}`;
+  Object.keys(routes).forEach(k=>{
+    const arr=routes[k].sort((a,b)=>b.count-a.count);
+    const max=arr[0].count;
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<b>${k}</b><br>`+arr.map(x=>`
+      <div class="small">${x.time} — ${x.count}</div>
+      <div class="bar"><span style="width:${(x.count/max)*100}%"></span></div>
+    `).join("");
+    box.appendChild(c);
   });
 }
 
-async function init(){
-  await loadText("from_locations.txt",fromSel);
-  await loadText("to_locations.txt",toSel);
-  loadTimes();
-  await loadData();
-  loadTabs();
-}
-init();
+loadLocations();
+genDates();
+genTimes();
+loadData();
 setInterval(loadData,60000);
 </script>
 
