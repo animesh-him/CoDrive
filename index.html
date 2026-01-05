@@ -81,7 +81,6 @@ button{
   height:10px;
   background:#fff;
   border-radius:6px;
-  transition:width .4s ease;
 }
 .small{
   font-size:13px;
@@ -119,17 +118,17 @@ button{
 const API="https://codrive-api.animesh-him.workers.dev";
 let currentDate="";
 
-/* ---------- IST DATE HELPERS ---------- */
+/* ---------- IST HELPERS ---------- */
 function getISTNow(){
   return new Date(Date.now() + 330 * 60000);
 }
 function getISTDate(offset=0){
-  const d = getISTNow();
-  d.setDate(d.getDate() + offset);
+  const d=getISTNow();
+  d.setDate(d.getDate()+offset);
   return d.toISOString().slice(0,10);
 }
 
-/* ---------- LOAD LOCATIONS ---------- */
+/* ---------- LOCATIONS ---------- */
 async function loadLocations(){
   const [f,t]=await Promise.all([
     fetch("from_locations.txt").then(r=>r.text()),
@@ -137,8 +136,8 @@ async function loadLocations(){
   ]);
   fill("from",f);
   fill("to",t);
+  attachRouteListeners();   // 🔥 NEW
 }
-
 function fill(id,text){
   const s=document.getElementById(id);
   s.innerHTML="";
@@ -149,26 +148,33 @@ function fill(id,text){
   });
 }
 
-/* ---------- DATE TABS (IST SAFE) ---------- */
-function genDates(){
-  const tabs=document.getElementById("tabs");
-  tabs.innerHTML="";
-  const dates=[
-    {label:"Today", value:getISTDate(0)},
-    {label:"Tomorrow", value:getISTDate(1)}
-  ];
-  dates.forEach((o,i)=>{
-    const b=document.createElement("button");
-    b.textContent=o.label;
-    b.onclick=()=>selectDate(o.value,b);
-    if(i===0){
-      b.classList.add("active");
-      currentDate=o.value;
-    }
-    tabs.appendChild(b);
+/* ---------- ROUTE CHANGE LISTENERS ---------- */
+function attachRouteListeners(){
+  from.addEventListener("change", ()=>{
+    genTimes();
+    refresh();
+  });
+  to.addEventListener("change", ()=>{
+    genTimes();
+    refresh();
   });
 }
 
+/* ---------- DATE TABS ---------- */
+function genDates(){
+  const tabs=document.getElementById("tabs");
+  tabs.innerHTML="";
+  [
+    {label:"Today",value:getISTDate(0)},
+    {label:"Tomorrow",value:getISTDate(1)}
+  ].forEach((o,i)=>{
+    const b=document.createElement("button");
+    b.textContent=o.label;
+    if(i===0){b.classList.add("active");currentDate=o.value;}
+    b.onclick=()=>selectDate(o.value,b);
+    tabs.appendChild(b);
+  });
+}
 function selectDate(val,btn){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
@@ -181,16 +187,24 @@ function selectDate(val,btn){
 function genTimes(){
   const sel=document.getElementById("time");
   sel.innerHTML="";
+
   const now=getISTNow();
   const isToday=currentDate===getISTDate(0);
 
-  for(let h=0;h<24;h++){
-    for(let m=0;m<60;m+=15){
-      const start=new Date(`${currentDate}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:00`);
-      const end=new Date(start.getTime()+15*60000);
-      if(isToday && end <= now) continue;
+  let startH=0, startM=0;
+  if(isToday){
+    startH=now.getHours();
+    startM=Math.floor(now.getMinutes()/15)*15;
+  }
 
-      const label=start.toTimeString().slice(0,5)+" - "+end.toTimeString().slice(0,5);
+  for(let h=startH;h<24;h++){
+    for(let m=(h===startH?startM:0);m<60;m+=15){
+      const label=
+        String(h).padStart(2,"0")+":"+
+        String(m).padStart(2,"0")+" - "+
+        String(h + (m===45?1:0)).padStart(2,"0")+":"+
+        String((m+15)%60).padStart(2,"0");
+
       const o=document.createElement("option");
       o.value=o.textContent=label;
       sel.appendChild(o);
@@ -218,41 +232,38 @@ async function refresh(){
   const q=`?date=${currentDate}&from=${encodeURIComponent(from.value)}&to=${encodeURIComponent(to.value)}`;
   const raw=await fetch(API+q).then(r=>r.json());
 
-  const data=raw
-    .filter(d=>d.from===from.value && d.to===to.value && d.count>0)
-    .sort((a,b)=>b.count-a.count);
+  const data=raw.filter(d=>d.count>0);
 
   const res=document.getElementById("results");
   res.innerHTML="<h3>Popularity</h3>";
 
   if(!data.length){
-    res.innerHTML+="<div class='small'>No selections yet for this route</div>";
+    res.innerHTML+="<div class='small'>No selections yet</div>";
     return;
   }
 
   const max=Math.max(...data.map(d=>d.count));
-  data.forEach(d=>{
+  data.sort((a,b)=>b.count-a.count).forEach(d=>{
     const row=document.createElement("div");
     row.className="slot";
+    row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
     const bar=document.createElement("div");
     bar.className="bar";
     bar.style.width=(d.count/max*100)+"%";
     bar.style.flex="1";
-    row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
     row.appendChild(bar);
     res.appendChild(row);
   });
 }
 
-/* ---------- VISIT COUNTER (FIXED) ---------- */
+/* ---------- VISIT COUNTER ---------- */
 async function countVisit(){
-  const r = await fetch(API+"?visit=1").then(r=>r.json());
-  visits.textContent = `People finding their co-drive partner`;
+  const r=await fetch(API+"?visit=1").then(r=>r.json());
+  visits.textContent=`${r.total} people finding their co-drive partner`;
 }
 
 /* ---------- INIT ---------- */
 setInterval(refresh,60000);
-
 loadLocations();
 genDates();
 genTimes();
