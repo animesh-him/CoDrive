@@ -62,7 +62,7 @@ button{background:#fff;color:#000;font-weight:600;}
     <select id="from"></select>
     <select id="to"></select>
     <select id="time"></select>
-    <button onclick="submitRoute()">Select Route</button>
+    <button id="submitBtn">Select Route</button>
     <div class="results" id="results"></div>
   </div>
 
@@ -93,8 +93,10 @@ async function loadLocations(){
   fillSelect("from",f);
   fillSelect("to",t);
 
-  // Automatic refresh when changing from/to
-  ["from","to"].forEach(id => document.getElementById(id).addEventListener("change", refresh));
+  // Add change listeners to refresh automatically
+  ["from","to","time"].forEach(id => {
+    document.getElementById(id).addEventListener("change", refresh);
+  });
 }
 function fillSelect(id,text){
   const s=document.getElementById(id);
@@ -152,25 +154,27 @@ function genTimes(){
 }
 
 /* ---------- SUBMIT ---------- */
-async function submitRoute(){
+document.getElementById("submitBtn").addEventListener("click", async()=>{
+  if(!from.value || !to.value || !time.value) return;
+
   const payload = {
-      date: currentDate,
-      from: from.value,
-      to: to.value,
-      time: time.value
+    date: currentDate,
+    from: from.value,
+    to: to.value,
+    time: time.value
   };
-  
+
   const resp = await fetch(API, {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body: JSON.stringify(payload)
   });
-  
-  const data = await resp.json();
-  if(data.error) alert(data.error); // show throttle message
 
-  refresh(); // always refresh after submission
-}
+  const data = await resp.json();
+  if(data.error) alert(data.error);
+
+  refresh();
+});
 
 /* ---------- POPULARITY ---------- */
 async function refresh(){
@@ -208,10 +212,10 @@ async function countVisit(){
 }
 
 /* ---------- INIT ---------- */
-loadLocations().then(()=>{ // wait until locations loaded
+loadLocations().then(()=>{
   genDates();
   genTimes();
-  refresh(); // show current popularity automatically
+  refresh(); // <-- shows popularity automatically after locations are loaded
 });
 countVisit();
 setInterval(refresh,60000);
