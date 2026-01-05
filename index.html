@@ -2,79 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoDrive</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg,#ff9800,#ff5722);
-  color: #fff;
+:root{
+  --grad: linear-gradient(270deg,#ff0066,#ff9900,#9933ff);
 }
-.container {
-  padding: 16px;
-  max-width: 500px;
-  margin: auto;
+*{box-sizing:border-box;font-family:system-ui,-apple-system;}
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--grad);
+  background-size:600% 600%;
+  animation:bgMove 12s ease infinite;
+  color:#fff;
 }
-h1 {
-  text-align: center;
-  font-family: cursive;
+@keyframes bgMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
 }
-.toggle {
-  display: flex;
-  background: rgba(255,255,255,0.2);
-  border-radius: 30px;
-  overflow: hidden;
-  margin-bottom: 16px;
+.container{
+  max-width:520px;
+  margin:auto;
+  padding:16px;
 }
-.toggle button {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  background: transparent;
-  color: #fff;
-  font-size: 16px;
+h1{text-align:center;font-family:cursive;}
+.tabs{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
+.tabs button{
+  border:none;padding:8px 14px;border-radius:20px;
+  background:rgba(255,255,255,.25);color:#fff;cursor:pointer;
 }
-.toggle button.active {
-  background: #fff;
-  color: #000;
+.tabs button.active{background:#fff;color:#000;}
+.card{
+  background:rgba(0,0,0,.25);
+  border-radius:16px;padding:16px;
 }
-select {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  margin-bottom: 12px;
-  font-size: 15px;
+select,button{
+  width:100%;padding:12px;border-radius:10px;
+  border:none;margin-top:10px;font-size:15px;
 }
-.popularity {
-  margin-top: 20px;
-}
-.row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.row span {
-  width: 140px;
-  font-size: 14px;
-}
-.bar {
-  flex: 1;
-  height: 10px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.fill {
-  height: 100%;
-  background: #fff;
-}
-.counter {
-  text-align: center;
-  margin-top: 12px;
-  font-size: 14px;
-}
+button{background:#fff;color:#000;font-weight:600;}
+.results{margin-top:16px;}
+.slot{display:flex;align-items:center;gap:10px;margin:6px 0;}
+.bar{height:10px;background:#fff;border-radius:6px;}
+.small{font-size:13px;opacity:.9;}
+.footer{text-align:center;margin-top:16px;font-family:cursive;opacity:.85;}
 </style>
 </head>
 
@@ -82,139 +56,169 @@ select {
 <div class="container">
   <h1>CoDrive</h1>
 
-  <div class="toggle">
-    <button id="todayBtn" class="active">Today</button>
-    <button id="tomorrowBtn">Tomorrow</button>
+  <div class="tabs" id="tabs"></div>
+
+  <div class="card">
+    <select id="from"></select>
+    <select id="to"></select>
+    <select id="time"></select>
+    <button onclick="submitRoute()">Select Route</button>
+    <div class="results" id="results"></div>
   </div>
 
-  <select id="from">
-    <option value="">From location</option>
-    <option>Brigade Eldorado Aerospace Park</option>
-    <option>KARLE SEZ</option>
-  </select>
-
-  <select id="to">
-    <option value="">To location</option>
-    <option>KARLE SEZ</option>
-    <option>Brigade Eldorado Aerospace Park</option>
-  </select>
-
-  <select id="timeSlot"></select>
-
-  <div class="popularity">
-    <h3>Popularity</h3>
-    <div id="popList"></div>
-  </div>
-
-  <div class="counter">
-    <span id="peopleCount">0</span> People finding their co-drive partner
-  </div>
+  <div class="footer" id="visits"></div>
+  <div class="footer">Created by Animesh</div>
 </div>
 
 <script>
-/* ---------- IST TIME ---------- */
-function nowIST() {
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  return new Date(utc + 330 * 60000);
+const API="https://codrive-api.animesh-him.workers.dev";
+let currentDate="";
+
+/* ---------- IST HELPERS (FIXED) ---------- */
+function nowIST(){
+  const utc = Date.now() + new Date().getTimezoneOffset()*60000;
+  return new Date(utc + 330*60000);
+}
+function istDateString(offset=0){
+  const d = nowIST();
+  d.setDate(d.getDate()+offset);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
-/* ---------- GLOBAL STATE ---------- */
-let selectedDay = "today";
-
-/* ---------- PEOPLE COUNTER ---------- */
-let count = parseInt(localStorage.getItem("peopleCount") || "0", 10);
-count++;
-localStorage.setItem("peopleCount", count);
-document.getElementById("peopleCount").textContent = count;
-
-/* ---------- DAY BUTTONS ---------- */
-todayBtn.onclick = () => switchDay("today");
-tomorrowBtn.onclick = () => switchDay("tomorrow");
-
-function switchDay(day) {
-  selectedDay = day;
-  todayBtn.classList.toggle("active", day === "today");
-  tomorrowBtn.classList.toggle("active", day === "tomorrow");
-  buildSlots();
-  buildPopularity();
+/* ---------- LOCATIONS ---------- */
+async function loadLocations(){
+  const [f,t]=await Promise.all([
+    fetch("from_locations.txt").then(r=>r.text()),
+    fetch("to_locations.txt").then(r=>r.text())
+  ]);
+  fill("from",f);
+  fill("to",t);
+  from.onchange=to.onchange=()=>{genTimes();refresh();}
+}
+function fill(id,text){
+  const s=document.getElementById(id);
+  s.innerHTML="";
+  text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean)
+    .forEach(v=>{
+      const o=document.createElement("option");
+      o.value=o.textContent=v;
+      s.appendChild(o);
+    });
 }
 
-/* ---------- SLOT BUILDER ---------- */
-function buildSlots() {
-  const sel = document.getElementById("timeSlot");
-  sel.innerHTML = "";
+/* ---------- DATE TABS ---------- */
+function genDates(){
+  const tabs=document.getElementById("tabs");
+  tabs.innerHTML="";
+  [{label:"Today",val:istDateString(0)},{label:"Tomorrow",val:istDateString(1)}]
+    .forEach((o,i)=>{
+      const b=document.createElement("button");
+      b.textContent=o.label;
+      if(i===0){b.classList.add("active");currentDate=o.val;}
+      b.onclick=()=>selectDate(o.val,b);
+      tabs.appendChild(b);
+    });
+}
+function selectDate(val,btn){
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  currentDate=val;
+  genTimes();
+  refresh();
+}
+
+/* ---------- TIME SLOTS (IST CORRECT) ---------- */
+function genTimes(){
+  const sel=document.getElementById("time");
+  sel.innerHTML="";
 
   const now = nowIST();
-  let startMinutes = 0;
+  const isToday = currentDate === istDateString(0);
+  const nowMinutes = now.getHours()*60 + now.getMinutes();
 
-  if (selectedDay === "today") {
-    startMinutes = Math.floor((now.getHours() * 60 + now.getMinutes()) / 15) * 15;
-  }
+  for(let m=0; m<1440; m+=15){
+    const endMinutes = m + 15;
+    if(isToday && endMinutes <= nowMinutes) continue;
 
-  for (let m = startMinutes; m < 1440; m += 15) {
-    const h1 = String(Math.floor(m / 60)).padStart(2, "0");
-    const m1 = String(m % 60).padStart(2, "0");
-    const h2 = String(Math.floor((m + 15) / 60) % 24).padStart(2, "0");
-    const m2 = String((m + 15) % 60).padStart(2, "0");
+    const h1 = String(Math.floor(m/60)).padStart(2,"0");
+    const m1 = String(m%60).padStart(2,"0");
+    const h2 = String(Math.floor(endMinutes/60)%24).padStart(2,"0");
+    const m2 = String(endMinutes%60).padStart(2,"0");
 
-    const opt = document.createElement("option");
-    opt.value = `${h1}:${m1}-${h2}:${m2}`;
-    opt.textContent = opt.value;
-    sel.appendChild(opt);
+    const label = `${h1}:${m1} - ${h2}:${m2}`;
+    const o=document.createElement("option");
+    o.value=o.textContent=label;
+    sel.appendChild(o);
   }
 }
 
-/* ---------- POPULARITY ---------- */
-function buildPopularity() {
-  const pop = {};
-  const key = `${selectedDay}_${from.value}_${to.value}`;
+/* ---------- SUBMIT ---------- */
+async function submitRoute(){
+  await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      date:currentDate,
+      from:from.value,
+      to:to.value,
+      time:time.value
+    })
+  });
+  refresh();
+}
 
-  const stored = JSON.parse(localStorage.getItem("popData") || "{}");
+/* ---------- POPULARITY (DEDUP FIX) ---------- */
+async function refresh(){
+  const q=`?date=${currentDate}&from=${encodeURIComponent(from.value)}&to=${encodeURIComponent(to.value)}`;
+  const raw=await fetch(API+q).then(r=>r.json());
 
-  if (!stored[key]) stored[key] = [];
-
-  stored[key].forEach(t => {
-    pop[t] = (pop[t] || 0) + 1;
+  // 🔧 MERGE DUPLICATE TIMES
+  const merged = {};
+  raw.forEach(d=>{
+    if(d.count>0){
+      merged[d.time]=(merged[d.time]||0)+d.count;
+    }
   });
 
-  const entries = Object.entries(pop).sort((a,b)=>b[1]-a[1]);
-  const max = entries[0]?.[1] || 1;
+  const data = Object.entries(merged)
+    .map(([time,count])=>({time,count}))
+    .sort((a,b)=>b.count-a.count);
 
-  const list = document.getElementById("popList");
-  list.innerHTML = "";
+  const res=document.getElementById("results");
+  res.innerHTML="<h3>Popularity</h3>";
 
-  entries.forEach(([time,count])=>{
-    const row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = `
-      <span>${time} (${count})</span>
-      <div class="bar"><div class="fill" style="width:${(count/max)*100}%"></div></div>
-    `;
-    list.appendChild(row);
+  if(!data.length){
+    res.innerHTML+="<div class='small'>No selections yet</div>";
+    return;
+  }
+
+  const max=Math.max(...data.map(d=>d.count));
+  data.forEach(d=>{
+    const row=document.createElement("div");
+    row.className="slot";
+    row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
+    const bar=document.createElement("div");
+    bar.className="bar";
+    bar.style.width=(d.count/max*100)+"%";
+    bar.style.flex="1";
+    row.appendChild(bar);
+    res.appendChild(row);
   });
 }
 
-/* ---------- SAVE SELECTION ---------- */
-timeSlot.onchange = () => {
-  if (!from.value || !to.value) return;
+/* ---------- VISITS ---------- */
+async function countVisit(){
+  const r=await fetch(API+"?visit=1").then(r=>r.json());
+  visits.textContent=`People finding their co-drive partner`;
+}
 
-  const key = `${selectedDay}_${from.value}_${to.value}`;
-  const stored = JSON.parse(localStorage.getItem("popData") || "{}");
-  if (!stored[key]) stored[key] = [];
-  stored[key].push(timeSlot.value);
-  localStorage.setItem("popData", JSON.stringify(stored));
-  buildPopularity();
-};
-
-/* ---------- AUTO REFRESH ---------- */
-from.onchange = to.onchange = () => {
-  buildSlots();
-  buildPopularity();
-};
-
-buildSlots();
-buildPopularity();
+/* ---------- INIT ---------- */
+setInterval(refresh,60000);
+loadLocations();
+genDates();
+genTimes();
+refresh();
+countVisit();
 </script>
 </body>
 </html>
