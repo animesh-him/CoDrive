@@ -93,10 +93,8 @@ async function loadLocations(){
   fillSelect("from",f);
   fillSelect("to",t);
 
-  from.onchange = to.onchange = () => {
-    genTimes();
-    refresh();
-  };
+  // Automatic refresh when changing from/to
+  ["from","to"].forEach(id => document.getElementById(id).addEventListener("change", refresh));
 }
 function fillSelect(id,text){
   const s=document.getElementById(id);
@@ -155,28 +153,36 @@ function genTimes(){
 
 /* ---------- SUBMIT ---------- */
 async function submitRoute(){
-  await fetch(API,{
+  const payload = {
+      date: currentDate,
+      from: from.value,
+      to: to.value,
+      time: time.value
+  };
+  
+  const resp = await fetch(API, {
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      date:currentDate,
-      from:from.value,
-      to:to.value,
-      time:time.value
-    })
+    body: JSON.stringify(payload)
   });
-  refresh();
+  
+  const data = await resp.json();
+  if(data.error) alert(data.error); // show throttle message
+
+  refresh(); // always refresh after submission
 }
 
-/* ---------- POPULARITY (STRICT FILTER) ---------- */
+/* ---------- POPULARITY ---------- */
 async function refresh(){
+  if(!from.value || !to.value) return;
+
   const q = `?date=${currentDate}&from=${encodeURIComponent(from.value)}&to=${encodeURIComponent(to.value)}`;
   const data = await fetch(API+q).then(r=>r.json());
 
   const res=document.getElementById("results");
   res.innerHTML="<h3>Popularity</h3>";
 
-  const valid=data.filter(d=>d.count>0);
+  const valid = data.filter(d=>d.count>0);
   if(!valid.length){
     res.innerHTML+="<div class='small'>No selections yet</div>";
     return;
@@ -197,15 +203,16 @@ async function refresh(){
 
 /* ---------- VISITS ---------- */
 async function countVisit(){
-  const r=await fetch(API+"?visit=1").then(r=>r.json());
+  const r = await fetch(API+"?visit=1").then(r=>r.json());
   visits.textContent=`People finding their co-drive partner`;
 }
 
 /* ---------- INIT ---------- */
-loadLocations();
-genDates();
-genTimes();
-refresh();
+loadLocations().then(()=>{ // wait until locations loaded
+  genDates();
+  genTimes();
+  refresh(); // show current popularity automatically
+});
 countVisit();
 setInterval(refresh,60000);
 </script>
