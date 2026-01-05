@@ -28,70 +28,27 @@ body{
   margin:auto;
   padding:16px;
 }
-h1{
-  text-align:center;
-  font-family:cursive;
-}
-.tabs{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  margin-bottom:14px;
-}
+h1{text-align:center;font-family:cursive;}
+.tabs{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
 .tabs button{
-  border:none;
-  padding:8px 14px;
-  border-radius:20px;
-  background:rgba(255,255,255,.25);
-  color:#fff;
-  cursor:pointer;
+  border:none;padding:8px 14px;border-radius:20px;
+  background:rgba(255,255,255,.25);color:#fff;cursor:pointer;
 }
-.tabs button.active{
-  background:#fff;
-  color:#000;
-}
+.tabs button.active{background:#fff;color:#000;}
 .card{
   background:rgba(0,0,0,.25);
-  border-radius:16px;
-  padding:16px;
+  border-radius:16px;padding:16px;
 }
 select,button{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  margin-top:10px;
-  font-size:15px;
+  width:100%;padding:12px;border-radius:10px;
+  border:none;margin-top:10px;font-size:15px;
 }
-button{
-  background:#fff;
-  color:#000;
-  font-weight:600;
-}
-.results{
-  margin-top:16px;
-}
-.slot{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin:6px 0;
-}
-.bar{
-  height:10px;
-  background:#fff;
-  border-radius:6px;
-}
-.small{
-  font-size:13px;
-  opacity:.9;
-}
-.footer{
-  text-align:center;
-  margin-top:16px;
-  font-family:cursive;
-  opacity:.85;
-}
+button{background:#fff;color:#000;font-weight:600;}
+.results{margin-top:16px;}
+.slot{display:flex;align-items:center;gap:10px;margin:6px 0;}
+.bar{height:10px;background:#fff;border-radius:6px;}
+.small{font-size:13px;opacity:.9;}
+.footer{text-align:center;margin-top:16px;font-family:cursive;opacity:.85;}
 </style>
 </head>
 
@@ -106,7 +63,6 @@ button{
     <select id="to"></select>
     <select id="time"></select>
     <button onclick="submitRoute()">Select Route</button>
-
     <div class="results" id="results"></div>
   </div>
 
@@ -118,12 +74,9 @@ button{
 const API="https://codrive-api.animesh-him.workers.dev";
 let currentDate="";
 
-/* ---------- IST HELPERS ---------- */
-function getISTNow(){
-  return new Date(Date.now() + 330 * 60000);
-}
-function getISTDate(offset=0){
-  const d=getISTNow();
+/* ---------- DATE HELPERS (LOCAL IST) ---------- */
+function getDate(offset=0){
+  const d=new Date();
   d.setDate(d.getDate()+offset);
   return d.toISOString().slice(0,10);
 }
@@ -136,44 +89,31 @@ async function loadLocations(){
   ]);
   fill("from",f);
   fill("to",t);
-  attachRouteListeners();   // 🔥 NEW
+  attachRouteListeners();
 }
 function fill(id,text){
   const s=document.getElementById(id);
   s.innerHTML="";
-  text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean).forEach(v=>{
-    const o=document.createElement("option");
-    o.value=o.textContent=v;
-    s.appendChild(o);
-  });
-}
-
-/* ---------- ROUTE CHANGE LISTENERS ---------- */
-function attachRouteListeners(){
-  from.addEventListener("change", ()=>{
-    genTimes();
-    refresh();
-  });
-  to.addEventListener("change", ()=>{
-    genTimes();
-    refresh();
-  });
+  text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean)
+    .forEach(v=>{
+      const o=document.createElement("option");
+      o.value=o.textContent=v;
+      s.appendChild(o);
+    });
 }
 
 /* ---------- DATE TABS ---------- */
 function genDates(){
   const tabs=document.getElementById("tabs");
   tabs.innerHTML="";
-  [
-    {label:"Today",value:getISTDate(0)},
-    {label:"Tomorrow",value:getISTDate(1)}
-  ].forEach((o,i)=>{
-    const b=document.createElement("button");
-    b.textContent=o.label;
-    if(i===0){b.classList.add("active");currentDate=o.value;}
-    b.onclick=()=>selectDate(o.value,b);
-    tabs.appendChild(b);
-  });
+  [{label:"Today",val:getDate(0)},{label:"Tomorrow",val:getDate(1)}]
+    .forEach((o,i)=>{
+      const b=document.createElement("button");
+      b.textContent=o.label;
+      if(i===0){b.classList.add("active");currentDate=o.val;}
+      b.onclick=()=>selectDate(o.val,b);
+      tabs.appendChild(b);
+    });
 }
 function selectDate(val,btn){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
@@ -183,33 +123,40 @@ function selectDate(val,btn){
   refresh();
 }
 
-/* ---------- TIME SLOTS (IST SAFE) ---------- */
+/* ---------- TIME SLOTS (CORRECT IST) ---------- */
 function genTimes(){
   const sel=document.getElementById("time");
   sel.innerHTML="";
 
-  const now=getISTNow();
-  const isToday=currentDate===getISTDate(0);
+  const now=new Date();
+  const isToday=currentDate===getDate(0);
 
-  let startH=0, startM=0;
-  if(isToday){
-    startH=now.getHours();
-    startM=Math.floor(now.getMinutes()/15)*15;
-  }
+  // Floor to current 15-minute slot
+  const base=new Date(now);
+  base.setMinutes(Math.floor(now.getMinutes()/15)*15,0,0);
 
-  for(let h=startH;h<24;h++){
-    for(let m=(h===startH?startM:0);m<60;m+=15){
+  for(let h=0;h<24;h++){
+    for(let m=0;m<60;m+=15){
+      const start=new Date(`${currentDate}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:00`);
+      const end=new Date(start.getTime()+15*60000);
+
+      if(isToday && end<=now) continue;
+
       const label=
-        String(h).padStart(2,"0")+":"+
-        String(m).padStart(2,"0")+" - "+
-        String(h + (m===45?1:0)).padStart(2,"0")+":"+
-        String((m+15)%60).padStart(2,"0");
+        start.toTimeString().slice(0,5)+" - "+
+        end.toTimeString().slice(0,5);
 
       const o=document.createElement("option");
       o.value=o.textContent=label;
       sel.appendChild(o);
     }
   }
+}
+
+/* ---------- ROUTE CHANGE ---------- */
+function attachRouteListeners(){
+  from.onchange=()=>{genTimes();refresh();}
+  to.onchange=()=>{genTimes();refresh();}
 }
 
 /* ---------- SUBMIT ---------- */
@@ -233,7 +180,6 @@ async function refresh(){
   const raw=await fetch(API+q).then(r=>r.json());
 
   const data=raw.filter(d=>d.count>0);
-
   const res=document.getElementById("results");
   res.innerHTML="<h3>Popularity</h3>";
 
@@ -256,10 +202,10 @@ async function refresh(){
   });
 }
 
-/* ---------- VISIT COUNTER ---------- */
+/* ---------- VISITS ---------- */
 async function countVisit(){
   const r=await fetch(API+"?visit=1").then(r=>r.json());
-  visits.textContent=`People finding their co-drive partner`;
+  visits.textContent=`${r.total} people finding their co-drive partner`;
 }
 
 /* ---------- INIT ---------- */
