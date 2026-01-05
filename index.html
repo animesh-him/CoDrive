@@ -74,11 +74,14 @@ button{background:#fff;color:#000;font-weight:600;}
 const API="https://codrive-api.animesh-him.workers.dev";
 let currentDate="";
 
-/* ---------- DATE HELPERS (LOCAL IST) ---------- */
+/* ---------- LOCAL DATE (NO UTC EVER) ---------- */
+function localDateString(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
 function getDate(offset=0){
   const d=new Date();
   d.setDate(d.getDate()+offset);
-  return d.toISOString().slice(0,10);
+  return localDateString(d);
 }
 
 /* ---------- LOCATIONS ---------- */
@@ -89,7 +92,7 @@ async function loadLocations(){
   ]);
   fill("from",f);
   fill("to",t);
-  attachRouteListeners();
+  from.onchange=to.onchange=()=>{genTimes();refresh();}
 }
 function fill(id,text){
   const s=document.getElementById(id);
@@ -123,15 +126,13 @@ function selectDate(val,btn){
   refresh();
 }
 
-/* ---------- TIME SLOTS (CORRECT IST) ---------- */
+/* ---------- TIME SLOTS (IST SAFE) ---------- */
 function genTimes(){
   const sel=document.getElementById("time");
   sel.innerHTML="";
-
   const now=new Date();
   const isToday=currentDate===getDate(0);
 
-  // Floor to current 15-minute slot
   const base=new Date(now);
   base.setMinutes(Math.floor(now.getMinutes()/15)*15,0,0);
 
@@ -142,21 +143,12 @@ function genTimes(){
 
       if(isToday && end<=now) continue;
 
-      const label=
-        start.toTimeString().slice(0,5)+" - "+
-        end.toTimeString().slice(0,5);
-
+      const label=start.toTimeString().slice(0,5)+" - "+end.toTimeString().slice(0,5);
       const o=document.createElement("option");
       o.value=o.textContent=label;
       sel.appendChild(o);
     }
   }
-}
-
-/* ---------- ROUTE CHANGE ---------- */
-function attachRouteListeners(){
-  from.onchange=()=>{genTimes();refresh();}
-  to.onchange=()=>{genTimes();refresh();}
 }
 
 /* ---------- SUBMIT ---------- */
