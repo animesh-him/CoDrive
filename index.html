@@ -230,7 +230,7 @@ async function refresh(){
 
 async function countVisit(){
   const r=await fetch(API+"?visit=1").then(r=>r.json());
-  visits.textContent=`$People finding their co-drive partner`;
+  visits.textContent=`People finding their co-drive partner`;
 }
 
 setInterval(refresh,60000);
