@@ -13,7 +13,11 @@ body{
   background:var(--grad);background-size:600% 600%;
   animation:bgMove 12s ease infinite;color:#fff
 }
-@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes bgMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
 .container{max-width:520px;margin:auto;padding:16px}
 h1{text-align:center;font-family:cursive}
 .tabs{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
@@ -27,11 +31,20 @@ select,button{
   width:100%;padding:12px;border-radius:10px;
   border:none;margin-top:10px;font-size:15px
 }
-button{background:#fff;color:#000;font-weight:600}
+button.primary{background:#fff;color:#000;font-weight:600}
+button.range{
+  width:48%;min-height:42px;
+  background:#fff;color:#000;font-weight:600
+}
+button.range.disabled{
+  opacity:.4;pointer-events:none
+}
+.range-wrap{display:flex;flex-wrap:wrap;gap:4%}
 .results{margin-top:16px}
 .slot{display:flex;gap:10px;margin:6px 0;align-items:center}
 .bar{height:10px;background:#fff;border-radius:6px;flex:1}
 .small{font-size:13px;opacity:.9}
+.label{margin-top:12px;font-size:14px;opacity:.9}
 .footer{text-align:center;margin-top:10px;font-family:cursive;opacity:.85}
 </style>
 </head>
@@ -39,13 +52,21 @@ button{background:#fff;color:#000;font-weight:600}
 <body>
 <div class="container">
   <h1>CoDrive</h1>
+
   <div class="tabs" id="tabs"></div>
 
   <div class="card">
     <select id="from"></select>
     <select id="to"></select>
-    <select id="time"></select>
-    <button id="submitBtn">Select Route</button>
+
+    <div id="rangeSection" style="display:none">
+      <div class="label">Select the below time range to see popularity</div>
+      <div class="range-wrap" id="ranges"></div>
+    </div>
+
+    <select id="time" style="display:none"></select>
+    <button id="submitBtn" class="primary" style="display:none">My Preference</button>
+
     <div class="results" id="results"></div>
   </div>
 
@@ -55,39 +76,39 @@ button{background:#fff;color:#000;font-weight:600}
 
 <script>
 const API="https://codrive-api.animesh-him.workers.dev";
-let currentDate="";
+let currentDate="", activeRange=null;
 
-/* ---------- LOCATIONS WITH IDS ---------- */
+/* ---------- LOCATIONS ---------- */
 const FROM_LOCATIONS=[
-  {id:"eldorado",label:"Brigade Eldorado Aerospace Park"},
-  {id:"finsbury",label:"Prestige Finsbury"},
-  {id:"ananda",label:"Godrej Ananda"},
-  {id:"ecopolitan",label:"Provident Ecopolitan"}
+ {id:"eldorado",label:"Brigade Eldorado Aerospace Park"},
+ {id:"finsbury",label:"Prestige Finsbury"},
+ {id:"ananda",label:"Godrej Ananda"},
+ {id:"ecopolitan",label:"Provident Ecopolitan"}
 ];
 const TO_LOCATIONS=[
-  {id:"karle",label:"KARLE SEZ"},
-  {id:"manyata",label:"Manyata Tech Park"},
-  {id:"shell",label:"Shell Technology Center (North Bangalore)"},
-  {id:"boeing",label:"Boeing Office (North Bangalore)"},
-  {id:"sap",label:"SAP Labs (North Bangalore)"},
-  {id:"dynamatics",label:"Dynamatics (North Bangalore)"},
-  {id:"itpl",label:"ITPL (Whitefield)"},
-  {id:"ecospace",label:"Ecospace (Bellandur)"},
-  {id:"kia1",label:"Kempegowda International Airport T1"},
-  {id:"kia2",label:"Kempegowda International Airport T2"},
-  {id:"cubbon",label:"Cubbon Park"},
-  {id:"koramangala",label:"Koramangala"},
-  {id:"mgroad",label:"MG Road"},
-  {id:"ecity",label:"Electronic City"},
-  {id:"bagmane",label:"Bagmane Tech Park, CV Raman Nagar"},
-  {id:"sarjapur",label:"Sarjapur"}
+ {id:"karle",label:"KARLE SEZ"},
+ {id:"manyata",label:"Manyata Tech Park"},
+ {id:"shell",label:"Shell Technology Center (North Bangalore)"},
+ {id:"boeing",label:"Boeing Office (North Bangalore)"},
+ {id:"sap",label:"SAP Labs (North Bangalore)"},
+ {id:"dynamatics",label:"Dynamatics (North Bangalore)"},
+ {id:"itpl",label:"ITPL (Whitefield)"},
+ {id:"ecospace",label:"Ecospace (Bellandur)"},
+ {id:"kia1",label:"Kempegowda International Airport T1"},
+ {id:"kia2",label:"Kempegowda International Airport T2"},
+ {id:"cubbon",label:"Cubbon Park"},
+ {id:"koramangala",label:"Koramangala"},
+ {id:"mgroad",label:"MG Road"},
+ {id:"ecity",label:"Electronic City"},
+ {id:"bagmane",label:"Bagmane Tech Park, CV Raman Nagar"},
+ {id:"sarjapur",label:"Sarjapur"}
 ];
 
-/* ---------- IST HELPERS ---------- */
+/* ---------- IST ---------- */
 const nowIST=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
 const istDate=o=>{const d=nowIST();d.setDate(d.getDate()+o);return d.toISOString().slice(0,10)};
 
-/* ---------- INIT SELECTS ---------- */
+/* ---------- INIT ---------- */
 function fill(sel,data){
   sel.innerHTML="<option value=''>Select</option>";
   data.forEach(o=>{
@@ -97,7 +118,6 @@ function fill(sel,data){
   });
 }
 
-/* ---------- DATE TABS ---------- */
 function genDates(){
   tabs.innerHTML="";
   [{l:"Today",v:istDate(0)},{l:"Tomorrow",v:istDate(1)}].forEach((o,i)=>{
@@ -108,19 +128,49 @@ function genDates(){
       [...tabs.children].forEach(x=>x.classList.remove("active"));
       b.classList.add("active");
       currentDate=o.v;
-      genTimes();
-      results.innerHTML="";
+      resetUI();
     };
     tabs.appendChild(b);
   });
 }
 
-/* ---------- 30 MIN SLOTS ---------- */
-function genTimes(){
-  time.innerHTML="<option value=''>Select time</option>";
-  const now=nowIST();
-  const nowMin=now.getHours()*60+now.getMinutes();
-  for(let m=0;m<1440;m+=30){
+/* ---------- TIME RANGES ---------- */
+const RANGES=[
+ {label:"00:00 – 06:00",start:0,end:360},
+ {label:"06:00 – 12:00",start:360,end:720},
+ {label:"12:00 – 18:00",start:720,end:1080},
+ {label:"18:00 – 00:00",start:1080,end:1440}
+];
+
+function genRanges(){
+  ranges.innerHTML="";
+  const nowMin=nowIST().getHours()*60+nowIST().getMinutes();
+  RANGES.forEach(r=>{
+    const b=document.createElement("button");
+    b.className="range";
+    b.textContent=r.label;
+    if(currentDate===istDate(0)&&r.end<=nowMin){
+      b.classList.add("disabled");
+    }
+    b.onclick=()=>selectRange(r);
+    ranges.appendChild(b);
+  });
+}
+
+async function selectRange(r){
+  activeRange=r;
+  genTimeSlots();
+  await loadPopularity();
+}
+
+/* ---------- TIME DROPDOWN ---------- */
+function genTimeSlots(){
+  time.style.display="block";
+  submitBtn.style.display="block";
+  time.innerHTML="<option value=''>Select time slot</option>";
+
+  const nowMin=nowIST().getHours()*60+nowIST().getMinutes();
+  for(let m=activeRange.start;m<activeRange.end;m+=30){
     if(currentDate===istDate(0)&&m+30<=nowMin) continue;
     const f=x=>String(x).padStart(2,"0");
     const h1=f(m/60|0),m1=f(m%60);
@@ -132,50 +182,61 @@ function genTimes(){
   }
 }
 
-/* ---------- SUBMIT ---------- */
-submitBtn.onclick=async()=>{
-  if(!from.value||!to.value||!time.value) return;
-
-  const r=await fetch(API,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      date:currentDate,
-      from:from.value,
-      to:to.value,
-      time:time.value
-    })
-  }).then(r=>r.json());
-
-  if(r.error){alert(r.error);return}
-  loadPopularity();
-};
-
-/* ---------- POPULARITY (NO AUTO) ---------- */
+/* ---------- POPULARITY ---------- */
 async function loadPopularity(){
   const q=`?date=${currentDate}&from=${from.value}&to=${to.value}`;
   const data=await fetch(API+q).then(r=>r.json());
   results.innerHTML="<h3>Popularity</h3>";
-  if(!data.length){results.innerHTML+="<div class='small'>No selections yet</div>";return}
-  const max=Math.max(...data.map(x=>x.count));
-  data.forEach(d=>{
+  const filtered=data.filter(d=>{
+    const h=parseInt(d.time.split(":")[0])*60;
+    return h>=activeRange.start && h<activeRange.end;
+  });
+  if(!filtered.length){results.innerHTML+="<div class='small'>No data</div>";return}
+  const max=Math.max(...filtered.map(x=>x.count));
+  filtered.forEach(d=>{
     const row=document.createElement("div");
     row.className="slot";
     row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
     const bar=document.createElement("div");
-    bar.className="bar"; bar.style.width=(d.count/max*100)+"%";
+    bar.className="bar";bar.style.width=(d.count/max*100)+"%";
     row.appendChild(bar);
     results.appendChild(row);
   });
 }
 
-/* ---------- VISITS ---------- */
-fetch(API+"?visit=1").then(()=>visits.textContent="People finding their co-drive partner");
+/* ---------- SUBMIT ---------- */
+submitBtn.onclick=async()=>{
+  if(!from.value||!to.value||!time.value) return;
+  const r=await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({date:currentDate,from:from.value,to:to.value,time:time.value})
+  }).then(r=>r.json());
+  if(r.error){alert(r.error);return}
+  loadPopularity();
+};
+
+/* ---------- RESET ---------- */
+function resetUI(){
+  rangeSection.style.display="none";
+  time.style.display="none";
+  submitBtn.style.display="none";
+  results.innerHTML="";
+}
+
+/* ---------- EVENTS ---------- */
+[from,to].forEach(s=>s.onchange=()=>{
+  if(from.value&&to.value){
+    rangeSection.style.display="block";
+    genRanges();
+  }else resetUI();
+});
 
 /* ---------- START ---------- */
 fill(from,FROM_LOCATIONS);
 fill(to,TO_LOCATIONS);
-genDates(); genTimes();
+genDates();
+fetch(API+"?visit=1").then(()=>visits.textContent="People finding their co-drive partner");
 </script>
 </body>
 </html>
