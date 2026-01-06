@@ -71,8 +71,33 @@ button{background:#fff;color:#000;font-weight:600;}
 const API="https://codrive-api.animesh-him.workers.dev";
 let currentDate="";
 
-/* ---------- NORMALIZE ---------- */
-const norm = v => v.trim().toLowerCase().normalize("NFKC");
+/* ---------- LOCATIONS WITH STABLE IDS ---------- */
+
+const FROM_LOCATIONS = [
+  {id:"brigade_eldorado", label:"Brigade Eldorado Aerospace Park"},
+  {id:"prestige_finsbury", label:"Prestige Finsbury Aerospace Park"},
+  {id:"godrej_ananda", label:"Godrej Ananda Aerospace Park"},
+  {id:"provident_ecopolitan", label:"Provident Ecopolitan Aerospace Park"}
+];
+
+const TO_LOCATIONS = [
+  {id:"karle_sez", label:"KARLE SEZ"},
+  {id:"manyata", label:"Manyata Tech Park"},
+  {id:"shell", label:"Shell Technology Center (North Bangalore)"},
+  {id:"boeing", label:"Boeing Office (North Bangalore)"},
+  {id:"sap", label:"SAP Labs (North Bangalore)"},
+  {id:"dynamatics", label:"Dynamatics (North Bangalore)"},
+  {id:"itpl", label:"ITPL (Whitefield)"},
+  {id:"ecospace", label:"Ecospace (Bellandur)"},
+  {id:"kia_t1", label:"Kempegowda International Airport T1"},
+  {id:"kia_t2", label:"Kempegowda International Airport T2"},
+  {id:"cubbon", label:"Cubbon Park"},
+  {id:"koramangala", label:"Koramangala"},
+  {id:"mg_road", label:"MG Road"},
+  {id:"electronic_city", label:"Electronic City"},
+  {id:"bagmane", label:"Bagmane Tech Park CV Raman Nagar"},
+  {id:"sarjapur", label:"Sarjapur"}
+];
 
 /* ---------- IST HELPERS ---------- */
 function nowIST(){
@@ -83,34 +108,32 @@ function istDateString(o=0){
   return d.toISOString().slice(0,10);
 }
 
-/* ---------- LOCATIONS ---------- */
-async function loadLocations(){
-  const [f,t]=await Promise.all([
-    fetch("from_locations.txt?v="+Date.now()).then(r=>r.text()),
-    fetch("to_locations.txt?v="+Date.now()).then(r=>r.text())
-  ]);
-  fill("from",f); fill("to",t);
+/* ---------- LOAD SELECTS ---------- */
+function loadLocations(){
+  from.innerHTML="";
+  FROM_LOCATIONS.forEach(l=>{
+    const o=document.createElement("option");
+    o.value=l.id;
+    o.textContent=l.label;
+    from.appendChild(o);
+  });
+
+  to.innerHTML="";
+  TO_LOCATIONS.forEach(l=>{
+    const o=document.createElement("option");
+    o.value=l.id;
+    o.textContent=l.label;
+    to.appendChild(o);
+  });
 
   ["from","to","time"].forEach(id=>{
     document.getElementById(id).onchange=refresh;
-  });
-
-  refresh(); // IMPORTANT
-}
-function fill(id,text){
-  const s=document.getElementById(id);
-  s.innerHTML="";
-  text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean)
-  .forEach(v=>{
-    const o=document.createElement("option");
-    o.value=o.textContent=v;
-    s.appendChild(o);
   });
 }
 
 /* ---------- DATES ---------- */
 function genDates(){
-  const t=document.getElementById("tabs"); t.innerHTML="";
+  tabs.innerHTML="";
   [{l:"Today",v:istDateString(0)},{l:"Tomorrow",v:istDateString(1)}]
   .forEach((o,i)=>{
     const b=document.createElement("button");
@@ -122,13 +145,13 @@ function genDates(){
       currentDate=o.v;
       genTimes(); refresh();
     };
-    t.appendChild(b);
+    tabs.appendChild(b);
   });
 }
 
 /* ---------- TIMES ---------- */
 function genTimes(){
-  const s=time; s.innerHTML="";
+  time.innerHTML="";
   const now=nowIST();
   const today=currentDate===istDateString(0);
   const nowMin=now.getHours()*60+now.getMinutes();
@@ -139,7 +162,7 @@ function genTimes(){
     const o=document.createElement("option");
     o.value=o.textContent=
       `${f(m/60|0)}:${f(m%60)} - ${f((m+15)/60|0)}:${f((m+15)%60)}`;
-    s.appendChild(o);
+    time.appendChild(o);
   }
 }
 
@@ -150,9 +173,9 @@ submitBtn.onclick=async()=>{
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       date:currentDate,
-      from:norm(from.value),
-      to:norm(to.value),
-      time:norm(time.value)
+      from:from.value,
+      to:to.value,
+      time:time.value
     })
   });
   refresh();
@@ -162,7 +185,7 @@ submitBtn.onclick=async()=>{
 async function refresh(){
   if(!from.value||!to.value) return;
 
-  const q=`?date=${currentDate}&from=${encodeURIComponent(norm(from.value))}&to=${encodeURIComponent(norm(to.value))}`;
+  const q=`?date=${currentDate}&from=${from.value}&to=${to.value}`;
   const data=await fetch(API+q).then(r=>r.json());
 
   results.innerHTML="<h3>Popularity</h3>";
@@ -184,13 +207,12 @@ async function refresh(){
   });
 }
 
-/* ---------- VISITS ---------- */
-fetch(API+"?visit=1").then(()=>visits.textContent="People finding their co-drive partner");
-
 /* ---------- INIT ---------- */
-loadLocations().then(()=>{
-  genDates(); genTimes(); refresh();
-});
+loadLocations();
+genDates();
+genTimes();
+refresh();
+fetch(API+"?visit=1").then(()=>visits.textContent="People finding their co-drive partner");
 setInterval(refresh,60000);
 </script>
 </body>
