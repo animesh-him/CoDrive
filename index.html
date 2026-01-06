@@ -87,13 +87,13 @@ function istDateString(offset=0){
 /* ---------- LOCATIONS ---------- */
 async function loadLocations(){
   const [f,t] = await Promise.all([
-    fetch("from_locations.txt").then(r=>r.text()),
-    fetch("to_locations.txt").then(r=>r.text())
+    fetch("from_locations.txt?v=" + Date.now()).then(r=>r.text()),
+    fetch("to_locations.txt?v=" + Date.now()).then(r=>r.text())
   ]);
-  fillSelect("from",f);
-  fillSelect("to",t);
 
-  // Add change listeners to refresh automatically
+  fillSelect("from", f);
+  fillSelect("to", t);
+
   ["from","to","time"].forEach(id => {
     document.getElementById(id).addEventListener("change", refresh);
   });
