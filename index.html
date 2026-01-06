@@ -23,7 +23,11 @@ body{
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
 }
-.container{max-width:520px;margin:auto;padding:16px;}
+.container{
+  max-width:520px;
+  margin:auto;
+  padding:16px;
+}
 h1{text-align:center;font-family:cursive;}
 .tabs{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
 .tabs button{
@@ -31,7 +35,10 @@ h1{text-align:center;font-family:cursive;}
   background:rgba(255,255,255,.25);color:#fff;cursor:pointer;
 }
 .tabs button.active{background:#fff;color:#000;}
-.card{background:rgba(0,0,0,.25);border-radius:16px;padding:16px;}
+.card{
+  background:rgba(0,0,0,.25);
+  border-radius:16px;padding:16px;
+}
 select,button{
   width:100%;padding:12px;border-radius:10px;
   border:none;margin-top:10px;font-size:15px;
@@ -39,12 +46,7 @@ select,button{
 button{background:#fff;color:#000;font-weight:600;}
 .results{margin-top:16px;}
 .slot{display:flex;align-items:center;gap:10px;margin:6px 0;}
-.bar{
-  height:10px;
-  background:#fff;
-  border-radius:6px;
-  transition:width .6s ease;
-}
+.bar{height:10px;background:#fff;border-radius:6px;flex:1;}
 .small{font-size:13px;opacity:.9;}
 .footer{text-align:center;margin-top:10px;font-family:cursive;opacity:.85;}
 </style>
@@ -53,6 +55,7 @@ button{background:#fff;color:#000;font-weight:600;}
 <body>
 <div class="container">
   <h1>CoDrive</h1>
+
   <div class="tabs" id="tabs"></div>
 
   <div class="card">
@@ -68,134 +71,129 @@ button{background:#fff;color:#000;font-weight:600;}
 </div>
 
 <script>
-const API="https://codrive-api.animesh-him.workers.dev";
-let currentDate="";
-
-/* ---------- LOCATIONS WITH STABLE IDS ---------- */
-
-const FROM_LOCATIONS = [
-  {id:"brigade_eldorado", label:"Brigade Eldorado Aerospace Park"},
-  {id:"prestige_finsbury", label:"Prestige Finsbury Aerospace Park"},
-  {id:"godrej_ananda", label:"Godrej Ananda Aerospace Park"},
-  {id:"provident_ecopolitan", label:"Provident Ecopolitan Aerospace Park"}
-];
-
-const TO_LOCATIONS = [
-  {id:"karle_sez", label:"KARLE SEZ"},
-  {id:"manyata", label:"Manyata Tech Park"},
-  {id:"shell", label:"Shell Technology Center (North Bangalore)"},
-  {id:"boeing", label:"Boeing Office (North Bangalore)"},
-  {id:"sap", label:"SAP Labs (North Bangalore)"},
-  {id:"dynamatics", label:"Dynamatics (North Bangalore)"},
-  {id:"itpl", label:"ITPL (Whitefield)"},
-  {id:"ecospace", label:"Ecospace (Bellandur)"},
-  {id:"kia_t1", label:"Kempegowda International Airport T1"},
-  {id:"kia_t2", label:"Kempegowda International Airport T2"},
-  {id:"cubbon", label:"Cubbon Park"},
-  {id:"koramangala", label:"Koramangala"},
-  {id:"mg_road", label:"MG Road"},
-  {id:"electronic_city", label:"Electronic City"},
-  {id:"bagmane", label:"Bagmane Tech Park CV Raman Nagar"},
-  {id:"sarjapur", label:"Sarjapur"}
-];
+const API = "https://codrive-api.animesh-him.workers.dev";
+let currentDate = "";
 
 /* ---------- IST HELPERS ---------- */
 function nowIST(){
   return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
 }
-function istDateString(o=0){
-  const d=nowIST(); d.setDate(d.getDate()+o);
+function istDateString(offset=0){
+  const d = nowIST();
+  d.setDate(d.getDate()+offset);
   return d.toISOString().slice(0,10);
 }
 
-/* ---------- LOAD SELECTS ---------- */
-function loadLocations(){
-  from.innerHTML="";
-  FROM_LOCATIONS.forEach(l=>{
-    const o=document.createElement("option");
-    o.value=l.id;
-    o.textContent=l.label;
-    from.appendChild(o);
-  });
+/* ---------- LOCATIONS ---------- */
+async function loadLocations(){
+  const [f,t] = await Promise.all([
+    fetch("from_locations.txt?v=" + Date.now()).then(r=>r.text()),
+    fetch("to_locations.txt?v=" + Date.now()).then(r=>r.text())
+  ]);
 
-  to.innerHTML="";
-  TO_LOCATIONS.forEach(l=>{
-    const o=document.createElement("option");
-    o.value=l.id;
-    o.textContent=l.label;
-    to.appendChild(o);
-  });
+  fillSelect("from", f);
+  fillSelect("to", t);
 
-  ["from","to","time"].forEach(id=>{
-    document.getElementById(id).onchange=refresh;
+  ["from","to","time"].forEach(id => {
+    document.getElementById(id).addEventListener("change", refresh);
+  });
+}
+function fillSelect(id,text){
+  const s=document.getElementById(id);
+  s.innerHTML="";
+  text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean).forEach(v=>{
+    const o=document.createElement("option");
+    o.value=o.textContent=v;
+    s.appendChild(o);
   });
 }
 
-/* ---------- DATES ---------- */
+/* ---------- DATE TABS ---------- */
 function genDates(){
+  const tabs=document.getElementById("tabs");
   tabs.innerHTML="";
-  [{l:"Today",v:istDateString(0)},{l:"Tomorrow",v:istDateString(1)}]
-  .forEach((o,i)=>{
+  [
+    {label:"Today",val:istDateString(0)},
+    {label:"Tomorrow",val:istDateString(1)}
+  ].forEach((o,i)=>{
     const b=document.createElement("button");
-    b.textContent=o.l;
-    if(!i){b.classList.add("active");currentDate=o.v;}
+    b.textContent=o.label;
+    if(i===0){b.classList.add("active");currentDate=o.val;}
     b.onclick=()=>{
       document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));
       b.classList.add("active");
-      currentDate=o.v;
-      genTimes(); refresh();
+      currentDate=o.val;
+      genTimes();
+      refresh();
     };
     tabs.appendChild(b);
   });
 }
 
-/* ---------- TIMES ---------- */
+/* ---------- TIME SLOTS ---------- */
 function genTimes(){
-  time.innerHTML="";
+  const sel=document.getElementById("time");
+  sel.innerHTML="";
   const now=nowIST();
-  const today=currentDate===istDateString(0);
+  const isToday=currentDate===istDateString(0);
   const nowMin=now.getHours()*60+now.getMinutes();
 
   for(let m=0;m<1440;m+=15){
-    if(today && m+15<=nowMin) continue;
-    const f=x=>String(x).padStart(2,"0");
+    const end=m+15;
+    if(isToday && end<=nowMin) continue;
+
+    const h1=String(Math.floor(m/60)).padStart(2,"0");
+    const m1=String(m%60).padStart(2,"0");
+    const h2=String(Math.floor(end/60)%24).padStart(2,"0");
+    const m2=String(end%60).padStart(2,"0");
+
     const o=document.createElement("option");
-    o.value=o.textContent=
-      `${f(m/60|0)}:${f(m%60)} - ${f((m+15)/60|0)}:${f((m+15)%60)}`;
-    time.appendChild(o);
+    o.value=o.textContent=`${h1}:${m1} - ${h2}:${m2}`;
+    sel.appendChild(o);
   }
 }
 
 /* ---------- SUBMIT ---------- */
-submitBtn.onclick=async()=>{
-  await fetch(API,{
+document.getElementById("submitBtn").addEventListener("click", async()=>{
+  if(!from.value || !to.value || !time.value) return;
+
+  const payload = {
+    date: currentDate,
+    from: from.value,
+    to: to.value,
+    time: time.value
+  };
+
+  const resp = await fetch(API, {
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      date:currentDate,
-      from:from.value,
-      to:to.value,
-      time:time.value
-    })
+    body: JSON.stringify(payload)
   });
+
+  const data = await resp.json();
+  if(data.error) alert(data.error);
+
   refresh();
-};
+});
 
 /* ---------- POPULARITY ---------- */
 async function refresh(){
-  if(!from.value||!to.value) return;
+  if(!from.value || !to.value) return;
 
-  const q=`?date=${currentDate}&from=${from.value}&to=${to.value}`;
-  const data=await fetch(API+q).then(r=>r.json());
+  const q = `?date=${currentDate}&from=${encodeURIComponent(from.value)}&to=${encodeURIComponent(to.value)}`;
+  const data = await fetch(API+q).then(r=>r.json());
 
-  results.innerHTML="<h3>Popularity</h3>";
-  if(!data.length){
-    results.innerHTML+=`<div class="small">No selections yet</div>`;
+  const res=document.getElementById("results");
+  res.innerHTML="<h3>Popularity</h3>";
+
+  const valid = data.filter(d=>d.count>0);
+  if(!valid.length){
+    res.innerHTML+="<div class='small'>No selections yet</div>";
     return;
   }
 
-  const max=Math.max(...data.map(d=>d.count));
-  data.sort((a,b)=>b.count-a.count).forEach(d=>{
+  const max=Math.max(...valid.map(d=>d.count));
+  valid.sort((a,b)=>b.count-a.count).forEach(d=>{
     const row=document.createElement("div");
     row.className="slot";
     row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
@@ -203,16 +201,23 @@ async function refresh(){
     bar.className="bar";
     bar.style.width=(d.count/max*100)+"%";
     row.appendChild(bar);
-    results.appendChild(row);
+    res.appendChild(row);
   });
 }
 
+/* ---------- VISITS ---------- */
+async function countVisit(){
+  const r = await fetch(API+"?visit=1").then(r=>r.json());
+  visits.textContent=`People finding their co-drive partner`;
+}
+
 /* ---------- INIT ---------- */
-loadLocations();
-genDates();
-genTimes();
-refresh();
-fetch(API+"?visit=1").then(()=>visits.textContent="People finding their co-drive partner");
+loadLocations().then(()=>{
+  genDates();
+  genTimes();
+  refresh(); // <-- shows popularity automatically after locations are loaded
+});
+countVisit();
 setInterval(refresh,60000);
 </script>
 </body>
