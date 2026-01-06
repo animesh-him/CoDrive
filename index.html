@@ -84,28 +84,38 @@ function istDateString(offset=0){
   return d.toISOString().slice(0,10);
 }
 
-/* ---------- LOCATIONS ---------- */
+/* ---------- LOCATIONS (FIXED) ---------- */
 async function loadLocations(){
+  const prevFrom = from.value;
+  const prevTo   = to.value;
+
   const [f,t] = await Promise.all([
     fetch("from_locations.txt?v=" + Date.now()).then(r=>r.text()),
     fetch("to_locations.txt?v=" + Date.now()).then(r=>r.text())
   ]);
 
-  fillSelect("from", f);
-  fillSelect("to", t);
+  fillSelect("from", f, prevFrom);
+  fillSelect("to", t, prevTo);
 
-  ["from","to","time"].forEach(id => {
+  ["from","to","time"].forEach(id=>{
     document.getElementById(id).addEventListener("change", refresh);
   });
 }
-function fillSelect(id,text){
-  const s=document.getElementById(id);
-  s.innerHTML="";
-  text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean).forEach(v=>{
+
+function fillSelect(id, text, preserve){
+  const s = document.getElementById(id);
+  const values = text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean);
+
+  s.innerHTML = "";
+  values.forEach(v=>{
     const o=document.createElement("option");
     o.value=o.textContent=v;
+    if(v === preserve) o.selected = true;
     s.appendChild(o);
   });
+
+  // fallback if preserved value no longer exists
+  if(!values.includes(preserve)) s.selectedIndex = 0;
 }
 
 /* ---------- DATE TABS ---------- */
@@ -154,25 +164,19 @@ function genTimes(){
 }
 
 /* ---------- SUBMIT ---------- */
-document.getElementById("submitBtn").addEventListener("click", async()=>{
+submitBtn.addEventListener("click", async()=>{
   if(!from.value || !to.value || !time.value) return;
 
-  const payload = {
-    date: currentDate,
-    from: from.value,
-    to: to.value,
-    time: time.value
-  };
-
-  const resp = await fetch(API, {
+  await fetch(API,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body: JSON.stringify(payload)
+    body:JSON.stringify({
+      date:currentDate,
+      from:from.value,
+      to:to.value,
+      time:time.value
+    })
   });
-
-  const data = await resp.json();
-  if(data.error) alert(data.error);
-
   refresh();
 });
 
@@ -186,14 +190,13 @@ async function refresh(){
   const res=document.getElementById("results");
   res.innerHTML="<h3>Popularity</h3>";
 
-  const valid = data.filter(d=>d.count>0);
-  if(!valid.length){
+  if(!data.length){
     res.innerHTML+="<div class='small'>No selections yet</div>";
     return;
   }
 
-  const max=Math.max(...valid.map(d=>d.count));
-  valid.sort((a,b)=>b.count-a.count).forEach(d=>{
+  const max=Math.max(...data.map(d=>d.count));
+  data.sort((a,b)=>b.count-a.count).forEach(d=>{
     const row=document.createElement("div");
     row.className="slot";
     row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
@@ -207,15 +210,15 @@ async function refresh(){
 
 /* ---------- VISITS ---------- */
 async function countVisit(){
-  const r = await fetch(API+"?visit=1").then(r=>r.json());
-  visits.textContent=`People finding their co-drive partner`;
+  await fetch(API+"?visit=1");
+  visits.textContent="People finding their co-drive partner";
 }
 
 /* ---------- INIT ---------- */
 loadLocations().then(()=>{
   genDates();
   genTimes();
-  refresh(); // <-- shows popularity automatically after locations are loaded
+  refresh();
 });
 countVisit();
 setInterval(refresh,60000);
