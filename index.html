@@ -23,11 +23,7 @@ body{
   50%{background-position:100% 50%}
   100%{background-position:0% 50%}
 }
-.container{
-  max-width:520px;
-  margin:auto;
-  padding:16px;
-}
+.container{max-width:520px;margin:auto;padding:16px;}
 h1{text-align:center;font-family:cursive;}
 .tabs{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
 .tabs button{
@@ -35,10 +31,7 @@ h1{text-align:center;font-family:cursive;}
   background:rgba(255,255,255,.25);color:#fff;cursor:pointer;
 }
 .tabs button.active{background:#fff;color:#000;}
-.card{
-  background:rgba(0,0,0,.25);
-  border-radius:16px;padding:16px;
-}
+.card{background:rgba(0,0,0,.25);border-radius:16px;padding:16px;}
 select,button{
   width:100%;padding:12px;border-radius:10px;
   border:none;margin-top:10px;font-size:15px;
@@ -46,7 +39,12 @@ select,button{
 button{background:#fff;color:#000;font-weight:600;}
 .results{margin-top:16px;}
 .slot{display:flex;align-items:center;gap:10px;margin:6px 0;}
-.bar{height:10px;background:#fff;border-radius:6px;flex:1;}
+.bar{
+  height:10px;
+  background:#fff;
+  border-radius:6px;
+  transition:width .6s ease;
+}
 .small{font-size:13px;opacity:.9;}
 .footer{text-align:center;margin-top:10px;font-family:cursive;opacity:.85;}
 </style>
@@ -55,7 +53,6 @@ button{background:#fff;color:#000;font-weight:600;}
 <body>
 <div class="container">
   <h1>CoDrive</h1>
-
   <div class="tabs" id="tabs"></div>
 
   <div class="card">
@@ -71,127 +68,106 @@ button{background:#fff;color:#000;font-weight:600;}
 </div>
 
 <script>
-const API = "https://codrive-api.animesh-him.workers.dev";
-let currentDate = "";
+const API="https://codrive-api.animesh-him.workers.dev";
+let currentDate="";
+
+/* ---------- NORMALIZE ---------- */
+const norm = v => v.trim().toLowerCase().normalize("NFKC");
 
 /* ---------- IST HELPERS ---------- */
 function nowIST(){
   return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
 }
-function istDateString(offset=0){
-  const d = nowIST();
-  d.setDate(d.getDate()+offset);
+function istDateString(o=0){
+  const d=nowIST(); d.setDate(d.getDate()+o);
   return d.toISOString().slice(0,10);
 }
 
-/* ---------- LOCATIONS (FIXED) ---------- */
+/* ---------- LOCATIONS ---------- */
 async function loadLocations(){
-  const prevFrom = from.value;
-  const prevTo   = to.value;
-
-  const [f,t] = await Promise.all([
-    fetch("from_locations.txt?v=" + Date.now()).then(r=>r.text()),
-    fetch("to_locations.txt?v=" + Date.now()).then(r=>r.text())
+  const [f,t]=await Promise.all([
+    fetch("from_locations.txt?v="+Date.now()).then(r=>r.text()),
+    fetch("to_locations.txt?v="+Date.now()).then(r=>r.text())
   ]);
-
-  fillSelect("from", f, prevFrom);
-  fillSelect("to", t, prevTo);
+  fill("from",f); fill("to",t);
 
   ["from","to","time"].forEach(id=>{
-    document.getElementById(id).addEventListener("change", refresh);
+    document.getElementById(id).onchange=refresh;
   });
+
+  refresh(); // IMPORTANT
 }
-
-function fillSelect(id, text, preserve){
-  const s = document.getElementById(id);
-  const values = text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean);
-
-  s.innerHTML = "";
-  values.forEach(v=>{
+function fill(id,text){
+  const s=document.getElementById(id);
+  s.innerHTML="";
+  text.split(/[,;\n]/).map(v=>v.trim()).filter(Boolean)
+  .forEach(v=>{
     const o=document.createElement("option");
     o.value=o.textContent=v;
-    if(v === preserve) o.selected = true;
     s.appendChild(o);
   });
-
-  // fallback if preserved value no longer exists
-  if(!values.includes(preserve)) s.selectedIndex = 0;
 }
 
-/* ---------- DATE TABS ---------- */
+/* ---------- DATES ---------- */
 function genDates(){
-  const tabs=document.getElementById("tabs");
-  tabs.innerHTML="";
-  [
-    {label:"Today",val:istDateString(0)},
-    {label:"Tomorrow",val:istDateString(1)}
-  ].forEach((o,i)=>{
+  const t=document.getElementById("tabs"); t.innerHTML="";
+  [{l:"Today",v:istDateString(0)},{l:"Tomorrow",v:istDateString(1)}]
+  .forEach((o,i)=>{
     const b=document.createElement("button");
-    b.textContent=o.label;
-    if(i===0){b.classList.add("active");currentDate=o.val;}
+    b.textContent=o.l;
+    if(!i){b.classList.add("active");currentDate=o.v;}
     b.onclick=()=>{
       document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));
       b.classList.add("active");
-      currentDate=o.val;
-      genTimes();
-      refresh();
+      currentDate=o.v;
+      genTimes(); refresh();
     };
-    tabs.appendChild(b);
+    t.appendChild(b);
   });
 }
 
-/* ---------- TIME SLOTS ---------- */
+/* ---------- TIMES ---------- */
 function genTimes(){
-  const sel=document.getElementById("time");
-  sel.innerHTML="";
+  const s=time; s.innerHTML="";
   const now=nowIST();
-  const isToday=currentDate===istDateString(0);
+  const today=currentDate===istDateString(0);
   const nowMin=now.getHours()*60+now.getMinutes();
 
   for(let m=0;m<1440;m+=15){
-    const end=m+15;
-    if(isToday && end<=nowMin) continue;
-
-    const h1=String(Math.floor(m/60)).padStart(2,"0");
-    const m1=String(m%60).padStart(2,"0");
-    const h2=String(Math.floor(end/60)%24).padStart(2,"0");
-    const m2=String(end%60).padStart(2,"0");
-
+    if(today && m+15<=nowMin) continue;
+    const f=x=>String(x).padStart(2,"0");
     const o=document.createElement("option");
-    o.value=o.textContent=`${h1}:${m1} - ${h2}:${m2}`;
-    sel.appendChild(o);
+    o.value=o.textContent=
+      `${f(m/60|0)}:${f(m%60)} - ${f((m+15)/60|0)}:${f((m+15)%60)}`;
+    s.appendChild(o);
   }
 }
 
 /* ---------- SUBMIT ---------- */
-submitBtn.addEventListener("click", async()=>{
-  if(!from.value || !to.value || !time.value) return;
-
+submitBtn.onclick=async()=>{
   await fetch(API,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       date:currentDate,
-      from:from.value,
-      to:to.value,
-      time:time.value
+      from:norm(from.value),
+      to:norm(to.value),
+      time:norm(time.value)
     })
   });
   refresh();
-});
+};
 
 /* ---------- POPULARITY ---------- */
 async function refresh(){
-  if(!from.value || !to.value) return;
+  if(!from.value||!to.value) return;
 
-  const q = `?date=${currentDate}&from=${encodeURIComponent(from.value)}&to=${encodeURIComponent(to.value)}`;
-  const data = await fetch(API+q).then(r=>r.json());
+  const q=`?date=${currentDate}&from=${encodeURIComponent(norm(from.value))}&to=${encodeURIComponent(norm(to.value))}`;
+  const data=await fetch(API+q).then(r=>r.json());
 
-  const res=document.getElementById("results");
-  res.innerHTML="<h3>Popularity</h3>";
-
+  results.innerHTML="<h3>Popularity</h3>";
   if(!data.length){
-    res.innerHTML+="<div class='small'>No selections yet</div>";
+    results.innerHTML+=`<div class="small">No selections yet</div>`;
     return;
   }
 
@@ -204,23 +180,17 @@ async function refresh(){
     bar.className="bar";
     bar.style.width=(d.count/max*100)+"%";
     row.appendChild(bar);
-    res.appendChild(row);
+    results.appendChild(row);
   });
 }
 
 /* ---------- VISITS ---------- */
-async function countVisit(){
-  await fetch(API+"?visit=1");
-  visits.textContent="People finding their co-drive partner";
-}
+fetch(API+"?visit=1").then(()=>visits.textContent="People finding their co-drive partner");
 
 /* ---------- INIT ---------- */
 loadLocations().then(()=>{
-  genDates();
-  genTimes();
-  refresh();
+  genDates(); genTimes(); refresh();
 });
-countVisit();
 setInterval(refresh,60000);
 </script>
 </body>
