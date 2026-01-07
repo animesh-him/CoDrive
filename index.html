@@ -13,21 +13,14 @@ body {
   min-height: 100vh;
   font-family: system-ui, -apple-system;
   color: #fff;
-  background: linear-gradient(
-    270deg,
-    #f58529,
-    #dd2a7b,
-    #8134af,
-    #515bd4
-  );
+  background: linear-gradient(270deg,#f58529,#dd2a7b,#8134af,#515bd4);
   background-size: 800% 800%;
   animation: insta 18s ease infinite;
 }
-
 @keyframes insta {
-  0% { background-position:0% 50%; }
-  50% { background-position:100% 50%; }
-  100% { background-position:0% 50%; }
+  0% {background-position:0% 50%}
+  50% {background-position:100% 50%}
+  100% {background-position:0% 50%}
 }
 
 .container {
@@ -49,6 +42,10 @@ h1 {
 
 .tabs button {
   flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
   background: white;
   color: black;
 }
@@ -73,7 +70,7 @@ button {
 }
 
 .bar {
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .track {
@@ -101,28 +98,28 @@ button {
 
 <h1>CoDrive</h1>
 
-<!-- DAY SELECT -->
+<!-- DAY SELECTION -->
 <div class="tabs">
   <button id="todayBtn" class="active">Today</button>
   <button id="tomorrowBtn">Tomorrow</button>
 </div>
 
 <select id="from">
-  <option value="">From</option>
+  <option value="">From location</option>
   <option value="eldorado">Eldorado</option>
   <option value="manyata">Manyata</option>
 </select>
 
 <select id="to">
-  <option value="">To</option>
+  <option value="">To location</option>
   <option value="eldorado">Eldorado</option>
   <option value="manyata">Manyata</option>
 </select>
 
 <div id="popularity"></div>
 
-<select id="slotSelect" style="display:none;"></select>
-<button id="voteBtn" style="display:none;">My Preference</button>
+<select id="slotSelect"></select>
+<button id="voteBtn">My Preference</button>
 
 <div class="footer">
   <div>Find your co-driving partner today</div>
@@ -146,6 +143,7 @@ const voteBtn = document.getElementById("voteBtn");
 
 todayBtn.onclick = () => setDay(0);
 tomorrowBtn.onclick = () => setDay(1);
+fromSel.onchange = toSel.onchange = loadPopularity;
 
 function setDay(d) {
   dayOffset = d;
@@ -154,10 +152,8 @@ function setDay(d) {
   loadPopularity();
 }
 
-fromSel.onchange = toSel.onchange = loadPopularity;
-
 function istNow() {
-  return new Date(new Date().toLocaleString("en-US",{ timeZone:"Asia/Kolkata" }));
+  return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
 }
 
 function dateStr() {
@@ -192,59 +188,63 @@ function futureSlots() {
 async function loadPopularity() {
   popDiv.innerHTML = "";
   slotSel.innerHTML = "";
-  slotSel.style.display = "none";
-  voteBtn.style.display = "none";
 
   if (!fromSel.value || !toSel.value) return;
 
   const slots = futureSlots();
   if (!slots.length) return;
 
-  const res = await fetch(WORKER + "/popularity", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      date: dateStr(),
-      from: fromSel.value,
-      to: toSel.value,
-      slots
-    })
-  });
+  let data = {};
+  try {
+    const res = await fetch(WORKER + "/popularity", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date: dateStr(),
+        from: fromSel.value,
+        to: toSel.value,
+        slots
+      })
+    });
+    data = await res.json();
+  } catch {
+    data = {};
+  }
 
-  const data = await res.json();
-  const max = Math.max(1, ...Object.values(data));
+  const counts = slots.map(s => data[s] ?? 0);
+  const max = Math.max(1, ...counts);
 
-  slots.forEach(s => {
-    const c = data[s];
-    const d = document.createElement("div");
-    d.className = "bar";
-    d.innerHTML = `
+  slots.forEach((s, i) => {
+    const c = counts[i];
+
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    bar.innerHTML = `
       <div>${s} (${c})</div>
-      <div class="track"><div class="fill" style="width:${(c/max)*100}%"></div></div>
+      <div class="track">
+        <div class="fill" style="width:${(c/max)*100}%"></div>
+      </div>
     `;
-    popDiv.appendChild(d);
+    popDiv.appendChild(bar);
 
     const opt = document.createElement("option");
     opt.value = s;
     opt.textContent = s;
     slotSel.appendChild(opt);
   });
-
-  slotSel.style.display = "block";
-  voteBtn.style.display = "block";
 }
 
 voteBtn.onclick = async () => {
-  const slot = slotSel.value;
+  if (!slotSel.value) return;
 
   await fetch(WORKER + "/vote", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       date: dateStr(),
       from: fromSel.value,
       to: toSel.value,
-      slot
+      slot: slotSel.value
     })
   });
 
