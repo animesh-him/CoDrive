@@ -6,158 +6,213 @@
 <title>CoDrive</title>
 
 <style>
-:root{--grad:linear-gradient(270deg,#ff0066,#ff9900,#9933ff)}
-*{box-sizing:border-box;font-family:system-ui,-apple-system}
-body{
-  margin:0;min-height:100vh;
-  background:var(--grad);background-size:600% 600%;
-  animation:bgMove 12s ease infinite;color:#fff
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+  color: #fff;
+  min-height: 100vh;
+  background: linear-gradient(270deg,#ff6ec4,#7873f5,#4adede,#ff6ec4);
+  background-size: 800% 800%;
+  animation: gradient 18s ease infinite;
 }
-@keyframes bgMove{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
+
+@keyframes gradient {
+  0% { background-position:0% 50% }
+  50% { background-position:100% 50% }
+  100% { background-position:0% 50% }
 }
-.container{max-width:520px;margin:auto;padding:16px}
-h1{text-align:center;font-family:cursive}
-.card{background:rgba(0,0,0,.25);border-radius:16px;padding:16px}
-select,button{
-  width:100%;padding:12px;border-radius:10px;
-  border:none;margin-top:10px;font-size:15px
+
+.container {
+  max-width: 420px;
+  margin: auto;
+  padding: 16px;
 }
-button.primary{background:#fff;color:#000;font-weight:600}
-.results{margin-top:16px}
-.slot{display:flex;gap:10px;margin:6px 0;align-items:center}
-.bar{height:10px;background:#fff;border-radius:6px;flex:1}
-.small{font-size:13px;opacity:.9}
-.footer{text-align:center;margin-top:10px;font-family:cursive;opacity:.85}
+
+select, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+}
+
+button {
+  background: #ffffff;
+  color: #000;
+  font-weight: 600;
+}
+
+.range-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.bar {
+  height: 12px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: #fff;
+}
+
+.footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.9;
+}
 </style>
 </head>
 
 <body>
 <div class="container">
-<h1>CoDrive</h1>
 
-<div class="card">
-<select id="from"></select>
-<select id="to"></select>
-<select id="time" style="display:none"></select>
-<button id="submitBtn" class="primary" style="display:none">My Preference</button>
+<h2>CoDrive</h2>
 
-<div class="results" id="results"></div>
+<select id="from">
+  <option value="">From</option>
+  <option value="eldorado">Eldorado</option>
+  <option value="manyata">Manyata</option>
+</select>
+
+<select id="to">
+  <option value="">To</option>
+  <option value="eldorado">Eldorado</option>
+  <option value="manyata">Manyata</option>
+</select>
+
+<button id="showBtn" style="display:none;">Show Popularity</button>
+
+<div id="ranges" class="range-grid" style="display:none;"></div>
+
+<div id="results"></div>
+
+<select id="slotSelect" style="display:none;"></select>
+<button id="voteBtn" style="display:none;">My Preference</button>
+
+<div class="footer">
+  <div>Find your co-driving partner!</div>
+  <div>Created by Animesh</div>
 </div>
 
-<div class="footer" id="visits"></div>
-<div class="footer">Created by Animesh</div>
 </div>
 
 <script>
-const API="https://codrive-api.animesh-him.workers.dev";
+const WORKER = "PASTE_YOUR_WORKER_URL_HERE";
 
-/* ---------- LOCATIONS ---------- */
-const FROM_LOCATIONS=[
- {id:"eldorado",label:"Brigade Eldorado Aerospace Park"},
- {id:"finsbury",label:"Prestige Finsbury"},
- {id:"ananda",label:"Godrej Ananda"},
- {id:"ecopolitan",label:"Provident Ecopolitan"}
+const fromSel = document.getElementById("from");
+const toSel = document.getElementById("to");
+const showBtn = document.getElementById("showBtn");
+const rangesDiv = document.getElementById("ranges");
+const resultsDiv = document.getElementById("results");
+const slotSelect = document.getElementById("slotSelect");
+const voteBtn = document.getElementById("voteBtn");
+
+const ranges = [
+  { label:"00–06 hours", start:0 },
+  { label:"06–12 hours", start:6 },
+  { label:"12–18 hours", start:12 },
+  { label:"18–24 hours", start:18 }
 ];
-const TO_LOCATIONS=[
- {id:"karle",label:"KARLE SEZ"},
- {id:"manyata",label:"Manyata Tech Park"},
- {id:"shell",label:"Shell Technology Center"},
- {id:"boeing",label:"Boeing"},
- {id:"sap",label:"SAP Labs"},
- {id:"dynamatics",label:"Dynamatics"}
-];
 
-/* ---------- IST ---------- */
-const nowIST=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
-const istDate=()=>nowIST().toISOString().slice(0,10);
-
-/* ---------- INIT ---------- */
-function fill(sel,data){
-  sel.innerHTML="<option value=''>Select</option>";
-  data.forEach(o=>{
-    const op=document.createElement("option");
-    op.value=o.id; op.textContent=o.label;
-    sel.appendChild(op);
-  });
+function istNow() {
+  return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
 }
 
-/* ---------- TIME SLOTS ---------- */
-function genFutureSlots(){
-  time.innerHTML="<option value=''>Select slot</option>";
-  const now=nowIST();
-  const nowMin=now.getHours()*60+now.getMinutes();
+function todayStr() {
+  return istNow().toISOString().slice(0,10);
+}
 
-  for(let m=0;m<1440;m+=30){
-    if(m+30<=nowMin) continue;
-    const f=x=>String(x).padStart(2,"0");
-    const val=`${f(m/60|0)}:${f(m%60)}-${f((m+30)/60|0)}:${f((m+30)%60)}`;
-    time.appendChild(new Option(val,val));
+function slotsForRange(start) {
+  const now = istNow();
+  const slots = [];
+  for (let h = start; h < start+6; h++) {
+    for (let m of [0,30]) {
+      const slotTime = new Date(now);
+      slotTime.setHours(h, m, 0, 0);
+      if (slotTime > now) {
+        const s = `${String(h).padStart(2,"0")}:${m===0?"00":"30"}-${String(h + (m===30?1:0)).padStart(2,"0")}:${m===0?"30":"00"}`;
+        slots.push(s);
+      }
+    }
   }
-
-  time.style.display="block";
-  submitBtn.style.display="block";
+  return slots;
 }
 
-/* ---------- POPULARITY ---------- */
-async function loadPopularity(){
-  if(!from.value||!to.value) return;
-
-  const res=await fetch(
-    `${API}?date=${istDate()}&from=${from.value}&to=${to.value}&_=${Date.now()}`
-  ).then(r=>r.json());
-
-  results.innerHTML="<h3>Popularity (Today)</h3>";
-
-  if(!res.length){
-    results.innerHTML+="<div class='small'>No data yet</div>";
-    return;
-  }
-
-  const max=Math.max(...res.map(x=>x.count));
-
-  res.forEach(d=>{
-    const row=document.createElement("div");
-    row.className="slot";
-    row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
-    const bar=document.createElement("div");
-    bar.className="bar";
-    bar.style.width=(d.count/max*100)+"%";
-    row.appendChild(bar);
-    results.appendChild(row);
-  });
-}
-
-/* ---------- SUBMIT ---------- */
-submitBtn.onclick=async()=>{
-  if(!time.value) return;
-  await fetch(API,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      date:istDate(),
-      from:from.value,
-      to:to.value,
-      time:time.value
-    })
-  });
-  loadPopularity();
+fromSel.onchange = toSel.onchange = () => {
+  showBtn.style.display = fromSel.value && toSel.value ? "block" : "none";
 };
 
-/* ---------- EVENTS ---------- */
-[from,to].forEach(s=>s.onchange=()=>{
-  if(from.value&&to.value){
-    genFutureSlots();
-    loadPopularity();
-  }
-});
+showBtn.onclick = () => {
+  rangesDiv.innerHTML = "";
+  rangesDiv.style.display = "grid";
 
-fill(from,FROM_LOCATIONS);
-fill(to,TO_LOCATIONS);
-fetch(API+"?visit=1").then(()=>visits.textContent="People finding co-drive partners");
-setInterval(loadPopularity,10000);
+  ranges.forEach(r => {
+    const btn = document.createElement("button");
+    btn.textContent = r.label;
+    if (slotsForRange(r.start).length === 0) btn.disabled = true;
+    btn.onclick = () => loadPopularity(r.start);
+    rangesDiv.appendChild(btn);
+  });
+};
+
+async function loadPopularity(startHour) {
+  const slots = slotsForRange(startHour);
+  const res = await fetch(WORKER + "/popularity", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      date: todayStr(),
+      from: fromSel.value,
+      to: toSel.value,
+      slots
+    })
+  });
+
+  const data = await res.json();
+  resultsDiv.innerHTML = "";
+  slotSelect.innerHTML = "";
+
+  let max = Math.max(1,...Object.values(data));
+
+  slots.forEach(s => {
+    const count = data[s];
+    const bar = document.createElement("div");
+    bar.innerHTML = `<div>${s} (${count})</div>
+      <div class="bar"><div class="bar-fill" style="width:${(count/max)*100}%"></div></div>`;
+    resultsDiv.appendChild(bar);
+
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    slotSelect.appendChild(opt);
+  });
+
+  slotSelect.style.display = "block";
+  voteBtn.style.display = "block";
+}
+
+voteBtn.onclick = async () => {
+  const slot = slotSelect.value;
+  await fetch(WORKER + "/vote", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      date: todayStr(),
+      from: fromSel.value,
+      to: toSel.value,
+      slot
+    })
+  });
+  loadPopularity(parseInt(slot.slice(0,2)));
+};
 </script>
 </body>
 </html>
