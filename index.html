@@ -40,7 +40,7 @@ button.range.disabled{opacity:.4;pointer-events:none}
 .range-wrap{display:flex;flex-wrap:wrap;gap:4%}
 .results{margin-top:16px}
 .slot{display:flex;gap:10px;margin:6px 0;align-items:center}
-.bar{height:10px;background:#fff;border-radius:6px;flex:1}
+.bar{height:10px;background:#fff;border-radius:6px}
 .small{font-size:13px;opacity:.9}
 .label{margin-top:12px;font-size:14px;opacity:.9}
 .footer{text-align:center;margin-top:10px;font-family:cursive;opacity:.85}
@@ -49,34 +49,32 @@ button.range.disabled{opacity:.4;pointer-events:none}
 
 <body>
 <div class="container">
-  <h1>CoDrive</h1>
+<h1>CoDrive</h1>
+<div class="tabs" id="tabs"></div>
 
-  <div class="tabs" id="tabs"></div>
+<div class="card">
+<select id="from"></select>
+<select id="to"></select>
 
-  <div class="card">
-    <select id="from"></select>
-    <select id="to"></select>
+<div id="rangeSection" style="display:none">
+  <div class="label">Select time range</div>
+  <div class="range-wrap" id="ranges"></div>
+</div>
 
-    <div id="rangeSection" style="display:none">
-      <div class="label">Select the below time range to see popularity</div>
-      <div class="range-wrap" id="ranges"></div>
-    </div>
+<select id="time" style="display:none"></select>
+<button id="submitBtn" class="primary" style="display:none">My Preference</button>
 
-    <select id="time" style="display:none"></select>
-    <button id="submitBtn" class="primary" style="display:none">My Preference</button>
+<div class="results" id="results"></div>
+</div>
 
-    <div class="results" id="results"></div>
-  </div>
-
-  <div class="footer" id="visits"></div>
-  <div class="footer">Created by Animesh</div>
+<div class="footer" id="visits"></div>
+<div class="footer">Created by Animesh</div>
 </div>
 
 <script>
 const API="https://codrive-api.animesh-him.workers.dev";
 let currentDate="", activeRange=null;
 
-/* ---------- LOCATIONS ---------- */
 const FROM_LOCATIONS=[
  {id:"eldorado",label:"Brigade Eldorado Aerospace Park"},
  {id:"finsbury",label:"Prestige Finsbury"},
@@ -86,27 +84,15 @@ const FROM_LOCATIONS=[
 const TO_LOCATIONS=[
  {id:"karle",label:"KARLE SEZ"},
  {id:"manyata",label:"Manyata Tech Park"},
- {id:"shell",label:"Shell Technology Center (North Bangalore)"},
- {id:"boeing",label:"Boeing Office (North Bangalore)"},
- {id:"sap",label:"SAP Labs (North Bangalore)"},
- {id:"dynamatics",label:"Dynamatics (North Bangalore)"},
- {id:"itpl",label:"ITPL (Whitefield)"},
- {id:"ecospace",label:"Ecospace (Bellandur)"},
- {id:"kia1",label:"Kempegowda International Airport T1"},
- {id:"kia2",label:"Kempegowda International Airport T2"},
- {id:"cubbon",label:"Cubbon Park"},
- {id:"koramangala",label:"Koramangala"},
- {id:"mgroad",label:"MG Road"},
- {id:"ecity",label:"Electronic City"},
- {id:"bagmane",label:"Bagmane Tech Park, CV Raman Nagar"},
- {id:"sarjapur",label:"Sarjapur"}
+ {id:"shell",label:"Shell Technology Center"},
+ {id:"boeing",label:"Boeing"},
+ {id:"sap",label:"SAP Labs"},
+ {id:"dynamatics",label:"Dynamatics"}
 ];
 
-/* ---------- IST ---------- */
 const nowIST=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
 const istDate=o=>{const d=nowIST();d.setDate(d.getDate()+o);return d.toISOString().slice(0,10)};
 
-/* ---------- INIT ---------- */
 function fill(sel,data){
   sel.innerHTML="<option value=''>Select</option>";
   data.forEach(o=>{
@@ -126,19 +112,17 @@ function genDates(){
       [...tabs.children].forEach(x=>x.classList.remove("active"));
       b.classList.add("active");
       currentDate=o.v;
-      activeRange=null;
       resetUI();
     };
     tabs.appendChild(b);
   });
 }
 
-/* ---------- TIME RANGES ---------- */
 const RANGES=[
- {label:"00:00 – 06:00",start:0,end:360},
- {label:"06:00 – 12:00",start:360,end:720},
- {label:"12:00 – 18:00",start:720,end:1080},
- {label:"18:00 – 00:00",start:1080,end:1440}
+ {label:"00–06",start:0,end:360},
+ {label:"06–12",start:360,end:720},
+ {label:"12–18",start:720,end:1080},
+ {label:"18–24",start:1080,end:1440}
 ];
 
 function genRanges(){
@@ -148,67 +132,54 @@ function genRanges(){
     const b=document.createElement("button");
     b.className="range";
     b.textContent=r.label;
-    if(currentDate===istDate(0)&&r.end<=nowMin){
-      b.classList.add("disabled");
-    }
-    b.onclick=()=>selectRange(r);
+    if(currentDate===istDate(0)&&r.end<=nowMin) b.classList.add("disabled");
+    b.onclick=()=>{activeRange=r;genTimeSlots();loadPopularity();}
     ranges.appendChild(b);
   });
 }
 
-function selectRange(r){
-  activeRange=r;
-  genTimeSlots();
-  loadPopularity();
-}
-
-/* ---------- TIME DROPDOWN ---------- */
 function genTimeSlots(){
   time.style.display="block";
   submitBtn.style.display="block";
-  time.innerHTML="<option value=''>Select time slot</option>";
-
+  time.innerHTML="<option value=''>Select slot</option>";
   const nowMin=nowIST().getHours()*60+nowIST().getMinutes();
+
   for(let m=activeRange.start;m<activeRange.end;m+=30){
     if(currentDate===istDate(0)&&m+30<=nowMin) continue;
     const f=x=>String(x).padStart(2,"0");
-    const h1=f(m/60|0),m1=f(m%60);
-    const h2=f((m+30)/60|0),m2=f((m+30)%60);
     const o=document.createElement("option");
-    o.value=`${h1}:${m1}-${h2}:${m2}`;
-    o.textContent=`${h1}:${m1} - ${h2}:${m2}`;
+    o.value=`${f(m/60|0)}:${f(m%60)}-${f((m+30)/60|0)}:${f((m+30)%60)}`;
+    o.textContent=o.value;
     time.appendChild(o);
   }
 }
 
-/* ---------- POPULARITY ---------- */
 async function loadPopularity(){
   if(!from.value||!to.value||!activeRange) return;
 
-  const q=`?date=${currentDate}&from=${from.value}&to=${to.value}`;
-  const data=await fetch(API+q).then(r=>r.json());
+  results.innerHTML="<div class='small'>Loading...</div>";
 
+  const res=await fetch(
+    `${API}?date=${currentDate}&from=${from.value}&to=${to.value}&_=${Date.now()}`
+  ).then(r=>r.json()).catch(()=>null);
+
+  const rows=(res?.data)||res||[];
   results.innerHTML="<h3>Popularity</h3>";
 
-  const filtered=data.filter(d=>{
-    const start=d.time.split("-")[0];
-    const [hh,mm]=start.split(":").map(Number);
-    const mins=hh*60+mm;
-
-    if(activeRange.end===1440){
-      return mins>=activeRange.start;
-    }
-    return mins>=activeRange.start && mins<activeRange.end;
-  });
-
-  if(!filtered.length){
-    results.innerHTML+="<div class='small'>No data</div>";
+  if(!rows.length){
+    results.innerHTML+="<div class='small'>No data yet</div>";
     return;
   }
 
-  const max=Math.max(...filtered.map(x=>x.count));
+  const max=Math.max(...rows.map(x=>x.count||0));
 
-  filtered.forEach(d=>{
+  rows.forEach(d=>{
+    const start=d.time.split("-")[0];
+    const [h,m]=start.split(":").map(Number);
+    const mins=h*60+m;
+
+    if(mins<activeRange.start||mins>=activeRange.end) return;
+
     const row=document.createElement("div");
     row.className="slot";
     row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
@@ -220,21 +191,18 @@ async function loadPopularity(){
   });
 }
 
-/* ---------- SUBMIT ---------- */
 submitBtn.onclick=async()=>{
-  if(!from.value||!to.value||!time.value||!activeRange) return;
-
-  const r=await fetch(API,{
+  if(!time.value) return;
+  await fetch(API,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({date:currentDate,from:from.value,to:to.value,time:time.value})
-  }).then(r=>r.json());
-
-  if(r.error){alert(r.error);return;}
+    body:JSON.stringify({
+      date:currentDate,from:from.value,to:to.value,time:time.value
+    })
+  });
   loadPopularity();
 };
 
-/* ---------- RESET ---------- */
 function resetUI(){
   rangeSection.style.display="none";
   time.style.display="none";
@@ -242,21 +210,18 @@ function resetUI(){
   results.innerHTML="";
 }
 
-/* ---------- EVENTS ---------- */
 [from,to].forEach(s=>s.onchange=()=>{
   resetUI();
   if(from.value&&to.value){
     rangeSection.style.display="block";
     genRanges();
-    activeRange=null;
   }
 });
 
-/* ---------- START ---------- */
 fill(from,FROM_LOCATIONS);
 fill(to,TO_LOCATIONS);
 genDates();
-fetch(API+"?visit=1").then(()=>visits.textContent="People finding their co-drive partner");
+fetch(API+"?visit=1").then(()=>visits.textContent="People finding co-drive partners");
 </script>
 </body>
 </html>
