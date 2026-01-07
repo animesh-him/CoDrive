@@ -36,9 +36,7 @@ button.range{
   width:48%;min-height:42px;
   background:#fff;color:#000;font-weight:600
 }
-button.range.disabled{
-  opacity:.4;pointer-events:none
-}
+button.range.disabled{opacity:.4;pointer-events:none}
 .range-wrap{display:flex;flex-wrap:wrap;gap:4%}
 .results{margin-top:16px}
 .slot{display:flex;gap:10px;margin:6px 0;align-items:center}
@@ -128,6 +126,7 @@ function genDates(){
       [...tabs.children].forEach(x=>x.classList.remove("active"));
       b.classList.add("active");
       currentDate=o.v;
+      activeRange=null;
       resetUI();
     };
     tabs.appendChild(b);
@@ -157,10 +156,10 @@ function genRanges(){
   });
 }
 
-async function selectRange(r){
+function selectRange(r){
   activeRange=r;
   genTimeSlots();
-  await loadPopularity();
+  loadPopularity();
 }
 
 /* ---------- TIME DROPDOWN ---------- */
@@ -184,21 +183,38 @@ function genTimeSlots(){
 
 /* ---------- POPULARITY ---------- */
 async function loadPopularity(){
+  if(!from.value||!to.value||!activeRange) return;
+
   const q=`?date=${currentDate}&from=${from.value}&to=${to.value}`;
   const data=await fetch(API+q).then(r=>r.json());
+
   results.innerHTML="<h3>Popularity</h3>";
+
   const filtered=data.filter(d=>{
-    const h=parseInt(d.time.split(":")[0])*60;
-    return h>=activeRange.start && h<activeRange.end;
+    const start=d.time.split("-")[0];
+    const [hh,mm]=start.split(":").map(Number);
+    const mins=hh*60+mm;
+
+    if(activeRange.end===1440){
+      return mins>=activeRange.start;
+    }
+    return mins>=activeRange.start && mins<activeRange.end;
   });
-  if(!filtered.length){results.innerHTML+="<div class='small'>No data</div>";return}
+
+  if(!filtered.length){
+    results.innerHTML+="<div class='small'>No data</div>";
+    return;
+  }
+
   const max=Math.max(...filtered.map(x=>x.count));
+
   filtered.forEach(d=>{
     const row=document.createElement("div");
     row.className="slot";
     row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
     const bar=document.createElement("div");
-    bar.className="bar";bar.style.width=(d.count/max*100)+"%";
+    bar.className="bar";
+    bar.style.width=(d.count/max*100)+"%";
     row.appendChild(bar);
     results.appendChild(row);
   });
@@ -206,13 +222,15 @@ async function loadPopularity(){
 
 /* ---------- SUBMIT ---------- */
 submitBtn.onclick=async()=>{
-  if(!from.value||!to.value||!time.value) return;
+  if(!from.value||!to.value||!time.value||!activeRange) return;
+
   const r=await fetch(API,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({date:currentDate,from:from.value,to:to.value,time:time.value})
   }).then(r=>r.json());
-  if(r.error){alert(r.error);return}
+
+  if(r.error){alert(r.error);return;}
   loadPopularity();
 };
 
@@ -226,10 +244,12 @@ function resetUI(){
 
 /* ---------- EVENTS ---------- */
 [from,to].forEach(s=>s.onchange=()=>{
+  resetUI();
   if(from.value&&to.value){
     rangeSection.style.display="block";
     genRanges();
-  }else resetUI();
+    activeRange=null;
+  }
 });
 
 /* ---------- START ---------- */
