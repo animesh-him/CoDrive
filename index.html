@@ -40,7 +40,6 @@ body {
 h1 {
   text-align: center;
   font-family: 'Pacifico', cursive;
-  margin-bottom: 10px;
 }
 
 .tabs {
@@ -63,25 +62,17 @@ h1 {
   background: rgba(220,220,220,0.95);
 }
 
-select, button {
+input[type="text"], select, button {
   width: 100%;
   padding: 12px;
-  margin-top: 12px;
+  margin-top: 10px;
   border-radius: 12px;
   border: none;
-  font-size: 15px;
+  font-size: 14px;
 }
 
-/* Instagram-matched dropdown colors */
-#from {
-  background: rgba(255, 105, 180, 0.85); /* pink */
-  color: black;
-}
-
-#to {
-  background: rgba(138, 43, 226, 0.85); /* purple */
-  color: black;
-}
+#from { background: rgba(255,105,180,0.85); }
+#to { background: rgba(138,43,226,0.85); }
 
 button {
   background: white;
@@ -89,52 +80,21 @@ button {
   font-weight: 600;
 }
 
-.bar {
-  margin-top: 10px;
-}
-
-.bar-label {
-  font-size: 11px;
-  opacity: 0.9;
-  margin-bottom: 4px;
-}
-
-.track {
-  height: 8px;
-  background: rgba(255,255,255,0.25);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.fill {
-  height: 100%;
-  border-radius: 4px;
-}
-
-.muted {
-  font-size: 12px;
-  opacity: 0.85;
-  margin-top: 12px;
-}
-
 .footer {
   margin-top: 40px;
   text-align: center;
   font-family: 'Pacifico', cursive;
   font-size: 15px;
-  font-weight: 400;
 }
 
 .credit {
-  font-family: 'Pacifico', cursive;
-  font-size: 15px;
   animation: floatText 2.5s ease-in-out infinite;
 }
 
 @keyframes floatText {
-  0% { opacity: 0.6; transform: translateY(0); }
-  50% { opacity: 1; transform: translateY(-3px); }
-  100% { opacity: 0.6; transform: translateY(0); }
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 </style>
 </head>
@@ -149,17 +109,11 @@ button {
   <button id="tomorrowBtn">Tomorrow</button>
 </div>
 
-<select id="from">
-  <option value="">From location</option>
-  <option value="eldorado">Eldorado</option>
-  <option value="manyata">Manyata</option>
-</select>
+<input id="fromSearch" placeholder="Search From location">
+<select id="from"></select>
 
-<select id="to">
-  <option value="">To location</option>
-  <option value="eldorado">Eldorado</option>
-  <option value="manyata">Manyata</option>
-</select>
+<input id="toSearch" placeholder="Search To location">
+<select id="to"></select>
 
 <div id="popularity"></div>
 
@@ -179,136 +133,59 @@ button {
 <script>
 const WORKER = "https://codrive-api.animesh-him.workers.dev";
 
-let dayOffset = 0;
+const locations = [
+  { id:"bagmane_cv_raman", label:"Bagmane Tech Park, CV Raman Nagar" },
+  { id:"boeing_north", label:"Boeing Office (North Bangalore)" },
+  { id:"brigade_eldorado", label:"Brigade Eldorado" },
+  { id:"cubbon_park", label:"Cubbon Park" },
+  { id:"dynamatics", label:"Dynamatics (North Bangalore)" },
+  { id:"ecospace", label:"Ecospace (Bellandur)" },
+  { id:"electronic_city", label:"Electronic City" },
+  { id:"itpl", label:"ITPL (Whitefield)" },
+  { id:"karle_sez", label:"KARLE SEZ" },
+  { id:"kia_t1", label:"Kempegowda International Airport T1" },
+  { id:"kia_t2", label:"Kempegowda International Airport T2" },
+  { id:"koramangala", label:"Koramangala" },
+  { id:"manyata", label:"Manyata Tech Park" },
+  { id:"mg_road", label:"MG Road" },
+  { id:"prestige_finsbury", label:"Prestige Finsbury" },
+  { id:"sap_labs", label:"SAP Labs (North Bangalore)" },
+  { id:"sarjapur", label:"Sarjapur" },
+  { id:"shell_tc", label:"Shell Technology Center (North Bangalore)" }
+].sort((a,b)=>a.label.localeCompare(b.label));
 
-const todayBtn = document.getElementById("todayBtn");
-const tomorrowBtn = document.getElementById("tomorrowBtn");
 const fromSel = document.getElementById("from");
 const toSel = document.getElementById("to");
-const popDiv = document.getElementById("popularity");
-const slotSel = document.getElementById("slotSelect");
-const voteBtn = document.getElementById("voteBtn");
+const fromSearch = document.getElementById("fromSearch");
+const toSearch = document.getElementById("toSearch");
 
-todayBtn.onclick = () => setDay(0);
-tomorrowBtn.onclick = () => setDay(1);
-fromSel.onchange = toSel.onchange = loadPopularity;
+function renderOptions() {
+  fromSel.innerHTML = `<option value="">From location</option>`;
+  toSel.innerHTML = `<option value="">To location</option>`;
 
-function setDay(d) {
-  dayOffset = d;
-  todayBtn.classList.toggle("active", d === 0);
-  tomorrowBtn.classList.toggle("active", d === 1);
-  loadPopularity();
-}
-
-function istNow() {
-  return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
-}
-
-function dateStr() {
-  const d = istNow();
-  d.setDate(d.getDate() + dayOffset);
-  return d.toISOString().slice(0,10);
-}
-
-function futureSlots() {
-  const now = istNow();
-  const slots = [];
-
-  for (let h = 0; h < 24; h++) {
-    for (let m of [0,30]) {
-      const end = new Date(now);
-      end.setHours(h, m === 0 ? 30 : 0, 0, 0);
-      if (m === 30) end.setHours(h + 1, 0, 0, 0);
-
-      if (dayOffset === 1 || end > now) {
-        const eh = m === 30 ? h + 1 : h;
-        const em = m === 30 ? "00" : "30";
-        slots.push(
-          `${String(h).padStart(2,"0")}:${m === 0 ? "00" : "30"}-` +
-          `${String(eh).padStart(2,"0")}:${em}`
-        );
-      }
+  locations.forEach(l => {
+    if (l.id !== toSel.value) {
+      fromSel.innerHTML += `<option value="${l.id}">${l.label}</option>`;
     }
-  }
-  return slots;
-}
-
-function barColor(ratio) {
-  if (ratio < 0.33) return "#ff9ad5";
-  if (ratio < 0.66) return "#d62976";
-  return "#8134af";
-}
-
-async function loadPopularity() {
-  popDiv.innerHTML = "";
-  slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
-
-  if (!fromSel.value || !toSel.value) return;
-
-  const slots = futureSlots();
-  if (!slots.length) return;
-
-  let data = {};
-  try {
-    const res = await fetch(WORKER + "/popularity", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date: dateStr(),
-        from: fromSel.value,
-        to: toSel.value,
-        slots
-      })
-    });
-    data = await res.json();
-  } catch {}
-
-  const entries = slots
-    .map(s => ({ slot: s, count: data[s] ?? 0 }))
-    .filter(e => e.count > 0);
-
-  if (entries.length === 0) {
-    popDiv.innerHTML = `<div class="muted">No preferences yet for future slots</div>`;
-  } else {
-    const max = Math.max(...entries.map(e => e.count));
-    entries.forEach(e => {
-      const ratio = e.count / max;
-      const bar = document.createElement("div");
-      bar.className = "bar";
-      bar.innerHTML = `
-        <div class="bar-label">${e.slot} • ${e.count}</div>
-        <div class="track">
-          <div class="fill" style="width:${ratio * 100}%; background:${barColor(ratio)}"></div>
-        </div>
-      `;
-      popDiv.appendChild(bar);
-    });
-  }
-
-  slots.forEach(s => {
-    const opt = document.createElement("option");
-    opt.value = s;
-    opt.textContent = s;
-    slotSel.appendChild(opt);
+    if (l.id !== fromSel.value) {
+      toSel.innerHTML += `<option value="${l.id}">${l.label}</option>`;
+    }
   });
 }
 
-voteBtn.onclick = async () => {
-  if (!slotSel.value) return;
-
-  await fetch(WORKER + "/vote", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      date: dateStr(),
-      from: fromSel.value,
-      to: toSel.value,
-      slot: slotSel.value
-    })
+function filterSelect(search, select) {
+  const q = search.value.toLowerCase();
+  [...select.options].forEach(o => {
+    if (!o.value) return;
+    o.hidden = !o.text.toLowerCase().includes(q);
   });
+}
 
-  loadPopularity();
-};
+fromSel.onchange = toSel.onchange = renderOptions;
+fromSearch.oninput = () => filterSelect(fromSearch, fromSel);
+toSearch.oninput = () => filterSelect(toSearch, toSel);
+
+renderOptions();
 </script>
 </body>
 </html>
