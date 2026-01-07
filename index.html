@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CoDrive</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: system-ui;
+  font-family: system-ui, -apple-system;
   color: #fff;
   background: linear-gradient(
     270deg,
@@ -22,7 +22,7 @@ body {
     #515bd4
   );
   background-size: 1200% 1200%;
-  animation: insta 3s linear infinite;
+  animation: insta 4s linear infinite;
 }
 
 @keyframes insta {
@@ -50,72 +50,33 @@ h1 {
 
 .tabs button {
   flex: 1;
-  padding: 12px;
-  border-radius: 14px;
+  padding: 10px;
+  border-radius: 10px;
   border: none;
-  background: black;
-  color: white;
   font-size: 14px;
+  background: rgba(255,255,255,0.85);
+  color: black;
 }
 
 .tabs button.active {
-  opacity: 0.75;
+  background: rgba(220,220,220,0.95);
 }
 
-.dropdown {
-  position: relative;
-  margin-top: 12px;
-}
-
-.dropdown-btn {
+input[type="text"], select, button {
   width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  background: black;
-  color: white;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 12px;
   border: none;
-  text-align: left;
+  font-size: 14px;
 }
 
-.dropdown-panel {
-  display: none;
-  position: absolute;
-  top: 105%;
-  width: 100%;
+#from { background: rgba(255,105,180,0.85); }
+#to { background: rgba(138,43,226,0.85); }
+
+button {
   background: white;
   color: black;
-  border-radius: 14px;
-  max-height: 220px;
-  overflow-y: auto;
-  z-index: 10;
-}
-
-.dropdown-panel input {
-  width: 90%;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-}
-
-.option {
-  padding: 12px;
-  cursor: pointer;
-}
-
-.option:hover {
-  background: #eee;
-}
-
-#slot {
-  background: black;
-  color: white;
-}
-
-#vote {
-  background: #e0e0e0;
-  color: black;
-  margin-top: 14px;
   font-weight: 600;
 }
 
@@ -123,13 +84,14 @@ h1 {
   margin-top: 40px;
   text-align: center;
   font-family: 'Pacifico', cursive;
+  font-size: 15px;
 }
 
 .credit {
-  animation: float 2.5s ease-in-out infinite;
+  animation: floatText 2.5s ease-in-out infinite;
 }
 
-@keyframes float {
+@keyframes floatText {
   0% { opacity: 0.6; }
   50% { opacity: 1; }
   100% { opacity: 0.6; }
@@ -143,30 +105,23 @@ h1 {
 <h1>CoDrive</h1>
 
 <div class="tabs">
-  <button class="active">Today</button>
-  <button>Tomorrow</button>
+  <button id="todayBtn" class="active">Today</button>
+  <button id="tomorrowBtn">Tomorrow</button>
 </div>
 
-<!-- FROM -->
-<div class="dropdown" id="fromDD">
-  <button class="dropdown-btn">From location</button>
-  <div class="dropdown-panel"></div>
-</div>
+<input id="fromSearch" placeholder="Search From location">
+<select id="from"></select>
 
-<!-- TO -->
-<div class="dropdown" id="toDD">
-  <button class="dropdown-btn">To location</button>
-  <div class="dropdown-panel"></div>
-</div>
+<input id="toSearch" placeholder="Search To location">
+<select id="to"></select>
 
-<select id="slot" class="dropdown-btn">
-  <option selected disabled>Time slot</option>
-  <option>07:00 - 08:00</option>
-  <option>08:00 - 09:00</option>
-  <option>09:00 - 10:00</option>
+<div id="popularity"></div>
+
+<select id="slotSelect">
+  <option value="" disabled selected>Time slot</option>
 </select>
 
-<button id="vote">My Preference</button>
+<button id="voteBtn">My Preference</button>
 
 <div class="footer">
   Finding my co-driving partner!
@@ -176,75 +131,61 @@ h1 {
 </div>
 
 <script>
+const WORKER = "https://codrive-api.animesh-him.workers.dev";
+
 const locations = [
-  "Bagmane Tech Park, CV Raman Nagar",
-  "Boeing Office (North Bangalore)",
-  "Brigade Eldorado",
-  "Cubbon Park",
-  "Dynamatics (North Bangalore)",
-  "Ecospace (Bellandur)",
-  "Electronic City",
-  "ITPL (Whitefield)",
-  "KARLE SEZ",
-  "Kempegowda International Airport T1",
-  "Kempegowda International Airport T2",
-  "Koramangala",
-  "Manyata Tech Park",
-  "MG Road",
-  "Prestige Finsbury",
-  "SAP Labs (North Bangalore)",
-  "Sarjapur",
-  "Shell Technology Center (North Bangalore)"
-].sort();
+  { id:"bagmane_cv_raman", label:"Bagmane Tech Park, CV Raman Nagar" },
+  { id:"boeing_north", label:"Boeing Office (North Bangalore)" },
+  { id:"brigade_eldorado", label:"Brigade Eldorado" },
+  { id:"cubbon_park", label:"Cubbon Park" },
+  { id:"dynamatics", label:"Dynamatics (North Bangalore)" },
+  { id:"ecospace", label:"Ecospace (Bellandur)" },
+  { id:"electronic_city", label:"Electronic City" },
+  { id:"itpl", label:"ITPL (Whitefield)" },
+  { id:"karle_sez", label:"KARLE SEZ" },
+  { id:"kia_t1", label:"Kempegowda International Airport T1" },
+  { id:"kia_t2", label:"Kempegowda International Airport T2" },
+  { id:"koramangala", label:"Koramangala" },
+  { id:"manyata", label:"Manyata Tech Park" },
+  { id:"mg_road", label:"MG Road" },
+  { id:"prestige_finsbury", label:"Prestige Finsbury" },
+  { id:"sap_labs", label:"SAP Labs (North Bangalore)" },
+  { id:"sarjapur", label:"Sarjapur" },
+  { id:"shell_tc", label:"Shell Technology Center (North Bangalore)" }
+].sort((a,b)=>a.label.localeCompare(b.label));
 
-function setupDropdown(id, excludeFn) {
-  const dd = document.getElementById(id);
-  const btn = dd.querySelector(".dropdown-btn");
-  const panel = dd.querySelector(".dropdown-panel");
+const fromSel = document.getElementById("from");
+const toSel = document.getElementById("to");
+const fromSearch = document.getElementById("fromSearch");
+const toSearch = document.getElementById("toSearch");
 
-  btn.onclick = () => {
-    panel.style.display = panel.style.display === "block" ? "none" : "block";
-  };
+function renderOptions() {
+  fromSel.innerHTML = `<option value="">From location</option>`;
+  toSel.innerHTML = `<option value="">To location</option>`;
 
-  panel.innerHTML = `
-    <input placeholder="Search..." />
-    <div class="list"></div>
-  `;
-
-  const input = panel.querySelector("input");
-  const list = panel.querySelector(".list");
-
-  function render() {
-    list.innerHTML = "";
-    locations.filter(l => !excludeFn(l))
-      .filter(l => l.toLowerCase().includes(input.value.toLowerCase()))
-      .forEach(l => {
-        const d = document.createElement("div");
-        d.className = "option";
-        d.textContent = l;
-        d.onclick = () => {
-          btn.textContent = l;
-          panel.style.display = "none";
-          renderAll();
-        };
-        list.appendChild(d);
-      });
-  }
-
-  input.oninput = render;
-  render();
+  locations.forEach(l => {
+    if (l.id !== toSel.value) {
+      fromSel.innerHTML += `<option value="${l.id}">${l.label}</option>`;
+    }
+    if (l.id !== fromSel.value) {
+      toSel.innerHTML += `<option value="${l.id}">${l.label}</option>`;
+    }
+  });
 }
 
-function renderAll() {
-  setupDropdown("fromDD", l =>
-    document.getElementById("toDD").querySelector(".dropdown-btn").textContent === l
-  );
-  setupDropdown("toDD", l =>
-    document.getElementById("fromDD").querySelector(".dropdown-btn").textContent === l
-  );
+function filterSelect(search, select) {
+  const q = search.value.toLowerCase();
+  [...select.options].forEach(o => {
+    if (!o.value) return;
+    o.hidden = !o.text.toLowerCase().includes(q);
+  });
 }
 
-renderAll();
+fromSel.onchange = toSel.onchange = renderOptions;
+fromSearch.oninput = () => filterSelect(fromSearch, fromSel);
+toSearch.oninput = () => filterSelect(toSearch, toSel);
+
+renderOptions();
 </script>
 </body>
 </html>
