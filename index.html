@@ -13,14 +13,23 @@ body {
   min-height: 100vh;
   font-family: system-ui, -apple-system;
   color: #fff;
-  background: linear-gradient(270deg,#f58529,#dd2a7b,#8134af,#515bd4);
-  background-size: 800% 800%;
-  animation: bg 18s ease infinite;
+  background: linear-gradient(
+    270deg,
+    #f58529,
+    #fd1d1d,
+    #dd2a7b,
+    #8134af,
+    #515bd4,
+    #feda77
+  );
+  background-size: 1200% 1200%;
+  animation: insta 5s linear infinite;
 }
-@keyframes bg {
-  0% {background-position:0% 50%}
-  50% {background-position:100% 50%}
-  100% {background-position:0% 50%}
+
+@keyframes insta {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .container {
@@ -52,7 +61,7 @@ h1 {
 }
 
 .tabs button.active {
-  background: #d0d0d0;
+  background: #e0e0e0;
 }
 
 select, button {
@@ -102,7 +111,8 @@ button {
   margin-top: 40px;
   text-align: center;
   font-family: 'Pacifico', cursive;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 400;
 }
 </style>
 </head>
@@ -135,8 +145,7 @@ button {
 <button id="voteBtn">My Preference</button>
 
 <div class="footer">
-  <div>Find your co-driving partner today</div>
-  <div>Created by Animesh</div>
+  Finding my co-driving partner!
 </div>
 
 </div>
@@ -230,7 +239,6 @@ async function loadPopularity() {
     popDiv.innerHTML = `<div class="muted">No preferences yet for future slots</div>`;
   } else {
     const max = Math.max(...entries.map(e => e.count));
-
     entries.forEach(e => {
       const bar = document.createElement("div");
       bar.className = "bar";
@@ -244,10 +252,11 @@ async function loadPopularity() {
     });
   }
 
-  slots.forEach(s => {
+  slots.forEach((s, i) => {
     const opt = document.createElement("option");
     opt.value = s;
     opt.textContent = s;
+    if (i === 0) opt.selected = true;
     slotSel.appendChild(opt);
   });
 }
