@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CoDrive</title>
 
-<!-- Google cursive font -->
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 
 <style>
@@ -44,6 +43,16 @@ h1 {
   font-weight: normal;
 }
 
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.tabs button {
+  flex: 1;
+}
+
 select, button {
   width: 100%;
   padding: 12px;
@@ -61,16 +70,6 @@ button {
 
 button:disabled {
   opacity: 0.4;
-}
-
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.tabs button {
-  flex: 1;
 }
 
 .range-grid {
@@ -101,7 +100,6 @@ button:disabled {
   text-align: center;
   font-family: 'Pacifico', cursive;
   font-size: 16px;
-  opacity: 0.95;
 }
 </style>
 </head>
@@ -110,6 +108,12 @@ button:disabled {
 <div class="container">
 
 <h1>CoDrive</h1>
+
+<!-- DAY SELECTION FIRST -->
+<div class="tabs">
+  <button id="todayTab">Today</button>
+  <button id="tomorrowTab">Tomorrow</button>
+</div>
 
 <select id="from">
   <option value="">From</option>
@@ -123,12 +127,7 @@ button:disabled {
   <option value="manyata">Manyata</option>
 </select>
 
-<button id="showBtn" style="display:none;">Show Popularity</button>
-
-<div id="dayTabs" class="tabs" style="display:none;">
-  <button id="todayTab">Today</button>
-  <button id="tomorrowTab">Tomorrow</button>
-</div>
+<button id="showBtn" disabled>Show Popularity</button>
 
 <div id="ranges" class="range-grid"></div>
 <div id="results"></div>
@@ -137,7 +136,7 @@ button:disabled {
 <button id="voteBtn" style="display:none;">My Preference</button>
 
 <div class="footer">
-  <div>Finding co-driving partner</div>
+  <div>Find your co-driving partner today</div>
   <div>Created by Animesh</div>
 </div>
 
@@ -153,10 +152,9 @@ const rangesDiv = document.getElementById("ranges");
 const resultsDiv = document.getElementById("results");
 const slotSelect = document.getElementById("slotSelect");
 const voteBtn = document.getElementById("voteBtn");
-const dayTabs = document.getElementById("dayTabs");
 
+let activeDayOffset = 0; // 0 = today (default), 1 = tomorrow
 let activeRange = null;
-let activeDayOffset = 0; // 0 = today, 1 = tomorrow
 
 const ranges = [
   { label:"00–06 hours", start:0 },
@@ -169,9 +167,9 @@ function istNow() {
   return new Date(new Date().toLocaleString("en-US",{ timeZone:"Asia/Kolkata" }));
 }
 
-function dateStr(offsetDays) {
+function dateStr(offset) {
   const d = istNow();
-  d.setDate(d.getDate() + offsetDays);
+  d.setDate(d.getDate() + offset);
   return d.toISOString().slice(0,10);
 }
 
@@ -189,14 +187,14 @@ function slotsForRange(start) {
 
   for (let h = start; h < start + 6; h++) {
     for (let m of [0,30]) {
-      const slotTime = new Date(now);
-      slotTime.setHours(h, m, 0, 0);
-      if (activeDayOffset === 1 || slotTime > now) {
-        const endH = m === 30 ? h + 1 : h;
-        const endM = m === 30 ? "00" : "30";
+      const t = new Date(now);
+      t.setHours(h, m, 0, 0);
+      if (activeDayOffset === 1 || t > now) {
+        const eh = m === 30 ? h + 1 : h;
+        const em = m === 30 ? "00" : "30";
         slots.push(
           `${String(h).padStart(2,"0")}:${m === 0 ? "00" : "30"}-` +
-          `${String(endH).padStart(2,"0")}:${endM}`
+          `${String(eh).padStart(2,"0")}:${em}`
         );
       }
     }
@@ -204,32 +202,32 @@ function slotsForRange(start) {
   return slots;
 }
 
-fromSel.onchange = toSel.onchange = () => {
-  showBtn.style.display = fromSel.value && toSel.value ? "block" : "none";
-};
-
-showBtn.onclick = () => {
-  dayTabs.style.display = "flex";
-  activeDayOffset = 0;
-  renderRanges();
-};
-
+/* --- DAY TABS --- */
 document.getElementById("todayTab").onclick = () => {
   activeDayOffset = 0;
-  renderRanges();
+  resetUI();
 };
 
 document.getElementById("tomorrowTab").onclick = () => {
   activeDayOffset = 1;
-  renderRanges();
+  resetUI();
 };
 
-function renderRanges() {
+function resetUI() {
   rangesDiv.innerHTML = "";
   resultsDiv.innerHTML = "";
   slotSelect.style.display = "none";
   voteBtn.style.display = "none";
+}
 
+/* --- FROM / TO --- */
+fromSel.onchange = toSel.onchange = () => {
+  showBtn.disabled = !(fromSel.value && toSel.value);
+};
+
+/* --- SHOW POPULARITY --- */
+showBtn.onclick = () => {
+  resetUI();
   ranges.forEach(r => {
     const btn = document.createElement("button");
     btn.textContent = r.label;
@@ -237,16 +235,17 @@ function renderRanges() {
     btn.onclick = () => loadPopularity(r.start);
     rangesDiv.appendChild(btn);
   });
-}
+};
 
+/* --- LOAD POPULARITY --- */
 async function loadPopularity(start) {
   activeRange = start;
   const slots = slotsForRange(start);
   if (!slots.length) return;
 
   const res = await fetch(WORKER_URL + "/popularity", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({
       date: dateStr(activeDayOffset),
       from: fromSel.value,
@@ -262,13 +261,13 @@ async function loadPopularity(start) {
   const max = Math.max(1, ...Object.values(data));
 
   slots.forEach(s => {
-    const count = data[s];
+    const c = data[s];
     const div = document.createElement("div");
     div.className = "bar";
     div.innerHTML = `
-      <div>${s} (${count})</div>
+      <div>${s} (${c})</div>
       <div class="bar-track">
-        <div class="bar-fill" style="width:${(count/max)*100}%"></div>
+        <div class="bar-fill" style="width:${(c/max)*100}%"></div>
       </div>
     `;
     resultsDiv.appendChild(div);
@@ -283,12 +282,13 @@ async function loadPopularity(start) {
   voteBtn.style.display = "block";
 }
 
+/* --- VOTE --- */
 voteBtn.onclick = async () => {
   const slot = slotSelect.value;
 
   await fetch(WORKER_URL + "/vote", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({
       date: dateStr(activeDayOffset),
       from: fromSel.value,
