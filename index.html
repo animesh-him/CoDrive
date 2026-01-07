@@ -22,7 +22,7 @@ body {
     #515bd4
   );
   background-size: 1200% 1200%;
-  animation: insta 3s linear infinite;
+  animation: insta 2.5s linear infinite;
 }
 
 @keyframes insta {
@@ -34,7 +34,7 @@ body {
 .container {
   max-width: 420px;
   margin: auto;
-  padding: 16px;
+  padding: 18px;
 }
 
 h1 {
@@ -42,11 +42,10 @@ h1 {
   font-family: 'Pacifico', cursive;
 }
 
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
-}
+/* uniform spacing block */
+.block { margin-top: 14px; }
+
+.tabs { display: flex; gap: 12px; }
 
 .tabs button {
   flex: 1;
@@ -58,16 +57,12 @@ h1 {
   font-size: 14px;
 }
 
-.tabs button.active {
-  opacity: 0.75;
-}
+.tabs button.active { opacity: 0.8; }
 
-.dropdown {
-  position: relative;
-  margin-top: 12px;
-}
+.dropdown { position: relative; }
 
-.dropdown-btn {
+.dropdown-btn,
+#slot {
   width: 100%;
   padding: 14px;
   border-radius: 14px;
@@ -85,13 +80,13 @@ h1 {
   background: white;
   color: black;
   border-radius: 14px;
-  max-height: 220px;
+  max-height: 230px;
   overflow-y: auto;
-  z-index: 10;
+  z-index: 20;
 }
 
 .dropdown-panel input {
-  width: 90%;
+  width: calc(100% - 20px);
   margin: 10px;
   padding: 10px;
   border-radius: 10px;
@@ -103,31 +98,28 @@ h1 {
   cursor: pointer;
 }
 
-.option:hover {
-  background: #eee;
-}
-
-#slot {
-  background: black;
-  color: white;
-}
+.option:hover { background: #eee; }
 
 #vote {
+  display: block;
+  width: 100%;
+  margin: 14px auto 0 auto;
+  padding: 14px;
+  border-radius: 14px;
   background: #e0e0e0;
   color: black;
-  margin-top: 14px;
+  border: none;
   font-weight: 600;
+  text-align: center;
 }
 
 .footer {
-  margin-top: 40px;
+  margin-top: 42px;
   text-align: center;
   font-family: 'Pacifico', cursive;
 }
 
-.credit {
-  animation: float 2.5s ease-in-out infinite;
-}
+.credit { animation: float 2.5s ease-in-out infinite; }
 
 @keyframes float {
   0% { opacity: 0.6; }
@@ -142,31 +134,26 @@ h1 {
 
 <h1>CoDrive</h1>
 
-<div class="tabs">
-  <button class="active">Today</button>
-  <button>Tomorrow</button>
+<div class="tabs block">
+  <button class="active" id="todayBtn">Today</button>
+  <button id="tomorrowBtn">Tomorrow</button>
 </div>
 
-<!-- FROM -->
-<div class="dropdown" id="fromDD">
+<div class="dropdown block" id="fromDD">
   <button class="dropdown-btn">From location</button>
   <div class="dropdown-panel"></div>
 </div>
 
-<!-- TO -->
-<div class="dropdown" id="toDD">
+<div class="dropdown block" id="toDD">
   <button class="dropdown-btn">To location</button>
   <div class="dropdown-panel"></div>
 </div>
 
-<select id="slot" class="dropdown-btn">
+<select id="slot" class="block">
   <option selected disabled>Time slot</option>
-  <option>07:00 - 08:00</option>
-  <option>08:00 - 09:00</option>
-  <option>09:00 - 10:00</option>
 </select>
 
-<button id="vote">My Preference</button>
+<button id="vote" class="block">My Preference</button>
 
 <div class="footer">
   Finding my co-driving partner!
@@ -176,6 +163,7 @@ h1 {
 </div>
 
 <script>
+// ------------------ LOCATIONS ------------------
 const locations = [
   "Bagmane Tech Park, CV Raman Nagar",
   "Boeing Office (North Bangalore)",
@@ -197,54 +185,119 @@ const locations = [
   "Shell Technology Center (North Bangalore)"
 ].sort();
 
+// ------------------ POPULARITY COLOR ------------------
+function popularityColor(count) {
+  if (count <= 1) return "#d9d9d9";
+  if (count === 2) return "#b0b0b0";
+  if (count === 3) return "#7a7a7a";
+  if (count === 4) return "#3f3f3f";
+  return "#000000";
+}
+
+// ------------------ IST DATE UTILS ------------------
+function getISTDate(offsetDays=0) {
+  const now = new Date();
+  // Convert to UTC
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  // Add IST offset +5:30
+  const istTime = new Date(utc + 5.5*60*60*1000);
+  // Add offsetDays
+  istTime.setDate(istTime.getDate() + offsetDays);
+  const yyyy = istTime.getFullYear();
+  const mm = String(istTime.getMonth()+1).padStart(2,'0');
+  const dd = String(istTime.getDate()).padStart(2,'0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function getFutureSlots() {
+  const slots = [];
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const istNow = new Date(utc + 5.5*60*60*1000);
+  const currentHour = istNow.getHours();
+  const currentMinute = istNow.getMinutes();
+  for (let h=0; h<24; h++) {
+    for (let m=0; m<60; m+=30) {
+      const slotStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      if (h>currentHour || (h===currentHour && m>currentMinute)) {
+        const nextH = m===0?h:h+1;
+        const nextM = m===0?30:0;
+        const slotRange = `${slotStr} - ${String(nextH).padStart(2,'0')}:${String(nextM).padStart(2,'0')}`;
+        slots.push(slotRange);
+      }
+    }
+  }
+  return slots;
+}
+
+// ------------------ DROPDOWNS ------------------
 function setupDropdown(id, excludeFn) {
   const dd = document.getElementById(id);
   const btn = dd.querySelector(".dropdown-btn");
   const panel = dd.querySelector(".dropdown-panel");
 
   btn.onclick = () => {
-    panel.style.display = panel.style.display === "block" ? "none" : "block";
+    panel.style.display = panel.style.display==="block"?"none":"block";
   };
 
-  panel.innerHTML = `
-    <input placeholder="Search..." />
-    <div class="list"></div>
-  `;
-
+  panel.innerHTML = `<input placeholder="Search..." /><div class="list"></div>`;
   const input = panel.querySelector("input");
   const list = panel.querySelector(".list");
 
   function render() {
-    list.innerHTML = "";
-    locations.filter(l => !excludeFn(l))
+    list.innerHTML="";
+    locations
+      .filter(l => !excludeFn(l))
       .filter(l => l.toLowerCase().includes(input.value.toLowerCase()))
-      .forEach(l => {
-        const d = document.createElement("div");
-        d.className = "option";
-        d.textContent = l;
-        d.onclick = () => {
-          btn.textContent = l;
-          panel.style.display = "none";
+      .forEach(l=>{
+        const d=document.createElement("div");
+        d.className="option";
+        d.textContent=l;
+        d.onclick=()=>{
+          btn.textContent=l;
+          panel.style.display="none";
           renderAll();
         };
         list.appendChild(d);
       });
   }
-
   input.oninput = render;
   render();
 }
 
 function renderAll() {
-  setupDropdown("fromDD", l =>
-    document.getElementById("toDD").querySelector(".dropdown-btn").textContent === l
-  );
-  setupDropdown("toDD", l =>
-    document.getElementById("fromDD").querySelector(".dropdown-btn").textContent === l
-  );
+  setupDropdown("fromDD", l=>document.getElementById("toDD").querySelector(".dropdown-btn").textContent===l);
+  setupDropdown("toDD", l=>document.getElementById("fromDD").querySelector(".dropdown-btn").textContent===l);
 }
 
+// ------------------ INITIAL SLOT ------------------
+function renderSlots() {
+  const slotSel=document.getElementById("slot");
+  slotSel.innerHTML="";
+  const futureSlots=getFutureSlots();
+  futureSlots.forEach(s=>{
+    const opt=document.createElement("option");
+    opt.value=s;
+    opt.textContent=s;
+    slotSel.appendChild(opt);
+  });
+}
+
+// ------------------ TABS ------------------
+document.getElementById("todayBtn").onclick=()=>{
+  document.getElementById("todayBtn").classList.add("active");
+  document.getElementById("tomorrowBtn").classList.remove("active");
+  renderSlots();
+};
+document.getElementById("tomorrowBtn").onclick=()=>{
+  document.getElementById("tomorrowBtn").classList.add("active");
+  document.getElementById("todayBtn").classList.remove("active");
+  renderSlots();
+};
+
+// ------------------ INIT ------------------
 renderAll();
+renderSlots();
 </script>
 </body>
 </html>
