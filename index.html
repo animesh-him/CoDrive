@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoDrive</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
@@ -11,9 +11,16 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: system-ui, -apple-system;
+  font-family: system-ui;
   color: #fff;
-  background: linear-gradient(270deg,#f58529,#fd1d1d,#dd2a7b,#8134af,#515bd4);
+  background: linear-gradient(
+    270deg,
+    #f58529,
+    #fd1d1d,
+    #dd2a7b,
+    #8134af,
+    #515bd4
+  );
   background-size: 1200% 1200%;
   animation: insta 3s linear infinite;
 }
@@ -27,106 +34,105 @@ body {
 .container {
   max-width: 420px;
   margin: auto;
-  padding: 18px;
-  text-align: center;
+  padding: 16px;
 }
 
 h1 {
+  text-align: center;
   font-family: 'Pacifico', cursive;
-  margin-bottom: 12px;
 }
 
-/* DAY BUTTONS */
 .tabs {
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .tabs button {
   flex: 1;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: none;
-  font-size: 14px;
+  background: black;
   color: white;
-  background: #444;
+  font-size: 14px;
 }
 
 .tabs button.active {
-  background: #000;
+  opacity: 0.75;
 }
 
-/* INPUTS */
-select, button {
+.dropdown {
+  position: relative;
+  margin-top: 12px;
+}
+
+.dropdown-btn {
   width: 100%;
   padding: 14px;
-  margin-top: 14px;
   border-radius: 14px;
+  background: black;
+  color: white;
   border: none;
-  font-size: 15px;
-}
-
-select {
-  background: #000;
-  color: #fff;
-}
-
-button {
-  background: #000;
-  color: #fff;
-  font-weight: 600;
-}
-
-/* POPULARITY */
-.bar {
-  margin-top: 12px;
   text-align: left;
 }
 
-.bar-label {
-  font-size: 11px;
-  margin-bottom: 4px;
+.dropdown-panel {
+  display: none;
+  position: absolute;
+  top: 105%;
+  width: 100%;
+  background: white;
+  color: black;
+  border-radius: 14px;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 10;
 }
 
-.track {
-  height: 8px;
-  background: rgba(255,255,255,0.25);
-  border-radius: 4px;
-  overflow: hidden;
+.dropdown-panel input {
+  width: 90%;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
 }
 
-.fill {
-  height: 100%;
-  border-radius: 4px;
+.option {
+  padding: 12px;
+  cursor: pointer;
 }
 
-.muted {
-  font-size: 12px;
-  opacity: 0.85;
-  margin-top: 12px;
+.option:hover {
+  background: #eee;
 }
 
-/* FOOTER */
+#slot {
+  background: black;
+  color: white;
+}
+
+#vote {
+  background: #e0e0e0;
+  color: black;
+  margin-top: 14px;
+  font-weight: 600;
+}
+
 .footer {
-  margin-top: 42px;
+  margin-top: 40px;
+  text-align: center;
   font-family: 'Pacifico', cursive;
-  font-size: 15px;
 }
 
 .credit {
-  font-family: 'Pacifico', cursive;
-  font-size: 15px;
-  background: linear-gradient(135deg,#ffffff,#bfbfbf,#ffffff);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: creditFlow 2.5s linear infinite;
+  animation: float 2.5s ease-in-out infinite;
 }
 
-@keyframes creditFlow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+@keyframes float {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 </style>
 </head>
@@ -137,31 +143,30 @@ button {
 <h1>CoDrive</h1>
 
 <div class="tabs">
-  <button id="todayBtn" class="active">Today</button>
-  <button id="tomorrowBtn">Tomorrow</button>
+  <button class="active">Today</button>
+  <button>Tomorrow</button>
 </div>
 
-<select id="from">
-  <option value="">From location</option>
-  <option value="eldorado">Brigade Eldorado</option>
-  <option value="manyata">Manyata Tech Park</option>
-  <option value="karle_sez">Karle SEZ</option>
+<!-- FROM -->
+<div class="dropdown" id="fromDD">
+  <button class="dropdown-btn">From location</button>
+  <div class="dropdown-panel"></div>
+</div>
+
+<!-- TO -->
+<div class="dropdown" id="toDD">
+  <button class="dropdown-btn">To location</button>
+  <div class="dropdown-panel"></div>
+</div>
+
+<select id="slot" class="dropdown-btn">
+  <option selected disabled>Time slot</option>
+  <option>07:00 - 08:00</option>
+  <option>08:00 - 09:00</option>
+  <option>09:00 - 10:00</option>
 </select>
 
-<select id="to">
-  <option value="">To location</option>
-  <option value="eldorado">Brigade Eldorado</option>
-  <option value="manyata">Manyata Tech Park</option>
-  <option value="karle_sez">Karle SEZ</option>
-</select>
-
-<div id="popularity"></div>
-
-<select id="slotSelect">
-  <option value="" disabled selected>Time slot</option>
-</select>
-
-<button id="voteBtn">My Preference</button>
+<button id="vote">My Preference</button>
 
 <div class="footer">
   Finding my co-driving partner!
@@ -171,81 +176,75 @@ button {
 </div>
 
 <script>
-const WORKER = "https://codrive-api.animesh-him.workers.dev";
+const locations = [
+  "Bagmane Tech Park, CV Raman Nagar",
+  "Boeing Office (North Bangalore)",
+  "Brigade Eldorado",
+  "Cubbon Park",
+  "Dynamatics (North Bangalore)",
+  "Ecospace (Bellandur)",
+  "Electronic City",
+  "ITPL (Whitefield)",
+  "KARLE SEZ",
+  "Kempegowda International Airport T1",
+  "Kempegowda International Airport T2",
+  "Koramangala",
+  "Manyata Tech Park",
+  "MG Road",
+  "Prestige Finsbury",
+  "SAP Labs (North Bangalore)",
+  "Sarjapur",
+  "Shell Technology Center (North Bangalore)"
+].sort();
 
-let dayOffset = 0;
+function setupDropdown(id, excludeFn) {
+  const dd = document.getElementById(id);
+  const btn = dd.querySelector(".dropdown-btn");
+  const panel = dd.querySelector(".dropdown-panel");
 
-const todayBtn = document.getElementById("todayBtn");
-const tomorrowBtn = document.getElementById("tomorrowBtn");
-const fromSel = document.getElementById("from");
-const toSel = document.getElementById("to");
-const popDiv = document.getElementById("popularity");
-const slotSel = document.getElementById("slotSelect");
+  btn.onclick = () => {
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+  };
 
-todayBtn.onclick = () => setDay(0);
-tomorrowBtn.onclick = () => setDay(1);
-fromSel.onchange = toSel.onchange = loadPopularity;
+  panel.innerHTML = `
+    <input placeholder="Search..." />
+    <div class="list"></div>
+  `;
 
-function setDay(d) {
-  dayOffset = d;
-  todayBtn.classList.toggle("active", d === 0);
-  tomorrowBtn.classList.toggle("active", d === 1);
-  loadPopularity();
-}
+  const input = panel.querySelector("input");
+  const list = panel.querySelector(".list");
 
-/* IST ONLY */
-function istNow() {
-  return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
-}
-
-function dateStr() {
-  const d = istNow();
-  d.setDate(d.getDate() + dayOffset);
-  return d.toISOString().slice(0,10);
-}
-
-function futureSlots() {
-  const now = istNow();
-  const slots = [];
-
-  for (let h = 0; h < 24; h++) {
-    for (let m of [0,30]) {
-      const end = new Date(now);
-      end.setHours(h, m === 0 ? 30 : 0, 0, 0);
-      if (m === 30) end.setHours(h + 1, 0, 0, 0);
-      if (dayOffset === 1 || end > now) {
-        const eh = m === 30 ? h + 1 : h;
-        const em = m === 30 ? "00" : "30";
-        slots.push(
-          `${String(h).padStart(2,"0")}:${m === 0 ? "00" : "30"}-` +
-          `${String(eh).padStart(2,"0")}:${em}`
-        );
-      }
-    }
+  function render() {
+    list.innerHTML = "";
+    locations.filter(l => !excludeFn(l))
+      .filter(l => l.toLowerCase().includes(input.value.toLowerCase()))
+      .forEach(l => {
+        const d = document.createElement("div");
+        d.className = "option";
+        d.textContent = l;
+        d.onclick = () => {
+          btn.textContent = l;
+          panel.style.display = "none";
+          renderAll();
+        };
+        list.appendChild(d);
+      });
   }
-  return slots;
+
+  input.oninput = render;
+  render();
 }
 
-async function loadPopularity() {
-  popDiv.innerHTML = "";
-  slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
-  if (!fromSel.value || !toSel.value) return;
-
-  const slots = futureSlots();
-  const res = await fetch(WORKER + "/popularity", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ date: dateStr(), from: fromSel.value, to: toSel.value, slots })
-  });
-  const data = await res.json();
-
-  slots.forEach(s => {
-    const opt = document.createElement("option");
-    opt.value = s;
-    opt.textContent = s;
-    slotSel.appendChild(opt);
-  });
+function renderAll() {
+  setupDropdown("fromDD", l =>
+    document.getElementById("toDD").querySelector(".dropdown-btn").textContent === l
+  );
+  setupDropdown("toDD", l =>
+    document.getElementById("fromDD").querySelector(".dropdown-btn").textContent === l
+  );
 }
+
+renderAll();
 </script>
 </body>
 </html>
