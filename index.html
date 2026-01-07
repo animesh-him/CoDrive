@@ -19,11 +19,10 @@ body {
     #fd1d1d,
     #dd2a7b,
     #8134af,
-    #515bd4,
-    #feda77
+    #515bd4
   );
   background-size: 1200% 1200%;
-  animation: insta 5s linear infinite;
+  animation: insta 4s linear infinite;
 }
 
 @keyframes insta {
@@ -56,21 +55,32 @@ h1 {
   border-radius: 10px;
   border: none;
   font-size: 14px;
-  background: white;
+  background: rgba(255,255,255,0.85);
   color: black;
 }
 
 .tabs button.active {
-  background: #e0e0e0;
+  background: rgba(220,220,220,0.95);
 }
 
 select, button {
   width: 100%;
   padding: 12px;
   margin-top: 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
   font-size: 15px;
+}
+
+/* Instagram-matched dropdown colors */
+#from {
+  background: rgba(255, 105, 180, 0.85); /* pink */
+  color: black;
+}
+
+#to {
+  background: rgba(138, 43, 226, 0.85); /* purple */
+  color: black;
 }
 
 button {
@@ -98,12 +108,12 @@ button {
 
 .fill {
   height: 100%;
-  background: #fff;
+  border-radius: 4px;
 }
 
 .muted {
   font-size: 12px;
-  opacity: 0.8;
+  opacity: 0.85;
   margin-top: 12px;
 }
 
@@ -223,6 +233,12 @@ function futureSlots() {
   return slots;
 }
 
+function barColor(ratio) {
+  if (ratio < 0.33) return "#ff9ad5";
+  if (ratio < 0.66) return "#d62976";
+  return "#8134af";
+}
+
 async function loadPopularity() {
   popDiv.innerHTML = "";
   slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
@@ -256,12 +272,13 @@ async function loadPopularity() {
   } else {
     const max = Math.max(...entries.map(e => e.count));
     entries.forEach(e => {
+      const ratio = e.count / max;
       const bar = document.createElement("div");
       bar.className = "bar";
       bar.innerHTML = `
         <div class="bar-label">${e.slot} • ${e.count}</div>
         <div class="track">
-          <div class="fill" style="width:${(e.count / max) * 100}%"></div>
+          <div class="fill" style="width:${ratio * 100}%; background:${barColor(ratio)}"></div>
         </div>
       `;
       popDiv.appendChild(bar);
