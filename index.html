@@ -20,24 +20,12 @@ body{
 }
 .container{max-width:520px;margin:auto;padding:16px}
 h1{text-align:center;font-family:cursive}
-.tabs{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
-.tabs button{
-  border:none;padding:8px 14px;border-radius:20px;
-  background:rgba(255,255,255,.25);color:#fff;cursor:pointer
-}
-.tabs button.active{background:#fff;color:#000}
 .card{background:rgba(0,0,0,.25);border-radius:16px;padding:16px}
 select,button{
   width:100%;padding:12px;border-radius:10px;
   border:none;margin-top:10px;font-size:15px
 }
 button.primary{background:#fff;color:#000;font-weight:600}
-button.range{
-  width:48%;min-height:42px;
-  background:#fff;color:#000;font-weight:600
-}
-button.range.disabled{opacity:.4;pointer-events:none}
-.range-wrap{display:flex;flex-wrap:wrap;gap:4%}
 .results{margin-top:16px}
 .slot{display:flex;gap:10px;margin:6px 0;align-items:center}
 .bar{height:10px;background:#fff;border-radius:6px;flex:1}
@@ -49,17 +37,10 @@ button.range.disabled{opacity:.4;pointer-events:none}
 <body>
 <div class="container">
 <h1>CoDrive</h1>
-<div class="tabs" id="tabs"></div>
 
 <div class="card">
 <select id="from"></select>
 <select id="to"></select>
-
-<div id="rangeSection" style="display:none">
-  <div class="label">Select time range</div>
-  <div class="range-wrap" id="ranges"></div>
-</div>
-
 <select id="time" style="display:none"></select>
 <button id="submitBtn" class="primary" style="display:none">My Preference</button>
 
@@ -71,8 +52,7 @@ button.range.disabled{opacity:.4;pointer-events:none}
 </div>
 
 <script>
-const API="https://codrive-api.animesh-him.workers.dev";
-let currentDate="", activeRange=null;
+const API="https://codrive-api.pages.dev";
 
 /* ---------- LOCATIONS ---------- */
 const FROM_LOCATIONS=[
@@ -92,7 +72,7 @@ const TO_LOCATIONS=[
 
 /* ---------- IST ---------- */
 const nowIST=()=>new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
-const istDate=o=>{const d=nowIST();d.setDate(d.getDate()+o);return d.toISOString().slice(0,10)};
+const istDate=()=>nowIST().toISOString().slice(0,10);
 
 /* ---------- INIT ---------- */
 function fill(sel,data){
@@ -104,83 +84,41 @@ function fill(sel,data){
   });
 }
 
-function genDates(){
-  tabs.innerHTML="";
-  [{l:"Today",v:istDate(0)},{l:"Tomorrow",v:istDate(1)}].forEach((o,i)=>{
-    const b=document.createElement("button");
-    b.textContent=o.l;
-    if(!i){b.classList.add("active");currentDate=o.v}
-    b.onclick=()=>{
-      [...tabs.children].forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      currentDate=o.v;
-      resetUI();
-    };
-    tabs.appendChild(b);
-  });
-}
-
-/* ---------- RANGES ---------- */
-const RANGES=[
- {label:"00–06",start:0,end:360},
- {label:"06–12",start:360,end:720},
- {label:"12–18",start:720,end:1080},
- {label:"18–24",start:1080,end:1440}
-];
-
-function genRanges(){
-  ranges.innerHTML="";
-  const nowMin=nowIST().getHours()*60+nowIST().getMinutes();
-  RANGES.forEach(r=>{
-    const b=document.createElement("button");
-    b.className="range";
-    b.textContent=r.label;
-    if(currentDate===istDate(0)&&r.end<=nowMin) b.classList.add("disabled");
-    b.onclick=()=>{activeRange=r;genTimeSlots();loadPopularity();}
-    ranges.appendChild(b);
-  });
-}
-
-function genTimeSlots(){
-  time.style.display="block";
-  submitBtn.style.display="block";
+/* ---------- TIME SLOTS ---------- */
+function genFutureSlots(){
   time.innerHTML="<option value=''>Select slot</option>";
-  const nowMin=nowIST().getHours()*60+nowIST().getMinutes();
+  const now=nowIST();
+  const nowMin=now.getHours()*60+now.getMinutes();
 
-  for(let m=activeRange.start;m<activeRange.end;m+=30){
-    if(currentDate===istDate(0)&&m+30<=nowMin) continue;
+  for(let m=0;m<1440;m+=30){
+    if(m+30<=nowMin) continue;
     const f=x=>String(x).padStart(2,"0");
     const val=`${f(m/60|0)}:${f(m%60)}-${f((m+30)/60|0)}:${f((m+30)%60)}`;
     time.appendChild(new Option(val,val));
   }
+
+  time.style.display="block";
+  submitBtn.style.display="block";
 }
 
 /* ---------- POPULARITY ---------- */
 async function loadPopularity(){
-  if(!from.value||!to.value||!activeRange) return;
-
-  results.innerHTML="<div class='small'>Loading...</div>";
+  if(!from.value||!to.value) return;
 
   const res=await fetch(
-    `${API}?date=${currentDate}&from=${from.value}&to=${to.value}&_=${Date.now()}`
+    `${API}?date=${istDate()}&from=${from.value}&to=${to.value}&_=${Date.now()}`
   ).then(r=>r.json());
 
-  const rows=res.data || [];
+  results.innerHTML="<h3>Popularity (Today)</h3>";
 
-  results.innerHTML="<h3>Popularity</h3>";
-
-  if(!rows.length){
+  if(!res.length){
     results.innerHTML+="<div class='small'>No data yet</div>";
     return;
   }
 
-  const max=Math.max(...rows.map(x=>x.count));
+  const max=Math.max(...res.map(x=>x.count));
 
-  rows.forEach(d=>{
-    const [h,m]=d.time.split("-")[0].split(":").map(Number);
-    const mins=h*60+m;
-    if(mins<activeRange.start||mins>=activeRange.end) return;
-
+  res.forEach(d=>{
     const row=document.createElement("div");
     row.className="slot";
     row.innerHTML=`<div class="small">${d.time} (${d.count})</div>`;
@@ -198,30 +136,28 @@ submitBtn.onclick=async()=>{
   await fetch(API,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({date:currentDate,from:from.value,to:to.value,time:time.value})
+    body:JSON.stringify({
+      date:istDate(),
+      from:from.value,
+      to:to.value,
+      time:time.value
+    })
   });
   loadPopularity();
 };
 
-function resetUI(){
-  rangeSection.style.display="none";
-  time.style.display="none";
-  submitBtn.style.display="none";
-  results.innerHTML="";
-}
-
+/* ---------- EVENTS ---------- */
 [from,to].forEach(s=>s.onchange=()=>{
-  resetUI();
   if(from.value&&to.value){
-    rangeSection.style.display="block";
-    genRanges();
+    genFutureSlots();
+    loadPopularity();
   }
 });
 
 fill(from,FROM_LOCATIONS);
 fill(to,TO_LOCATIONS);
-genDates();
 fetch(API+"?visit=1").then(()=>visits.textContent="People finding co-drive partners");
+setInterval(loadPopularity,10000);
 </script>
 </body>
 </html>
