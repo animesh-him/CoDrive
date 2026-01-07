@@ -114,6 +114,18 @@ button {
   font-size: 15px;
   font-weight: 400;
 }
+
+.credit {
+  font-family: 'Pacifico', cursive;
+  font-size: 15px;
+  animation: floatText 2.5s ease-in-out infinite;
+}
+
+@keyframes floatText {
+  0% { opacity: 0.6; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
+  100% { opacity: 0.6; transform: translateY(0); }
+}
 </style>
 </head>
 
@@ -141,11 +153,15 @@ button {
 
 <div id="popularity"></div>
 
-<select id="slotSelect"></select>
+<select id="slotSelect">
+  <option value="" disabled selected>Time slot</option>
+</select>
+
 <button id="voteBtn">My Preference</button>
 
 <div class="footer">
   Finding my co-driving partner!
+  <div class="credit">Created by Animesh</div>
 </div>
 
 </div>
@@ -209,7 +225,7 @@ function futureSlots() {
 
 async function loadPopularity() {
   popDiv.innerHTML = "";
-  slotSel.innerHTML = "";
+  slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
 
   if (!fromSel.value || !toSel.value) return;
 
@@ -252,11 +268,10 @@ async function loadPopularity() {
     });
   }
 
-  slots.forEach((s, i) => {
+  slots.forEach(s => {
     const opt = document.createElement("option");
     opt.value = s;
     opt.textContent = s;
-    if (i === 0) opt.selected = true;
     slotSel.appendChild(opt);
   });
 }
