@@ -4,300 +4,222 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoDrive</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-
 <style>
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: system-ui;
-  color: #fff;
-  background: linear-gradient(
-    270deg,
-    #f58529,
-    #fd1d1d,
-    #dd2a7b,
-    #8134af,
-    #515bd4
-  );
-  background-size: 1200% 1200%;
-  animation: insta 2.5s linear infinite;
-}
-
-@keyframes insta {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.container {
-  max-width: 420px;
-  margin: auto;
-  padding: 18px;
-}
-
-h1 {
-  text-align: center;
-  font-family: 'Pacifico', cursive;
-}
-
-/* uniform spacing block */
-.block { margin-top: 14px; }
-
-.tabs { display: flex; gap: 12px; }
-
-.tabs button {
-  flex: 1;
-  padding: 12px;
-  border-radius: 14px;
-  border: none;
-  background: black;
-  color: white;
-  font-size: 14px;
-}
-
-.tabs button.active { opacity: 0.8; }
-
-.dropdown { position: relative; }
-
-.dropdown-btn,
-#slot {
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  background: black;
-  color: white;
-  border: none;
-  text-align: left;
-}
-
-.dropdown-panel {
-  display: none;
-  position: absolute;
-  top: 105%;
-  width: 100%;
-  background: white;
-  color: black;
-  border-radius: 14px;
-  max-height: 230px;
-  overflow-y: auto;
-  z-index: 20;
-}
-
-.dropdown-panel input {
-  width: calc(100% - 20px);
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-}
-
-.option {
-  padding: 12px;
-  cursor: pointer;
-}
-
-.option:hover { background: #eee; }
-
-#vote {
-  display: block;
-  width: 100%;
-  margin: 14px auto 0 auto;
-  padding: 14px;
-  border-radius: 14px;
-  background: #e0e0e0;
-  color: black;
-  border: none;
-  font-weight: 600;
-  text-align: center;
-}
-
-.footer {
-  margin-top: 42px;
-  text-align: center;
-  font-family: 'Pacifico', cursive;
-}
-
-.credit { animation: float 2.5s ease-in-out infinite; }
-
-@keyframes float {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
+  /* Instagram animated gradient background */
+  body {
+    margin: 0;
+    font-family: cursive;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    animation: gradientBG 3s linear infinite alternate;
+    background-size: 400% 400%;
+    color: white;
+  }
+  @keyframes gradientBG {
+    0% {background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366);}
+    25% {background: linear-gradient(45deg, #bc1888, #9d36b8, #6a11cb, #2575fc);}
+    50% {background: linear-gradient(45deg, #6a11cb, #2575fc, #f09433, #e6683c);}
+    75% {background: linear-gradient(45deg, #dc2743, #cc2366, #bc1888, #9d36b8);}
+    100% {background: linear-gradient(45deg, #2575fc, #f09433, #e6683c, #dc2743);}
+  }
+  h1 { font-size: 2em; margin-top: 20px; }
+  .btn { padding: 8px 12px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; }
+  .btn-black { background: black; color: white; }
+  .btn-gray { background: gray; color: black; }
+  select { padding: 8px; margin: 5px; border-radius: 5px; border: none; background: black; color: white; font-size: 14px; }
+  .dropdown-container { display: flex; flex-direction: column; width: 90%; max-width: 400px; margin: 5px 0; }
+  .pop-bar { margin: 3px 0; height: 20px; border-radius: 5px; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 12px; color: white; }
+  .footer { margin-top: auto; text-align: center; font-size: 16px; }
 </style>
 </head>
-
 <body>
-<div class="container">
 
 <h1>CoDrive</h1>
 
-<div class="tabs block">
-  <button class="active" id="todayBtn">Today</button>
-  <button id="tomorrowBtn">Tomorrow</button>
+<!-- Day selector -->
+<div>
+  <button id="todayBtn" class="btn btn-black">Today</button>
+  <button id="tomorrowBtn" class="btn btn-black">Tomorrow</button>
 </div>
 
-<div class="dropdown block" id="fromDD">
-  <button class="dropdown-btn">From location</button>
-  <div class="dropdown-panel"></div>
+<!-- Dropdowns -->
+<div class="dropdown-container">
+  <select id="fromLocation"></select>
+  <select id="toLocation"></select>
+  <select id="timeSlot">
+    <option disabled selected>Time slot</option>
+  </select>
 </div>
 
-<div class="dropdown block" id="toDD">
-  <button class="dropdown-btn">To location</button>
-  <div class="dropdown-panel"></div>
-</div>
+<!-- My Preference Button -->
+<button id="myPrefBtn" class="btn btn-gray">My Preference</button>
 
-<select id="slot" class="block">
-  <option selected disabled>Time slot</option>
-</select>
+<!-- Popularity Bars -->
+<div id="popularityContainer" style="width: 90%; max-width: 400px; margin-top:10px;"></div>
 
-<button id="vote" class="block">My Preference</button>
-
+<!-- Footer -->
 <div class="footer">
-  Finding my co-driving partner!
-  <div class="credit">Created by Animesh</div>
-</div>
-
+  <div>Finding my co-driving partner!</div>
+  <div>Created by Animesh</div>
 </div>
 
 <script>
-// ------------------ LOCATIONS ------------------
+const workerURL = "https://codrive.animesh-him.workers.dev";
+
+// Locations
 const locations = [
   "Bagmane Tech Park, CV Raman Nagar",
   "Boeing Office (North Bangalore)",
   "Brigade Eldorado",
   "Cubbon Park",
   "Dynamatics (North Bangalore)",
-  "Ecospace (Bellandur)",
   "Electronic City",
+  "Ecospace (Bellandur)",
   "ITPL (Whitefield)",
   "KARLE SEZ",
+  "Koramangala",
   "Kempegowda International Airport T1",
   "Kempegowda International Airport T2",
-  "Koramangala",
-  "Manyata Tech Park",
   "MG Road",
+  "Manyata Tech Park",
   "Prestige Finsbury",
   "SAP Labs (North Bangalore)",
-  "Sarjapur",
-  "Shell Technology Center (North Bangalore)"
+  "Shell Technology Center (North Bangalore)",
+  "Sarjapur"
 ].sort();
 
-// ------------------ POPULARITY COLOR ------------------
-function popularityColor(count) {
-  if (count <= 1) return "#d9d9d9";
-  if (count === 2) return "#b0b0b0";
-  if (count === 3) return "#7a7a7a";
-  if (count === 4) return "#3f3f3f";
-  return "#000000";
+// Elements
+const fromSel = document.getElementById("fromLocation");
+const toSel = document.getElementById("toLocation");
+const timeSel = document.getElementById("timeSlot");
+const popContainer = document.getElementById("popularityContainer");
+const todayBtn = document.getElementById("todayBtn");
+const tomorrowBtn = document.getElementById("tomorrowBtn");
+const myPrefBtn = document.getElementById("myPrefBtn");
+
+let selectedDay = "today";
+let selectedFrom = "";
+let selectedTo = "";
+let selectedTime = "";
+
+// Populate locations
+function populateLocations() {
+  fromSel.innerHTML = '<option disabled selected>From location</option>';
+  toSel.innerHTML = '<option disabled selected>To location</option>';
+  locations.forEach(loc => {
+    fromSel.innerHTML += `<option value="${loc}">${loc}</option>`;
+    toSel.innerHTML += `<option value="${loc}">${loc}</option>`;
+  });
+}
+populateLocations();
+
+// Day button handlers
+todayBtn.onclick = () => { selectedDay="today"; updateDayButtons(); fetchPopularity(); };
+tomorrowBtn.onclick = () => { selectedDay="tomorrow"; updateDayButtons(); fetchPopularity(); };
+
+function updateDayButtons(){
+  todayBtn.style.background = (selectedDay==="today") ? "gray" : "black";
+  todayBtn.style.color = (selectedDay==="today") ? "black" : "white";
+  tomorrowBtn.style.background = (selectedDay==="tomorrow") ? "gray" : "black";
+  tomorrowBtn.style.color = (selectedDay==="tomorrow") ? "black" : "white";
 }
 
-// ------------------ IST DATE UTILS ------------------
-function getISTDate(offsetDays=0) {
-  const now = new Date();
-  // Convert to UTC
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  // Add IST offset +5:30
-  const istTime = new Date(utc + 5.5*60*60*1000);
-  // Add offsetDays
-  istTime.setDate(istTime.getDate() + offsetDays);
-  const yyyy = istTime.getFullYear();
-  const mm = String(istTime.getMonth()+1).padStart(2,'0');
-  const dd = String(istTime.getDate()).padStart(2,'0');
-  return `${yyyy}-${mm}-${dd}`;
+// Handle location selection
+fromSel.onchange = () => { selectedFrom=fromSel.value; filterToOptions(); fetchPopularity(); };
+toSel.onchange = () => { selectedTo=toSel.value; filterFromOptions(); fetchPopularity(); };
+
+// Disable selected location from other dropdown
+function filterToOptions(){
+  for(let i=0;i<toSel.options.length;i++){
+    toSel.options[i].disabled = (toSel.options[i].value === selectedFrom);
+  }
+}
+function filterFromOptions(){
+  for(let i=0;i<fromSel.options.length;i++){
+    fromSel.options[i].disabled = (fromSel.options[i].value === selectedTo);
+  }
 }
 
-function getFutureSlots() {
-  const slots = [];
+// Populate time slots (future 30-min slots)
+function populateTimeSlots(){
+  timeSel.innerHTML = '<option disabled selected>Time slot</option>';
   const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const istNow = new Date(utc + 5.5*60*60*1000);
-  const currentHour = istNow.getHours();
-  const currentMinute = istNow.getMinutes();
-  for (let h=0; h<24; h++) {
-    for (let m=0; m<60; m+=30) {
-      const slotStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-      if (h>currentHour || (h===currentHour && m>currentMinute)) {
-        const nextH = m===0?h:h+1;
-        const nextM = m===0?30:0;
-        const slotRange = `${slotStr} - ${String(nextH).padStart(2,'0')}:${String(nextM).padStart(2,'0')}`;
-        slots.push(slotRange);
+  const istOffset = 5.5*60; // IST offset in minutes
+  const nowUTC = new Date(now.getTime() + now.getTimezoneOffset()*60000);
+  const nowIST = new Date(nowUTC.getTime() + istOffset*60000);
+  let start = new Date(nowIST); start.setSeconds(0,0);
+  for(let h=0; h<24; h++){
+    for(let m=0; m<60; m+=30){
+      const slotEnd = new Date(nowIST);
+      slotEnd.setHours(h); slotEnd.setMinutes(m+30);
+      if(slotEnd>nowIST){
+        const sh = String(h).padStart(2,'0');
+        const sm = String(m).padStart(2,'0');
+        const eh = String(h).padStart(2,'0');
+        const em = String(m+30).padStart(2,'0');
+        const slot = `${sh}:${sm}-${eh}:${em}`;
+        timeSel.innerHTML += `<option value="${slot}">${slot}</option>`;
       }
     }
   }
-  return slots;
 }
+populateTimeSlots();
 
-// ------------------ DROPDOWNS ------------------
-function setupDropdown(id, excludeFn) {
-  const dd = document.getElementById(id);
-  const btn = dd.querySelector(".dropdown-btn");
-  const panel = dd.querySelector(".dropdown-panel");
-
-  btn.onclick = () => {
-    panel.style.display = panel.style.display==="block"?"none":"block";
-  };
-
-  panel.innerHTML = `<input placeholder="Search..." /><div class="list"></div>`;
-  const input = panel.querySelector("input");
-  const list = panel.querySelector(".list");
-
-  function render() {
-    list.innerHTML="";
-    locations
-      .filter(l => !excludeFn(l))
-      .filter(l => l.toLowerCase().includes(input.value.toLowerCase()))
-      .forEach(l=>{
-        const d=document.createElement("div");
-        d.className="option";
-        d.textContent=l;
-        d.onclick=()=>{
-          btn.textContent=l;
-          panel.style.display="none";
-          renderAll();
-        };
-        list.appendChild(d);
-      });
-  }
-  input.oninput = render;
-  render();
-}
-
-function renderAll() {
-  setupDropdown("fromDD", l=>document.getElementById("toDD").querySelector(".dropdown-btn").textContent===l);
-  setupDropdown("toDD", l=>document.getElementById("fromDD").querySelector(".dropdown-btn").textContent===l);
-}
-
-// ------------------ INITIAL SLOT ------------------
-function renderSlots() {
-  const slotSel=document.getElementById("slot");
-  slotSel.innerHTML="";
-  const futureSlots=getFutureSlots();
-  futureSlots.forEach(s=>{
-    const opt=document.createElement("option");
-    opt.value=s;
-    opt.textContent=s;
-    slotSel.appendChild(opt);
+// Fetch popularity
+async function fetchPopularity(){
+  if(!selectedFrom || !selectedTo) return;
+  const now = new Date();
+  const istOffset = 5.5*60;
+  const nowUTC = new Date(now.getTime() + now.getTimezoneOffset()*60000);
+  const nowIST = new Date(nowUTC.getTime() + istOffset*60000);
+  const dateStr = (selectedDay==="today") ? nowIST.toISOString().split('T')[0] : new Date(nowIST.getTime()+86400000).toISOString().split('T')[0];
+  
+  const slots = Array.from(timeSel.options).filter(o=>o.value!=='Time slot').map(o=>o.value);
+  
+  const res = await fetch(workerURL+"/popularity", {
+    method:"POST",
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({date:dateStr, from:selectedFrom, to:selectedTo, slots})
+  });
+  const data = await res.json();
+  
+  // Display bars
+  popContainer.innerHTML = '';
+  slots.forEach(slot=>{
+    const count = data[slot] || 0;
+    let color = 'lightgray';
+    if(count===1) color='lightgray';
+    else if(count===2) color='gray';
+    else if(count>=3) color='black';
+    const div = document.createElement('div');
+    div.className = 'pop-bar';
+    div.style.background=color;
+    div.textContent = slot + (count>0 ? ` (${count})` : '');
+    popContainer.appendChild(div);
   });
 }
 
-// ------------------ TABS ------------------
-document.getElementById("todayBtn").onclick=()=>{
-  document.getElementById("todayBtn").classList.add("active");
-  document.getElementById("tomorrowBtn").classList.remove("active");
-  renderSlots();
-};
-document.getElementById("tomorrowBtn").onclick=()=>{
-  document.getElementById("tomorrowBtn").classList.add("active");
-  document.getElementById("todayBtn").classList.remove("active");
-  renderSlots();
+// Handle preference
+myPrefBtn.onclick = async ()=>{
+  const slot = timeSel.value;
+  if(!selectedFrom || !selectedTo || !slot || slot==="Time slot") return;
+  const now = new Date();
+  const istOffset = 5.5*60;
+  const nowUTC = new Date(now.getTime() + now.getTimezoneOffset()*60000);
+  const nowIST = new Date(nowUTC.getTime() + istOffset*60000);
+  const dateStr = (selectedDay==="today") ? nowIST.toISOString().split('T')[0] : new Date(nowIST.getTime()+86400000).toISOString().split('T')[0];
+
+  await fetch(workerURL+"/vote", {
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({date:dateStr, from:selectedFrom, to:selectedTo, slot})
+  });
+  fetchPopularity();
 };
 
-// ------------------ INIT ------------------
-renderAll();
-renderSlots();
 </script>
 </body>
 </html>
