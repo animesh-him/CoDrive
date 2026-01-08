@@ -257,8 +257,13 @@ function istNow() {
 
  function baseDateStr() {
   const d = istNow();
-  return d.toISOString().slice(0,10);
- }
+  return (
+    d.getFullYear() + "-" +
+    String(d.getMonth()+1).padStart(2,"0") + "-" +
+    String(d.getDate()).padStart(2,"0")
+  );
+}
+    
  let baseDayStamp = baseDateStr();   
 function dateStr() {
   const d = istNow();
@@ -271,8 +276,9 @@ function scheduleMidnightReset() {
   const now = istNow();
 
   const testTime = new Date(now);
-  testTime.setHours(1, 22, 0, 0); // 🔥 TEST at 01:10 IST TODAY
-
+ // testTime.setHours(1, 10, 0, 0); // 🔥 TEST at 01:10 IST TODAY
+testTime.setMinutes(testTime.getMinutes() + 1);
+  
   // If already passed, schedule next day (safety)
   if (testTime <= now) {
     testTime.setDate(testTime.getDate() + 1);
