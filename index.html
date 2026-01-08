@@ -52,8 +52,13 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;   /* 🔥 stack vertically */
   align-items: center;
   justify-content: center;
+  text-align: center;
+}
+
+.title-main {
   font-family: 'Caveat', cursive;
   font-size: 34px;
   background: linear-gradient(
@@ -68,6 +73,14 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: titleMove 1.2s linear infinite;
+}
+
+.title-tagline {
+  margin-top: 4px;              /* 🔥 tight spacing */
+  font-family: 'Caveat', cursive; /* same as footer */
+  font-size: 14px;
+  opacity: 0.85;
+  letter-spacing: 0.4px;
 }
 
 @keyframes titleMove {
@@ -186,7 +199,10 @@ button {
   <video autoplay muted loop playsinline preload="metadata">
     <source src="https://animesh-him.github.io/CoDrive/codrive1.mp4" type="video/mp4">
   </video>
-  <div class="video-title">CoDrive</div>
+  <div class="video-title">
+  <div class="title-main">CoDrive</div>
+  <div class="title-tagline">Finding my Co-Driving Partner!</div>
+</div>
 </div>
 
 <!-- ORIGINAL WORKING CONTENT (UNCHANGED STRUCTURE) -->
