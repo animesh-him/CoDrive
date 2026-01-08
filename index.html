@@ -266,7 +266,7 @@ function scheduleMidnightReset() {
   const now = istNow();
 
   const testTime = new Date(now);
-  testTime.setHours(1, 10, 0, 0); // 🔥 TEST at 01:10 IST TODAY
+  testTime.setHours(1, 22, 0, 0); // 🔥 TEST at 01:10 IST TODAY
 
   // If already passed, schedule next day (safety)
   if (testTime <= now) {
