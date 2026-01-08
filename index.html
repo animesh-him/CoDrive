@@ -255,6 +255,11 @@ function istNow() {
   return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
 }
 
+ function baseDateStr() {
+  const d = istNow();
+  return d.toISOString().slice(0,10);
+ }
+    
 function dateStr() {
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
@@ -281,13 +286,13 @@ function scheduleMidnightReset() {
   }, delay);
 }
     /* ===== HARD DATE CORRECTION (FOCUS / VISIBILITY) ===== */
-let lastSeenDate = dateStr();
+let lastSeenDate = baseDateStr();
 
 function hardDateCheck() {
-  const current = dateStr();
+  const current = baseDateStr();
   if (current !== lastSeenDate) {
     lastSeenDate = current;
-    setDay(0); // force Today refresh
+    setDay(0); // force Today on real date change
   }
 }
 
