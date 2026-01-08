@@ -231,7 +231,9 @@ button {
   <script>
 const WORKER = "https://codrive-api.animesh-him.workers.dev";
 let dayOffset = 0;
-
+    
+let baseDayStamp = baseDateStr(); // YYYY-MM-DD (IST)
+    
 const todayBtn = document.getElementById("todayBtn");
 const tomorrowBtn = document.getElementById("tomorrowBtn");
 const fromSel = document.getElementById("from");
@@ -289,10 +291,22 @@ function scheduleMidnightReset() {
 let lastSeenDate = baseDateStr();
 
 function hardDateCheck() {
-  const current = baseDateStr();
-  if (current !== lastSeenDate) {
-    lastSeenDate = current;
-    setDay(0); // force Today on real date change
+  const currentBase = baseDateStr();
+
+  if (currentBase !== baseDayStamp) {
+    baseDayStamp = currentBase;
+
+    dayOffset = 0;
+    todayBtn.classList.add("active");
+    tomorrowBtn.classList.remove("active");
+
+    // 🔥 FORCE full recompute
+    popDiv.innerHTML = "";
+    slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
+
+    if (fromSel.value && toSel.value) {
+      loadPopularity();
+    }
   }
 }
 
@@ -396,9 +410,10 @@ voteBtn.onclick = async () => {
 };
 
 /* ✅ SAFE INITIALIZATION */
+
 window.addEventListener("load", () => {
-  setDay(0);
-  scheduleMidnightReset();
+  hardDateCheck();          // 🔥 fixes Today/Tomorrow on refresh
+  scheduleMidnightReset(); // keeps auto-switch alive
 });
 </script>
 
