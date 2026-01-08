@@ -232,8 +232,6 @@ button {
 const WORKER = "https://codrive-api.animesh-him.workers.dev";
 let dayOffset = 0;
     
-let baseDayStamp = baseDateStr(); // YYYY-MM-DD (IST)
-    
 const todayBtn = document.getElementById("todayBtn");
 const tomorrowBtn = document.getElementById("tomorrowBtn");
 const fromSel = document.getElementById("from");
@@ -261,7 +259,7 @@ function istNow() {
   const d = istNow();
   return d.toISOString().slice(0,10);
  }
-    
+ let baseDayStamp = baseDateStr();   
 function dateStr() {
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
@@ -288,7 +286,7 @@ function scheduleMidnightReset() {
   }, delay);
 }
     /* ===== HARD DATE CORRECTION (FOCUS / VISIBILITY) ===== */
-let lastSeenDate = baseDateStr();
+
 
 function hardDateCheck() {
   const currentBase = baseDateStr();
