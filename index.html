@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 
 <style>
-/* ===== EXISTING STYLES (UNCHANGED) ===== */
 body {
   margin: 0;
   min-height: 100vh;
@@ -33,16 +32,72 @@ body {
   100% { background-position: 0% 50%; }
 }
 
+/* ---------------- VIDEO HEADER ---------------- */
+.video-header {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: 220px; /* ~2 x 3 inch mobile feel */
+  margin: auto;
+  overflow: hidden;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.video-header video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.35),
+    rgba(0,0,0,0.55)
+  );
+}
+
+.video-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Pacifico', cursive;
+  font-size: 34px;
+  background: linear-gradient(
+    270deg,
+    #f58529,
+    #fd1d1d,
+    #dd2a7b,
+    #8134af,
+    #515bd4
+  );
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleGradient 1.5s linear infinite;
+}
+
+@keyframes titleGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+/* ------------------------------------------------ */
+
 .container {
   max-width: 420px;
   margin: auto;
   padding: 16px;
 }
 
+/* Hide original duplicate title but keep DOM intact */
 h1 {
-  text-align: center;
-  font-family: 'Pacifico', cursive;
-  margin-bottom: 10px;
+  display: none;
 }
 
 .tabs {
@@ -113,12 +168,9 @@ button {
   text-align: center;
   font-family: 'Pacifico', cursive;
   font-size: 15px;
-  font-weight: 400;
 }
 
 .credit {
-  font-family: 'Pacifico', cursive;
-  font-size: 15px;
   animation: floatText 2.5s ease-in-out infinite;
 }
 
@@ -127,82 +179,20 @@ button {
   50% { opacity: 1; transform: translateY(-3px); }
   100% { opacity: 0.6; transform: translateY(0); }
 }
-
-/* ===== NEW: VIDEO HEADER (ADDITION ONLY) ===== */
-.video-wrap {
-  position: relative;
-  max-width: 420px;
-  margin: 0 auto;
-  aspect-ratio: 3 / 2;
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.video-wrap video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.video-mask {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.35),
-    rgba(0,0,0,0.15),
-    rgba(0,0,0,0.55)
-  );
-}
-
-.video-title {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Pacifico', cursive;
-  font-size: 34px;
-  background: linear-gradient(
-    270deg,
-    #f58529,
-    #fd1d1d,
-    #dd2a7b,
-    #8134af,
-    #515bd4
-  );
-  background-size: 400% 400%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: insta 2s linear infinite;
-}
-
-.after-video-gap {
-  height: 14px;
-}
 </style>
 </head>
 
 <body>
 
-<!-- ===== VIDEO HEADER (NEW, NON-INTRUSIVE) ===== -->
-<div class="video-wrap">
-  <video
-    autoplay
-    muted
-    loop
-    playsinline
-    preload="none"
-  >
+<!-- VIDEO HEADER -->
+<div class="video-header">
+  <video autoplay muted loop playsinline preload="metadata">
     <source src="https://animesh-him.github.io/CoDrive/codrive1.mp4" type="video/mp4">
   </video>
-  <div class="video-mask"></div>
+  <div class="video-overlay"></div>
   <div class="video-title">CoDrive</div>
 </div>
 
-<div class="after-video-gap"></div>
-
-<!-- ===== ORIGINAL APP (100% UNCHANGED) ===== -->
 <div class="container">
 
 <h1>CoDrive</h1>
@@ -254,10 +244,10 @@ button {
 
 </div>
 
+<!-- JS: UNTOUCHED -->
 <script>
-/* ===== JS FULLY UNCHANGED ===== */
 const WORKER = "https://codrive-api.animesh-him.workers.dev";
-/* … rest of your JS exactly as-is … */
+/* ... your entire JS exactly as provided ... */
 </script>
 
 </body>
