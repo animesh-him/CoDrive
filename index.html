@@ -265,17 +265,22 @@ function dateStr() {
 function scheduleMidnightReset() {
   const now = istNow();
 
-  const nextMidnight = new Date(now);
-  nextMidnight.setHours(24, 0, 0, 0); // IST midnight
+  const testTime = new Date(now);
+  testTime.setHours(1, 10, 0, 0); // 🔥 TEST at 01:10 IST TODAY
 
-  const delay = nextMidnight - now;
+  // If already passed, schedule next day (safety)
+  if (testTime <= now) {
+    testTime.setDate(testTime.getDate() + 1);
+  }
+
+  const delay = testTime - now;
 
   setTimeout(() => {
     setDay(0);
     scheduleMidnightReset();
   }, delay);
 }
-
+    
 function futureSlots() {
   const now = istNow();
   const slots = [];
