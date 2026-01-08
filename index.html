@@ -228,9 +228,7 @@ button {
 </div>
 
 </div>
-
-<!-- JAVASCRIPT: COPIED EXACTLY, NOT TOUCHED -->
-<script>
+  <script>
 const WORKER = "https://codrive-api.animesh-him.workers.dev";
 let dayOffset = 0;
 
@@ -262,18 +260,19 @@ function dateStr() {
   d.setDate(d.getDate() + dayOffset);
   return d.toISOString().slice(0,10);
 }
-  /* ===== IST MIDNIGHT AUTO SWITCH ===== */
+
+/* ===== IST MIDNIGHT AUTO SWITCH ===== */
 function scheduleMidnightReset() {
   const now = istNow();
 
   const nextMidnight = new Date(now);
-  nextMidnight.setHours(24, 0, 0, 0); // 00:00 IST next day
+  nextMidnight.setHours(24, 0, 0, 0); // IST midnight
 
   const delay = nextMidnight - now;
 
   setTimeout(() => {
-    setDay(0);               // reset to Today
-    scheduleMidnightReset(); // reschedule for next day
+    setDay(0);
+    scheduleMidnightReset();
   }, delay);
 }
 
@@ -369,8 +368,12 @@ voteBtn.onclick = async () => {
 
   loadPopularity();
 };
-setDay(0);                 // ensure Today on load
-scheduleMidnightReset();   // enable auto midnight switch
+
+/* ✅ SAFE INITIALIZATION */
+window.addEventListener("load", () => {
+  setDay(0);
+  scheduleMidnightReset();
+});
 </script>
 
 </body>
