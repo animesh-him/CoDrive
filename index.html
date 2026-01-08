@@ -421,6 +421,7 @@ voteBtn.onclick = async () => {
 /* ✅ SAFE INITIALIZATION */
 
 window.addEventListener("load", () => {
+  setDay(0);               // 🔥 FORCE Today
   hardDateCheck();          // 🔥 fixes Today/Tomorrow on refresh
   scheduleMidnightReset(); // keeps auto-switch alive
 });
