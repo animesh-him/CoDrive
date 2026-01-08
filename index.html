@@ -56,7 +56,21 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
+.gradient-text {
+  background: linear-gradient(
+    270deg,
+    #f58529,
+    #fd1d1d,
+    #dd2a7b,
+    #8134af,
+    #515bd4
+  );
+  background-size: 400% 400%;
+  animation: titleMove 1.2s linear infinite;
 
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
   /* 🔥 GRADIENT + ANIMATION MOVED HERE */
   background: linear-gradient(
     270deg,
@@ -73,7 +87,7 @@ body {
   -webkit-text-fill-color: transparent;
 }
   
-.title-main {
+/*.title-main {
   font-family: 'Caveat', cursive;
   font-size: 34px;
   background: linear-gradient(
@@ -88,15 +102,27 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: titleMove 1.2s linear infinite;
-}
+}*/
+  .title-main {
+  font-family: 'Caveat', cursive;
+  font-size: 34px;
+  line-height: 1.1;
+  }
 
-.title-tagline {
+/*.title-tagline {
   margin-top: 4px;
   font-family: 'Caveat', cursive;
   font-size: 14px;
   opacity: 0.9;
   letter-spacing: 0.4px;
-}
+}*/
+  .title-tagline {
+  margin-top: 6px;           /* 🔥 forces spacing */
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  line-height: 1.2;
+  opacity: 0.9;
+  }
 
 @keyframes titleMove {
   0% { background-position: 0% 50%; }
@@ -214,9 +240,13 @@ button {
   <video autoplay muted loop playsinline preload="metadata">
     <source src="https://animesh-him.github.io/CoDrive/codrive1.mp4" type="video/mp4">
   </video>
-  <div class="video-title">
-  <div class="title-main">CoDrive</div>
-  <div class="title-tagline">Finding my Co-Driving Partner!</div>
+<div class="video-title">
+  <div class="title-main gradient-text">CoDrive</div>
+  <div class="title-tagline gradient-text">
+    Find my co-driving partner!
+  </div>
+</div>
+   
 </div>
 </div>
 
