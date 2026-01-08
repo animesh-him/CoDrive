@@ -280,6 +280,22 @@ function scheduleMidnightReset() {
     scheduleMidnightReset();
   }, delay);
 }
+    /* ===== HARD DATE CORRECTION (FOCUS / VISIBILITY) ===== */
+let lastSeenDate = dateStr();
+
+function hardDateCheck() {
+  const current = dateStr();
+  if (current !== lastSeenDate) {
+    lastSeenDate = current;
+    setDay(0); // force Today refresh
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) hardDateCheck();
+});
+
+window.addEventListener("focus", hardDateCheck);
     
 function futureSlots() {
   const now = istNow();
