@@ -52,12 +52,27 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;   /* 🔥 stack vertically */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-}
 
+  /* 🔥 GRADIENT + ANIMATION MOVED HERE */
+  background: linear-gradient(
+    270deg,
+    #f58529,
+    #fd1d1d,
+    #dd2a7b,
+    #8134af,
+    #515bd4
+  );
+  background-size: 400% 400%;
+  animation: titleMove 1.2s linear infinite;
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+  
 .title-main {
   font-family: 'Caveat', cursive;
   font-size: 34px;
