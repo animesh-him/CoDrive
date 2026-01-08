@@ -115,6 +115,18 @@ button {
   background: white;
   color: black;
   font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* 🔥 Selected tab */
+.tabs button.active {
+  background: #d0d0d0;   /* grey */
+  color: black;
+}
+
+/* Optional: unselected tab clarity */
+.tabs button:not(.active) {
+  background: white;
 }
 
 .bar {
