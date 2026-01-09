@@ -211,6 +211,42 @@ button {
   font-family: 'Caveat', cursive;
   font-size: 16px;
   }
+
+  .to-location-code-wrap {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.to-location-code-badge {
+  background: #000;
+  color: #fff;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.to-location-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#toLocationFullscreenText {
+  color: #fff;
+  font-size: 30vw;
+  font-weight: bold;
+}
 </style>
 </head>
 
@@ -298,6 +334,15 @@ button {
       <div class="circle-label">Owners</div>
     </div>
   </div>
+  <!-- TO LOCATION CODE BADGE -->
+<div class="to-location-code-wrap">
+  <div id="toLocationCodeBadge" class="to-location-code-badge" hidden></div>
+</div>
+
+<!-- FULLSCREEN CODE VIEW -->
+<div id="toLocationFullscreen" class="to-location-fullscreen" hidden>
+  <div id="toLocationFullscreenText"></div>
+</div>
 </div> 
 </div>
 
@@ -487,7 +532,62 @@ riderBtn.onclick = () => voteWeekend("riders");
 ownerBtn.onclick = () => voteWeekend("owners");
 
 window.addEventListener("load", loadWeekend);
+<script>
+/* ===== TO LOCATION → DISPLAY CODE (HARD-CODED) ===== */
+
+const TO_LOCATION_CODES = {
+  bagmane: "B1",
+  boeing: "B2",
+  cubbon: "C",
+  dynamatics: "D",
+  ecospace: "E",
+  electronic_city: "EC",
+  itpl: "I",
+  karle_sez: "K1",
+  kia_t1: "K2",
+  kia_t2: "K3",
+  koramangala: "KO",
+  mg_road: "M",
+  manyata: "MT",
+  sap_labs: "S",
+  sarjapur: "SA",
+  shell: "SH"
+};
+
+(function () {
+  const toSelect = document.getElementById("toLocation"); // existing TO dropdown
+  const badge = document.getElementById("toLocationCodeBadge");
+  const fs = document.getElementById("toLocationFullscreen");
+  const fsText = document.getElementById("toLocationFullscreenText");
+
+  if (!toSelect) return;
+
+  function updateCode() {
+    const code = TO_LOCATION_CODES[toSelect.value];
+    if (code) {
+      badge.textContent = code;
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
+  }
+
+  toSelect.addEventListener("change", updateCode);
+
+  badge.addEventListener("click", () => {
+    fsText.textContent = badge.textContent;
+    fs.hidden = false;
+  });
+
+  fs.addEventListener("click", () => {
+    fs.hidden = true;
+  });
+
+  updateCode();
+})();
 </script>
+  
+  </script>
 <div class="footer">
   Finding my co-driving partner!
   <div class="muted">
