@@ -107,10 +107,10 @@ select, button {
   margin-bottom: 12px;
 }
 
-.tabs button {
+//*.tabs button {
   width: 100%;
 }
-
+*//
 button {
   background: white;
   color: black;
@@ -201,6 +201,18 @@ button {
 .circle-label {
   font-size: 12px;
   margin-top: 4px;
+}
+  /* SAFE: Only styling existing buttons */
+.tabs button {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #ccc;
+}
+
+/* Active tab (today / tomorrow) */
+.tabs button.active {
+  background-color: #4a4a4a; /* dark gray */
+  color: #ffffff;
 }
 </style>
 </head>
