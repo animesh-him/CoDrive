@@ -70,7 +70,23 @@ body {
   animation: titleMove 1.2s linear infinite;
 }
 
-@keyframes titleMove {
+    .title-main {
+  font-family: 'Caveat', cursive;
+  font-size: 34px;
+  line-height: 1.1;
+  }
+
+/*.title-tagline {
+  margin-top: 4px;
+  font-family: 'Caveat', cursive;
+  font-size: 14px;
+  opacity: 0.9;
+  letter-spacing: 0.4px;
+}*/
+  .title-tagline {
+  margin-top: 6px;           /* 🔥 forces spacing */
+
+    @keyframes titleMove {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
