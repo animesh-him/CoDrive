@@ -48,7 +48,7 @@ body {
   object-fit: cover;
 }
 
-.video-title {
+/*.video-title {
   position: absolute;
   inset: 0;
   display: flex;
@@ -68,7 +68,17 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: titleMove 1.2s linear infinite;
-}
+}*/
+  .video-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;   /* 🔥 REQUIRED */
+  align-items: center;
+  justify-content: center;
+  text-align: center;       /* 🔥 REQUIRED */
+  font-family: 'Caveat', cursive;
+  }
   @keyframes titleMove {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
