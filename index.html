@@ -232,6 +232,51 @@ button {
   font-size: 16px;
   }
 
+  /* ===== TO LOCATION CODE UI (SAFE ADDITION) ===== */
+.to-code-wrap {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.to-code-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+
+.code-circle-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: #000000;
+  font-weight: 700;
+  font-size: 18px;
+  border: none;
+}
+
+.code-circle-btn:disabled {
+  opacity: 0.4;
+}
+
+/* ===== FULLSCREEN CODE (WHITE-SCREEN GUARANTEE) ===== */
+.fullscreen-code {
+  position: fixed;
+  inset: 0;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 22vw;
+  font-weight: 900;
+  z-index: 2147483647;
+}
+
+.fullscreen-code.active {
+  display: flex;
+}
 </style>
 </head>
 
