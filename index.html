@@ -669,6 +669,75 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
+<script>
+/* ===== BUTTON COOLDOWN + FLASH MESSAGE (10s, MEMORY ONLY) ===== */
+(function () {
+  const COOLDOWN_MS = 10000; // 10 seconds
+  const lastClick = new WeakMap();
+  let flashEl = null;
+  let flashTimer = null;
+
+  function showFlash(secondsLeft) {
+    if (!flashEl) {
+      flashEl = document.createElement("div");
+      flashEl.style.position = "fixed";
+      flashEl.style.bottom = "24px";
+      flashEl.style.left = "50%";
+      flashEl.style.transform = "translateX(-50%)";
+      flashEl.style.background = "rgba(0,0,0,0.85)";
+      flashEl.style.color = "#fff";
+      flashEl.style.padding = "10px 16px";
+      flashEl.style.borderRadius = "12px";
+      flashEl.style.fontSize = "14px";
+      flashEl.style.zIndex = "2147483647";
+      flashEl.style.fontFamily = "system-ui, -apple-system";
+      flashEl.style.boxShadow = "0 6px 18px rgba(0,0,0,0.3)";
+      flashEl.style.transition = "opacity 0.2s ease";
+      document.body.appendChild(flashEl);
+    }
+
+    flashEl.textContent = `Please wait ${secondsLeft}s before clicking again`;
+    flashEl.style.opacity = "1";
+
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => {
+      if (flashEl) flashEl.style.opacity = "0";
+    }, 1200);
+  }
+
+  function protect(btn) {
+    if (!btn || !btn.onclick) return;
+
+    const original = btn.onclick;
+
+    btn.onclick = async function (...args) {
+      const now = Date.now();
+      const last = lastClick.get(btn) || 0;
+      const remaining = COOLDOWN_MS - (now - last);
+
+      if (remaining > 0) {
+        showFlash(Math.ceil(remaining / 1000));
+        return;
+      }
+
+      lastClick.set(btn, now);
+
+      try {
+        await original.apply(this, args);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+  }
+
+  window.addEventListener("load", () => {
+    protect(document.getElementById("voteBtn"));
+    protect(document.getElementById("riderBtn"));
+    protect(document.getElementById("ownerBtn"));
+  });
+})();
+</script>
+  
 <div class="footer">
   <div class="muted">
    @Copyleft Licensed under the GNU General Public License (GPLv3.0)
