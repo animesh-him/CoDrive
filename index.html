@@ -579,6 +579,96 @@ window.addEventListener("load", loadWeekend);
 
   
   </script>
+
+  <script>
+/* ===== TO LOCATION CODE LOGIC (AUTO-SYNC SAFE) ===== */
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  const toSelect = document.getElementById("to");           // existing
+  const toCodeSelect = document.getElementById("toCodeSelect");
+  const codeCircleBtn = document.getElementById("codeCircleBtn");
+  const fullscreenCode = document.getElementById("fullscreenCode");
+  const fullscreenCodeText = document.getElementById("fullscreenCodeText");
+
+  if (!toSelect || !toCodeSelect || !codeCircleBtn) return;
+
+  /* Build name <-> value map from existing To dropdown */
+  const toValueToName = {};
+  const toNameToValue = {};
+
+  [...toSelect.options].forEach(opt => {
+    if (!opt.value) return;
+    toValueToName[opt.value] = opt.textContent.trim();
+    toNameToValue[opt.textContent.trim()] = opt.value;
+  });
+
+  const TO_LOCATIONS = Object.values(toValueToName).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  /* Generate codes */
+  const letterCount = {};
+  const nameToCode = {};
+  const codeToName = {};
+
+  TO_LOCATIONS.forEach(name => {
+    const letter = name.charAt(0).toUpperCase();
+    letterCount[letter] = (letterCount[letter] || 0) + 1;
+    const code = letter + letterCount[letter];
+    nameToCode[name] = code;
+    codeToName[code] = name;
+  });
+
+  /* Populate code dropdown */
+  TO_LOCATIONS.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = nameToCode[name];
+    opt.textContent = `${name} (${nameToCode[name]})`;
+    toCodeSelect.appendChild(opt);
+  });
+
+  /* === SYNC: To location → Code === */
+  toSelect.addEventListener("change", () => {
+    const name = toValueToName[toSelect.value];
+    if (!name) {
+      toCodeSelect.value = "";
+      codeCircleBtn.textContent = "--";
+      codeCircleBtn.disabled = true;
+      return;
+    }
+    const code = nameToCode[name];
+    toCodeSelect.value = code;
+    codeCircleBtn.textContent = code;
+    codeCircleBtn.disabled = false;
+  });
+
+  /* === SYNC: Code → To location === */
+  toCodeSelect.addEventListener("change", () => {
+    const code = toCodeSelect.value;
+    const name = codeToName[code];
+    if (!name) return;
+
+    toSelect.value = toNameToValue[name];
+    codeCircleBtn.textContent = code;
+    codeCircleBtn.disabled = false;
+
+    /* Trigger existing logic safely */
+    toSelect.dispatchEvent(new Event("change"));
+  });
+
+  /* Fullscreen view */
+  codeCircleBtn.addEventListener("click", () => {
+    fullscreenCodeText.textContent = codeCircleBtn.textContent;
+    fullscreenCode.classList.add("active");
+  });
+
+  fullscreenCode.addEventListener("click", () => {
+    fullscreenCode.classList.remove("active");
+  });
+
+});
+</script>
 <div class="footer">
   <div class="muted">
    @Copyleft Licensed under the GNU General Public License (GPLv3.0)
