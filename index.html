@@ -277,6 +277,22 @@ button {
 .fullscreen-code.active {
   display: flex;
 }
+
+  .ig-link {
+  text-decoration: none;
+  font-weight: 600;
+  background: linear-gradient(270deg, #ff0057, #ffb300, #00e5ff, #8e2de2);
+  background-size: 800% 800%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: igGlow 6s ease infinite;
+}
+
+@keyframes igGlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 </style>
 </head>
 
@@ -742,8 +758,8 @@ window.addEventListener("DOMContentLoaded", () => {
 <div class="footer">
   <div class="muted">
   Follow this link to join CoDrive WhatsApp community:
-  <a href="https://chat.whatsapp.com/GyGxqYo2FamHvwnhJPa1sk" target="_blank" rel="noopener noreferrer">
-    Click
+  <a class="ig-link" href="https://chat.whatsapp.com/GyGxqYo2FamHvwnhJPa1sk" target="_blank">
+    Join WhatsApp Group
   </a>
 </div>
     <div class="muted">
