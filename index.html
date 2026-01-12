@@ -293,6 +293,31 @@ button {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+  .weekend-video-bg {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.weekend-video-bg video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.55);
+  z-index: 0;
+}
+
+.weekend-video-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
 </style>
 </head>
 
@@ -376,16 +401,22 @@ button {
 
  <!-- 🆕 WEEKEND COMMUNITY MEET (SAFE ADDITION) -->
 <div class="weekend-box">
-  <div class="weekend-title">CoDrive Weekend Community Meet</div>
+  <div class="weekend-video-bg">
+  <video autoplay muted loop playsinline preload="metadata">
+    <source src="https://animesh-him.github.io/CoDrive/footerfinal.mp4" type="video/mp4">
+  </video>
 
-  <div class="weekend-meta">
-    <span id="weekendDate"></span><br>
-    Time- 5:00 PM – 5:30 PM<br>
-    Location- Brigade Eldorado Amphithetre.
-    Post 5:30 pm to 6 pm, Music Enthusiasts can play / sing along, jam like the backbenchers of class. There isn't any electronic arrangements, it would be purely a symphony of human voice. 
-    Bring your Guitar and Vocal Cords if you wish to sound professional!
+  <div class="weekend-video-content">
+    <div class="weekend-title">CoDrive Weekend Community Meet</div>
+    <div class="weekend-meta">
+      <span id="weekendDate"></span><br>
+      Time- 5:00 PM – 5:30 PM<br>
+      Location- Brigade Eldorado Amphithetre.<br>
+      Post 5:30 pm to 6 pm, Music Enthusiasts can play / sing along, jam like the backbenchers of class. There isn't any electronic arrangements, it would be purely a symphony of human voice.<br>
+      Bring your Guitar and Vocal Cords, if you wish to sound professional!
+    </div>
   </div>
-
+</div>
   <select id="societySelect">
     <option value="eldorado">Brigade Eldorado</option>
   </select>
