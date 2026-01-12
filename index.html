@@ -33,7 +33,7 @@ body {
   100% { background-position: 0% 50%; }
 }
 
-/* ---------- VIDEO HEADER (NEW, ISOLATED) ---------- */
+/* ---------- VIDEO HEADER ---------- */
 .video-header {
   position: relative;
   max-width: 420px;
@@ -51,10 +51,10 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;   /* 🔥 REQUIRED */
+  flex-direction: column;   
   align-items: center;
   justify-content: center;
-  text-align: center;       /* 🔥 REQUIRED */
+  text-align: center;       
   font-family: 'Caveat', cursive;
   }
   @keyframes titleMove {
@@ -64,7 +64,7 @@ body {
 }
   .title-main {
   font-family: 'Caveat', cursive;
-  font-size: 38px;      /* 🔥 increase heading size */
+  font-size: 38px;      /* increase heading size */
   line-height: 1.1;
   }
 .title-tagline {
@@ -74,7 +74,7 @@ body {
   line-height: 1.2;
   opacity: 0.9;
 }
-/* ---------- CONTAINER (UNCHANGED) ---------- */
+
 .container {
   max-width: 420px;
   margin: auto;
@@ -86,7 +86,7 @@ h1 {
   display: none;
 }
 
-/* ---------- INPUT SIZE REDUCTION (SAFE) ---------- */
+/* ---------- INPUT SIZE REDUCTION ---------- */
 select, button {
   width: 70%;
   margin-left: auto;
@@ -104,11 +104,7 @@ select, button {
   gap: 10px;
   margin-bottom: 12px;
 }
-
-/*.tabs button {
-  width: 100%;
-}
-*/
+  
 button {
   background: white;
   color: black;
@@ -162,7 +158,7 @@ button {
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
-  /* ===== WEEKEND MEET (ISOLATED, SAFE) ===== */
+  /* ===== WEEKEND MEET ===== */
 .weekend-box {
   margin-top: 28px;
   padding-top: 16px;
@@ -188,7 +184,7 @@ button {
   font-size: 18px;
   font-weight: bold;
 }
-/* ===== WEEKEND MEET FONT FIX ===== */
+
 .weekend-title {
   font-family: 'Caveat', cursive;
   font-size: 24px;   /* ⬅️ increase this */
@@ -199,7 +195,6 @@ button {
 .circle-label {
   font-family: 'Caveat', cursive;
 }
-  /* SAFE: Only styling existing buttons */
 .tabs button {
   background-color: #ffffff;
   color: #000000;
@@ -216,7 +211,7 @@ button {
   font-size: 16px;
   }
 
-  /* ===== TO LOCATION CODE UI (SAFE ADDITION) ===== */
+  /* ===== TO LOCATION CODE UI===== */
 .to-code-wrap {
   margin-top: 16px;
   text-align: center;
@@ -284,8 +279,6 @@ button {
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
-
-  /* 🔥 ADD THESE */
   height: 260px;
   background: #000; /* fallback if video fails */
   }
@@ -298,8 +291,6 @@ button {
   object-fit: cover;
   filter: brightness(0.85);
   z-index: 0;
-
-  /* 🔥 ADD */
   transform: translateZ(0);
 }
 
@@ -328,7 +319,6 @@ button {
 </div>
 </div>
 
-<!-- ORIGINAL WORKING CONTENT (UNCHANGED STRUCTURE) -->
 <div class="container">
 
 <h1>CoDrive</h1>
@@ -373,7 +363,7 @@ button {
 
 <button id="voteBtn">My Preference</button>
 
-<!-- ===== TO LOCATION CODE SELECT (SAFE ADDITION) ===== -->
+<!-- ===== TO LOCATION CODE SELECT ===== -->
 <div class="to-code-wrap">
   <div class="to-code-row">
     <select id="toCodeSelect">
@@ -391,7 +381,7 @@ button {
   <span id="fullscreenCodeText"></span>
 </div>
 
- <!-- 🆕 WEEKEND COMMUNITY MEET (SAFE ADDITION) -->
+ <!-- 🆕 WEEKEND COMMUNITY MEET-->
 <div class="weekend-box">
   <div class="weekend-video-bg">
   <video autoplay muted loop playsinline preload="metadata"
@@ -431,7 +421,6 @@ button {
 </div> 
 </div>
 
-<!-- JAVASCRIPT: COPIED EXACTLY, NOT TOUCHED -->
 <script>
 const WORKER = "https://codrive-api.animesh-him.workers.dev";
 let dayOffset = 0;
