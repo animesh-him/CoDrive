@@ -503,12 +503,16 @@ riderPrefBtn.onclick = () => {
   selectedRole = "R";
   riderPrefBtn.classList.add("active");
   providerPrefBtn.classList.remove("active");
+  providerPrefBtn.disabled = true;
+  riderPrefBtn.disabled = false;
 };
 
 providerPrefBtn.onclick = () => {
   selectedRole = "P";
   providerPrefBtn.classList.add("active");
   riderPrefBtn.classList.remove("active");
+  riderPrefBtn.disabled = true;
+  providerPrefBtn.disabled = false;
 };
 let slotMap = {};   
   
