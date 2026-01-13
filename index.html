@@ -506,26 +506,33 @@ function dateStr() {
 
 function futureSlots() {
   const now = istNow();
+  const base = new Date(now);
+  base.setHours(0, 0, 0, 0);
+
   const slots = [];
 
   for (let h = 0; h < 24; h++) {
     for (let m of [0, 30]) {
 
-      // Absolute slot index (S1–S48)
+      // Absolute slot index: S1 = 00:00–00:30
       const absoluteIndex = h * 2 + (m === 30 ? 2 : 1);
 
-      const end = new Date(now);
-      end.setHours(h, m === 0 ? 30 : 0, 0, 0);
-      if (m === 30) end.setHours(h + 1, 0, 0, 0);
+      const start = new Date(base);
+      start.setHours(h, m, 0, 0);
 
+      const end = new Date(start);
+      end.setMinutes(end.getMinutes() + 30);
+
+      // TODAY → only future end times
+      // TOMORROW → allow all
       if (dayOffset === 1 || end > now) {
-        const eh = m === 30 ? h + 1 : h;
-        const em = m === 30 ? "00" : "30";
+        const sh = String(start.getHours()).padStart(2, "0");
+        const sm = String(start.getMinutes()).padStart(2, "0");
+        const eh = String(end.getHours()).padStart(2, "0");
+        const em = String(end.getMinutes()).padStart(2, "0");
 
         slots.push({
-          label:
-            `${String(h).padStart(2, "0")}:${m === 0 ? "00" : "30"}-` +
-            `${String(eh).padStart(2, "0")}:${em}`,
+          label: `${sh}:${sm}-${eh}:${em}`,
           code: "S" + absoluteIndex
         });
       }
