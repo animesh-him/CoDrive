@@ -321,6 +321,22 @@ button {
   color: #fff !important;
   border: none !important;
 }
+  .to-code-row select {
+  width: 100%;
+  min-width: 0;
+}
+
+.to-code-row {
+  flex-wrap: nowrap;
+}
+  .to-code-wrap {
+  max-width: 420px;
+  margin: 16px auto 0 auto;
+  padding: 0 8px;
+  }
+  #toCodeSelect {
+  flex: 1;
+  }
 </style>
 </head>
 
@@ -577,21 +593,14 @@ function restoreStateFromPopularity(data) {
   const d = data[slotSel.value];
   if (!d) return;
 
-  // Restore Rider
-  if (d.R > 0) {
-    selectedRole = null;
-    riderPrefBtn.classList.add("active");
-    providerPrefBtn.classList.remove("active");
-    showCodeBtn.style.display = "block";
-  }
+  riderPrefBtn.classList.toggle("active", d.R > 0);
+  providerPrefBtn.classList.toggle("active", d.P > 0);
 
-  // Restore Provider
-  if (d.P > 0) {
-    selectedRole = null;
-    providerPrefBtn.classList.add("active");
-    riderPrefBtn.classList.remove("active");
+  if (d.R > 0 || d.P > 0) {
     showCodeBtn.style.display = "block";
   }
+  riderPrefBtn.disabled = false;
+providerPrefBtn.disabled = false;
 }
   
 async function loadPopularity() {
@@ -843,7 +852,12 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  if (!selectedRole || !lastVotePosition || !slotSel.value) return;
+  if (!slotSel.value) return;
+
+if (!selectedRole || !lastVotePosition) {
+  alert("Please vote again to generate your code");
+  return;
+}
 
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
