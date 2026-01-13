@@ -190,7 +190,7 @@ button {
   font-size: 24px;   /* ⬅️ increase this */
   line-height: 1.15;
   font-weight: 600;
-},
+}
 .weekend-meta,
 .circle-label {
   font-family: 'Caveat', cursive;
@@ -588,7 +588,7 @@ async function loadPopularity() {
 
   slots.forEach(s => {
   const opt = document.createElement("option");
-  opt.value = s.label;
+  opt.value = s.code;
   opt.textContent = `${s.label} (${s.code})`;
   slotSel.appendChild(opt);
 });
@@ -687,16 +687,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   if (!toSelect || !toCodeSelect || !codeCircleBtn) return;
 
-  /* Build name <-> value map from existing To dropdown */
-  const toValueToName = {};
-  const toNameToValue = {};
-
-  [...toSelect.options].forEach(opt => {
-    if (!opt.value) return;
-    toValueToName[opt.value] = opt.textContent.trim();
-    toNameToValue[opt.textContent.trim()] = opt.value;
-  });
-
   /* Build maps from central registry */
 const toValueToName = {};
 const toNameToValue = {};
@@ -755,7 +745,7 @@ codeCircleBtn.addEventListener("click", () => {
 fullscreenCode.addEventListener("click", () => {
   fullscreenCode.classList.remove("active");
 });
-    
+ });   
 </script>
 <script>
 /* ===== BUTTON COOLDOWN + FLASH MESSAGE (10s, MEMORY ONLY) ===== */
