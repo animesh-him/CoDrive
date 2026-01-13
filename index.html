@@ -560,14 +560,14 @@ async function loadPopularity() {
         date: dateStr(),
         from: fromSel.value,
         to: toSel.value,
-        slots
+        slots: slots.map(s => s.label)
       })
     });
     data = await res.json();
   } catch {}
 
   const entries = slots
-    .map(s => ({ slot: s, count: data[s] ?? 0 }))
+    .map(s => ({ slot: s, count: data[s.label] ?? 0 }))
     .filter(e => e.count > 0);
 
   if (entries.length === 0) {
@@ -590,10 +590,10 @@ async function loadPopularity() {
   slotMap = {}; // reset
 
 slots.forEach(s => {
-  slotMap[s.code] = s;   //  STORE FULL SLOT
+  slotMap[s.label] = s;   //  STORE FULL SLOT
 
   const opt = document.createElement("option");
-  opt.value = s.code;
+  opt.value = s.label;
   opt.textContent = `${s.label} (${s.code})`;
   slotSel.appendChild(opt);
 });
@@ -612,7 +612,7 @@ voteBtn.onclick = async () => {
       date: dateStr(),
       from: fromSel.value,
       to: toSel.value,
-      slot: slotObj   // ✅ FULL SLOT OBJECT
+      slot: slotObj.label
     })
   });
 
