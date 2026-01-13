@@ -613,8 +613,8 @@ function restoreStateFromPopularity(data) {
   const d = data[slotSel.value];
   if (!d) return;
 
-  riderPrefBtn.classList.toggle("active", d.R > 0);
-  providerPrefBtn.classList.toggle("active", d.P > 0);
+  riderPrefBtn.classList.remove("active");
+  providerPrefBtn.classList.remove("active");
 
   riderPrefBtn.disabled = false;
   providerPrefBtn.disabled = false;
