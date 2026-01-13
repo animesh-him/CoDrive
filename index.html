@@ -157,6 +157,7 @@ button {
   display: block;
   margin: 16px auto;   /* THIS centers it */
   text-align: center;
+  max-width: 200px;
 }
 .footer {
   margin-top: 40px;
@@ -275,6 +276,33 @@ button {
 .fullscreen-code.active {
   display: flex;
 }
+  /* ===== FULLSCREEN CODE TEXT LAYOUT ===== */
+#fullscreenCode {
+  align-items: flex-start;   /* top */
+  padding-top: 12px;
+}
+
+#fullscreenCodeText {
+  width: 100%;
+  text-align: center;
+}
+
+.fs-line {
+  width: 100%;
+  text-align: center;
+}
+
+.fs-date {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.fs-route,
+.fs-role {
+  font-size: 3em;   /* 3x bigger */
+  font-weight: 900;
+  margin-bottom: 12px;
+}
 
   .ig-link {
   text-decoration: none;
@@ -340,8 +368,13 @@ button {
   #toCodeSelect {
   flex: 1;
   }
-  .route-row {
-  justify-content: space-between;
+.route-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+  .route-row select {
+  width: 48%;
   }
   .tabs {
   display: flex !important;
@@ -913,11 +946,10 @@ if (!selectedRole || !lastVotePosition) {
   const roleLine = selectedRole + lastVotePosition;
 
   fullscreenCodeText.innerHTML = `
-    <div style="font-size:24px">${dateLine}</div>
-    <div style="font-size:48px">${routeLine}</div>
-    <div style="font-size:48px">${roleLine}</div>
-    <div style="height:80px"></div>
-  `;
+  <div class="fs-line fs-date">${dateLine}</div>
+  <div class="fs-line fs-route">${routeLine}</div>
+  <div class="fs-line fs-role">${roleLine}</div>
+`;
   fullscreenCode.classList.add("active");
 });
 
