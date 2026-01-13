@@ -470,7 +470,8 @@ populateFromTo();
   const popDiv = document.getElementById("popularity");
 const slotSel = document.getElementById("slotSelect");
 const voteBtn = document.getElementById("voteBtn");
-
+let slotMap = {};   
+  
 todayBtn.onclick = () => setDay(0);
 tomorrowBtn.onclick = () => setDay(1);
 fromSel.addEventListener("change", () => {
