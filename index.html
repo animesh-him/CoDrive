@@ -337,6 +337,9 @@ button {
   #toCodeSelect {
   flex: 1;
   }
+  .route-row {
+  justify-content: space-between;
+  }
 </style>
 </head>
 
@@ -364,7 +367,7 @@ button {
   <button id="tomorrowBtn">Tomorrow</button>
 </div>
 
-<div class="to-code-row">
+<div class="to-code-row route-row">
   <select id="from">
     <option value="">From</option>
   </select>
@@ -512,9 +515,21 @@ const slotSel = document.getElementById("slotSelect");
 const riderPrefBtn = document.getElementById("riderPrefBtn");
 const providerPrefBtn = document.getElementById("providerPrefBtn");
 const showCodeBtn = document.getElementById("showCodeBtn");
+  slotSel.addEventListener("change", () => {
+  hasVotedThisSlot = false;
+  justVoted = false;
+  lastVotePosition = null;
+  selectedRole = null;
+
+  riderPrefBtn.disabled = false;
+  providerPrefBtn.disabled = false;
+  showCodeBtn.style.display = "none";
+});
 
 let selectedRole = null; // "R" or "P"
 let lastVotePosition = null;
+  let justVoted = false;
+  let hasVotedThisSlot = false;
 
 let slotMap = {};   
   
@@ -599,8 +614,9 @@ function restoreStateFromPopularity(data) {
   riderPrefBtn.disabled = false;
   providerPrefBtn.disabled = false;
 
-  // ❗ Show Code ONLY after a fresh vote
+  if (!justVoted) {
   showCodeBtn.style.display = "none";
+}
 }
   
 async function loadPopularity() {
@@ -690,6 +706,7 @@ slots.forEach(s => {
 }
 
 async function submitVote() {
+  if (hasVotedThisSlot) return;
   if (!fromSel.value || !toSel.value || !slotSel.value || !selectedRole) return;
 
   const slotObj = slotMap[slotSel.value];
@@ -709,6 +726,11 @@ async function submitVote() {
 
   const data = await res.json();
   lastVotePosition = data.position;
+  hasVotedThisSlot = true;
+riderPrefBtn.disabled = true;
+providerPrefBtn.disabled = true;
+  justVoted = true;
+showCodeBtn.style.display = "block";
 
   showCodeBtn.style.display = "block";
   loadPopularity();
