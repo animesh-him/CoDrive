@@ -499,21 +499,7 @@ const showCodeBtn = document.getElementById("showCodeBtn");
 
 let selectedRole = null; // "R" or "P"
 let lastVotePosition = null;
-riderPrefBtn.onclick = () => {
-  selectedRole = "R";
-  riderPrefBtn.classList.add("active");
-  providerPrefBtn.classList.remove("active");
-  providerPrefBtn.disabled = true;
-  riderPrefBtn.disabled = false;
-};
 
-providerPrefBtn.onclick = () => {
-  selectedRole = "P";
-  providerPrefBtn.classList.add("active");
-  riderPrefBtn.classList.remove("active");
-  riderPrefBtn.disabled = true;
-  providerPrefBtn.disabled = false;
-};
 let slotMap = {};   
   
 todayBtn.onclick = () => setDay(0);
@@ -593,7 +579,7 @@ function restoreStateFromPopularity(data) {
 
   // Restore Rider
   if (d.R > 0) {
-    selectedRole = "R";
+    selectedRole = null;
     riderPrefBtn.classList.add("active");
     providerPrefBtn.classList.remove("active");
     showCodeBtn.style.display = "block";
@@ -601,7 +587,7 @@ function restoreStateFromPopularity(data) {
 
   // Restore Provider
   if (d.P > 0) {
-    selectedRole = "P";
+    selectedRole = null;
     providerPrefBtn.classList.add("active");
     riderPrefBtn.classList.remove("active");
     showCodeBtn.style.display = "block";
@@ -609,6 +595,8 @@ function restoreStateFromPopularity(data) {
 }
   
 async function loadPopularity() {
+ riderPrefBtn.disabled = false;
+providerPrefBtn.disabled = false;
   popDiv.innerHTML = "";
   slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
 
@@ -712,8 +700,15 @@ async function submitVote() {
   showCodeBtn.style.display = "block";
   loadPopularity();
       }
-riderPrefBtn.addEventListener("click", submitVote);
-providerPrefBtn.addEventListener("click", submitVote);
+riderPrefBtn.addEventListener("click", () => {
+  selectedRole = "R";
+  submitVote();
+});
+
+providerPrefBtn.addEventListener("click", () => {
+  selectedRole = "P";
+  submitVote();
+});
 </script>
   <script>
 /* ===== WEEKEND MEET LOGIC (SAFE ADDITION) ===== */
