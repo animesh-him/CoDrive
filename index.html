@@ -586,7 +586,11 @@ async function loadPopularity() {
     });
   }
 
-  slots.forEach(s => {
+  slotMap = {}; // reset
+
+slots.forEach(s => {
+  slotMap[s.code] = s;   //  STORE FULL SLOT
+
   const opt = document.createElement("option");
   opt.value = s.code;
   opt.textContent = `${s.label} (${s.code})`;
@@ -595,22 +599,20 @@ async function loadPopularity() {
 }
 
 voteBtn.onclick = async () => {
-  // ✅ SAFE CHECKS (ADD HERE)
-  if (!fromSel.value || !toSel.value || !slotSel.value) {
-    return;
-  }
+  if (!fromSel.value || !toSel.value || !slotSel.value) return;
 
-  const payload = {
-    date: dateStr(),
-    from: fromSel.value,
-    to: toSel.value,
-    slot: slotSel.value
-  };
+  const slotObj = slotMap[slotSel.value];
+  if (!slotObj) return; // safety
 
   await fetch(WORKER + "/vote", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      date: dateStr(),
+      from: fromSel.value,
+      to: toSel.value,
+      slot: slotObj   // ✅ FULL SLOT OBJECT
+    })
   });
 
   loadPopularity();
