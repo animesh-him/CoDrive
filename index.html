@@ -595,21 +595,27 @@ async function loadPopularity() {
 }
 
 voteBtn.onclick = async () => {
-  if (!slotSel.value) return;
+  // ✅ SAFE CHECKS (ADD HERE)
+  if (!fromSel.value || !toSel.value || !slotSel.value) {
+    return;
+  }
+
+  const payload = {
+    date: dateStr(),
+    from: fromSel.value,
+    to: toSel.value,
+    slot: slotSel.value
+  };
 
   await fetch(WORKER + "/vote", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      date: dateStr(),
-      from: fromSel.value,
-      to: toSel.value,
-      slot: slotSel.value
-    })
+    body: JSON.stringify(payload)
   });
 
   loadPopularity();
 };
+
 </script>
   <script>
 /* ===== WEEKEND MEET LOGIC (SAFE ADDITION) ===== */
