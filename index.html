@@ -140,6 +140,24 @@ button {
   text-align: center;
 }
 
+  .pref-btn {
+  background: #000;
+  color: #fff;
+  font-family: 'Caveat', cursive;
+  font-size: 18px;
+  width: 45%;
+}
+
+.pref-btn.active {
+  background: #333;
+}
+
+#showCodeBtn {
+  background: #000;
+  color: #fff;
+  font-family: 'Caveat', cursive;
+  font-size: 18px;
+}
 .footer {
   margin-top: 40px;
   text-align: center;
@@ -343,9 +361,13 @@ button {
 <select id="slotSelect">
   <option value="" disabled selected>Time slot</option>
 </select>
+<div class="tabs">
+  <button id="riderPrefBtn" class="pref-btn">Rider</button>
+  <button id="providerPrefBtn" class="pref-btn">Provider</button>
+</div>
 
-<button id="voteBtn">My Preference</button>
-  
+<button id="showCodeBtn" style="display:none;">Show Code</button>
+
 <!-- ===== TO LOCATION CODE SELECT ===== -->
   <div class="to-code-wrap">
     <div class="weekend-meta muted">Rider/Owner show below CODE to match Destination.</div>
@@ -469,7 +491,23 @@ const locationCodes = {};
 populateFromTo();
   const popDiv = document.getElementById("popularity");
 const slotSel = document.getElementById("slotSelect");
-const voteBtn = document.getElementById("voteBtn");
+const riderPrefBtn = document.getElementById("riderPrefBtn");
+const providerPrefBtn = document.getElementById("providerPrefBtn");
+const showCodeBtn = document.getElementById("showCodeBtn");
+
+let selectedRole = null; // "R" or "P"
+let lastVotePosition = null;
+riderPrefBtn.onclick = () => {
+  selectedRole = "R";
+  riderPrefBtn.classList.add("active");
+  providerPrefBtn.classList.remove("active");
+};
+
+providerPrefBtn.onclick = () => {
+  selectedRole = "P";
+  providerPrefBtn.classList.add("active");
+  riderPrefBtn.classList.remove("active");
+};
 let slotMap = {};   
   
 todayBtn.onclick = () => setDay(0);
@@ -567,20 +605,42 @@ async function loadPopularity() {
   } catch {}
 
   const entries = slots
-    .map(s => ({ slot: s, count: data[s.label] ?? 0 }))
-    .filter(e => e.count > 0);
+    .map(s => {
+  const d = data[s.label] || { R: 0, P: 0 };
+  return {
+    slot: s,
+    R: d.R,
+    P: d.P,
+    total: d.R + d.P
+  };
+})
+.filter(e => e.total > 0);
 
   if (entries.length === 0) {
     popDiv.innerHTML = `<div class="muted">No preferences yet for future slots</div>`;
   } else {
-    const max = Math.max(...entries.map(e => e.count));
+    const max = Math.max(...entries.map(e => e.total));
     entries.forEach(e => {
       const bar = document.createElement("div");
       bar.className = "bar";
       bar.innerHTML = `
-        <div class="bar-label">${e.slot.label} (${e.slot.code}) • ${e.count}</div>
-        <div class="track">
-          <div class="fill" style="width:${(e.count / max) * 100}%"></div>
+        <div class="bar-label">${e.slot.label} (${e.slot.code}) • 
+${e.P} Providers &nbsp; ${e.R} Riders</div>
+          <div class="track">
+  <div style="
+    display:flex;
+    height:100%;
+    width:${(e.total / max) * 100}%;
+  ">
+    <div style="
+      width:${(e.P / e.total) * 100}%;
+      background:#40e0d0;
+    "></div>
+    <div style="
+      width:${(e.R / e.total) * 100}%;
+      background:#ffffff;
+    "></div>
+  </div>
         </div>
       `;
       popDiv.appendChild(bar);
@@ -590,7 +650,7 @@ async function loadPopularity() {
   slotMap = {}; // reset
 
 slots.forEach(s => {
-  slotMap[s.label] = s;   //  STORE FULL SLOT
+  slotMap[s.label] = s;
 
   const opt = document.createElement("option");
   opt.value = s.label;
@@ -599,26 +659,33 @@ slots.forEach(s => {
 });
 }
 
-voteBtn.onclick = async () => {
-  if (!fromSel.value || !toSel.value || !slotSel.value) return;
+async function submitVote() {
+  if (!fromSel.value || !toSel.value || !slotSel.value || !selectedRole) return;
 
   const slotObj = slotMap[slotSel.value];
-  if (!slotObj) return; // safety
+  if (!slotObj) return;
 
-  await fetch(WORKER + "/vote", {
+  const res = await fetch(WORKER + "/vote", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       date: dateStr(),
       from: fromSel.value,
       to: toSel.value,
-      slot: slotObj.label
+      slot: slotObj.label,
+      role: selectedRole
     })
   });
 
-  loadPopularity();
-};
+  const data = await res.json();
+  lastVotePosition = data.position;
 
+  showCodeBtn.style.display = "block";
+  loadPopularity();
+      }
+
+  riderPrefBtn.addEventListener("click", submitVote);
+  providerPrefBtn.addEventListener("click", submitVote);
 </script>
   <script>
 /* ===== WEEKEND MEET LOGIC (SAFE ADDITION) ===== */
@@ -747,7 +814,19 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  fullscreenCodeText.textContent = codeCircleBtn.textContent;
+  const d = istNow();
+d.setDate(d.getDate() + dayOffset);
+
+const dateLine = `D-${String(d.getDate()).padStart(2,"0")}-${d.toLocaleString("en-IN",{month:"short"})}-${d.getFullYear()}`;
+const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotMap[slotSel.value].code}`;
+const roleLine = selectedRole + lastVotePosition;
+
+fullscreenCodeText.innerHTML = `
+  <div style="font-size:24px">${dateLine}</div>
+  <div style="font-size:48px">${routeLine}</div>
+  <div style="font-size:48px">${roleLine}</div>
+  <div style="height:80px"></div>
+`;
   fullscreenCode.classList.add("active");
 });
 
