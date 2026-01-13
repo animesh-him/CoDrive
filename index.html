@@ -328,33 +328,16 @@ button {
   <button id="tomorrowBtn">Tomorrow</button>
 </div>
 
-<select id="from">
-  <option value="">From location</option>
-  <option value="eldorado">Brigade Eldorado</option>
-  <option value="godrej">Godrej Ananda</option>
-  <option value="prestige">Prestige Finsbury Park</option>
-</select>
+<div class="to-code-row">
+  <select id="from">
+    <option value="">From</option>
+  </select>
 
-<select id="to">
-  <option value="">To location</option>
-  <option value="bagmane">Bagmane Tech Park, CV Raman Nagar</option>
-  <option value="boeing">Boeing Office (North Bangalore)</option>
-  <option value="cubbon">Cubbon Park</option>
-  <option value="dynamatics">Dynamatics (North Bangalore)</option>
-  <option value="ecospace">Ecospace (Bellandur)</option>
-  <option value="electronic_city">Electronic City</option>
-  <option value="itpl">ITPL (Whitefield)</option>
-  <option value="karle_sez">KARLE SEZ</option>
-  <option value="kia_t1">Kempegowda International Airport T1</option>
-  <option value="kia_t2">Kempegowda International Airport T2</option>
-  <option value="koramangala">Koramangala</option>
-  <option value="mg_road">MG Road</option>
-  <option value="manyata">Manyata Tech Park</option>
-  <option value="sap_labs">SAP Labs (North Bangalore)</option>
-  <option value="sarjapur">Sarjapur</option>
-  <option value="shell">Shell Technology Center (North Bangalore)</option>
-</select>
-
+  <select id="to">
+    <option value="">To</option>
+  </select>
+</div>
+  
 <div id="popularity"></div>
 
 <select id="slotSelect">
@@ -423,20 +406,86 @@ button {
 </div>
 
 <script>
-const WORKER = "https://codrive-api.animesh-him.workers.dev";
+/* ===== CENTRAL LOCATION REGISTRY ===== */
+const LOCATIONS = {
+  eldorado: { name: "Brigade Eldorado", includeFrom: true, includeTo: false },
+  godrej: { name: "Godrej Ananda", includeFrom: true, includeTo: false },
+  prestige: { name: "Prestige Finsbury Park", includeFrom: true, includeTo: false },
+
+  bagmane: { name: "Bagmane Tech Park, CV Raman Nagar", includeFrom: false, includeTo: true },
+  boeing: { name: "Boeing Office (North Bangalore)", includeFrom: false, includeTo: true },
+  cubbon: { name: "Cubbon Park", includeFrom: false, includeTo: true },
+  dynamatics: { name: "Dynamatics (North Bangalore)", includeFrom: false, includeTo: true },
+  ecospace: { name: "Ecospace (Bellandur)", includeFrom: false, includeTo: true },
+  electronic_city: { name: "Electronic City", includeFrom: false, includeTo: true },
+  itpl: { name: "ITPL (Whitefield)", includeFrom: false, includeTo: true },
+  karle_sez: { name: "KARLE SEZ", includeFrom: false, includeTo: true },
+  kia_t1: { name: "Kempegowda International Airport T1", includeFrom: false, includeTo: true },
+  kia_t2: { name: "Kempegowda International Airport T2", includeFrom: false, includeTo: true },
+  koramangala: { name: "Koramangala", includeFrom: false, includeTo: true },
+  mg_road: { name: "MG Road", includeFrom: false, includeTo: true },
+  manyata: { name: "Manyata Tech Park", includeFrom: false, includeTo: true },
+  sap_labs: { name: "SAP Labs (North Bangalore)", includeFrom: false, includeTo: true },
+  sarjapur: { name: "Sarjapur", includeFrom: false, includeTo: true },
+  shell: { name: "Shell Technology Center (North Bangalore)", includeFrom: false, includeTo: true }
+};
+  const WORKER = "https://codrive-api.animesh-him.workers.dev";
 let dayOffset = 0;
 
 const todayBtn = document.getElementById("todayBtn");
 const tomorrowBtn = document.getElementById("tomorrowBtn");
 const fromSel = document.getElementById("from");
 const toSel = document.getElementById("to");
-const popDiv = document.getElementById("popularity");
+/* ===== GLOBAL LOCATION CODE MAP ===== */
+const locationCodes = {};
+(() => {
+  const allLocations = Object.entries(LOCATIONS)
+    .map(([value, obj]) => ({ value, name: obj.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const letterCount = {};
+  allLocations.forEach(loc => {
+    const letter = loc.name[0].toUpperCase();
+    letterCount[letter] = (letterCount[letter] || 0) + 1;
+    locationCodes[loc.value] = letter + letterCount[letter];
+  });
+})();
+  function populateFromTo() {
+  fromSel.innerHTML = `<option value="">From</option>`;
+  toSel.innerHTML = `<option value="">To</option>`;
+
+  Object.entries(LOCATIONS).forEach(([value, loc]) => {
+    const label = `${loc.name} (${locationCodes[value]})`;
+
+    if (loc.includeFrom) {
+      fromSel.appendChild(new Option(label, value));
+    }
+    if (loc.includeTo) {
+      toSel.appendChild(new Option(label, value));
+    }
+  });
+}
+
+populateFromTo();
+  const popDiv = document.getElementById("popularity");
 const slotSel = document.getElementById("slotSelect");
 const voteBtn = document.getElementById("voteBtn");
 
 todayBtn.onclick = () => setDay(0);
 tomorrowBtn.onclick = () => setDay(1);
-fromSel.onchange = toSel.onchange = loadPopularity;
+fromSel.addEventListener("change", () => {
+  [...toSel.options].forEach(o => {
+    o.disabled = o.value === fromSel.value && o.value !== "";
+  });
+  loadPopularity();
+});
+
+toSel.addEventListener("change", () => {
+  [...fromSel.options].forEach(o => {
+    o.disabled = o.value === toSel.value && o.value !== "";
+  });
+  loadPopularity();
+});
 
 function setDay(d) {
   dayOffset = d;
@@ -458,9 +507,10 @@ function dateStr() {
 function futureSlots() {
   const now = istNow();
   const slots = [];
+  let slotCounter = 0; // S1 → S48
 
   for (let h = 0; h < 24; h++) {
-    for (let m of [0,30]) {
+    for (let m of [0, 30]) {
       const end = new Date(now);
       end.setHours(h, m === 0 ? 30 : 0, 0, 0);
       if (m === 30) end.setHours(h + 1, 0, 0, 0);
@@ -468,10 +518,15 @@ function futureSlots() {
       if (dayOffset === 1 || end > now) {
         const eh = m === 30 ? h + 1 : h;
         const em = m === 30 ? "00" : "30";
-        slots.push(
-          `${String(h).padStart(2,"0")}:${m === 0 ? "00" : "30"}-` +
-          `${String(eh).padStart(2,"0")}:${em}`
-        );
+
+        slotCounter++;
+
+        slots.push({
+          label:
+            `${String(h).padStart(2, "0")}:${m === 0 ? "00" : "30"}-` +
+            `${String(eh).padStart(2, "0")}:${em}`,
+          code: "S" + slotCounter
+        });
       }
     }
   }
@@ -514,7 +569,7 @@ async function loadPopularity() {
       const bar = document.createElement("div");
       bar.className = "bar";
       bar.innerHTML = `
-        <div class="bar-label">${e.slot} • ${e.count}</div>
+        <div class="bar-label">${e.slot.label} (${e.slot.code}) • ${e.count}</div>
         <div class="track">
           <div class="fill" style="width:${(e.count / max) * 100}%"></div>
         </div>
@@ -524,11 +579,11 @@ async function loadPopularity() {
   }
 
   slots.forEach(s => {
-    const opt = document.createElement("option");
-    opt.value = s;
-    opt.textContent = s;
-    slotSel.appendChild(opt);
-  });
+  const opt = document.createElement("option");
+  opt.value = s.label;
+  opt.textContent = `${s.label} (${s.code})`;
+  slotSel.appendChild(opt);
+});
 }
 
 voteBtn.onclick = async () => {
@@ -634,9 +689,26 @@ window.addEventListener("DOMContentLoaded", () => {
     toNameToValue[opt.textContent.trim()] = opt.value;
   });
 
-  const TO_LOCATIONS = Object.values(toValueToName).sort((a, b) =>
-    a.localeCompare(b)
-  );
+  /* Build maps from central registry */
+const toValueToName = {};
+const toNameToValue = {};
+
+Object.entries(LOCATIONS).forEach(([value, loc]) => {
+  if (loc.includeTo) {
+    toValueToName[value] = loc.name;
+    toNameToValue[loc.name] = value;
+  }
+});
+
+/* Populate To-Code dropdown */
+Object.entries(toValueToName)
+  .sort((a, b) => a[1].localeCompare(b[1]))
+  .forEach(([value, name]) => {
+    const opt = document.createElement("option");
+    opt.value = locationCodes[value];
+    opt.textContent = `${name} (${locationCodes[value]})`;
+    toCodeSelect.appendChild(opt);
+  });
 
   /* Generate codes */
   const letterCount = {};
@@ -661,32 +733,32 @@ window.addEventListener("DOMContentLoaded", () => {
 
   /* === SYNC: To location → Code === */
   toSelect.addEventListener("change", () => {
-    const name = toValueToName[toSelect.value];
-    if (!name) {
-      toCodeSelect.value = "";
-      codeCircleBtn.textContent = "--";
-      codeCircleBtn.disabled = true;
-      return;
-    }
-    const code = nameToCode[name];
-    toCodeSelect.value = code;
-    codeCircleBtn.textContent = code;
-    codeCircleBtn.disabled = false;
-  });
+  const value = toSelect.value;
+  if (!value) {
+    codeCircleBtn.textContent = "--";
+    codeCircleBtn.disabled = true;
+    toCodeSelect.value = "";
+    return;
+  }
+  const code = locationCodes[value];
+  toCodeSelect.value = code;
+  codeCircleBtn.textContent = code;
+  codeCircleBtn.disabled = false;
+});
 
   /* === SYNC: Code → To location === */
   toCodeSelect.addEventListener("change", () => {
-    const code = toCodeSelect.value;
-    const name = codeToName[code];
-    if (!name) return;
+  const code = toCodeSelect.value;
+  const value = Object.keys(locationCodes)
+    .find(v => locationCodes[v] === code);
 
-    toSelect.value = toNameToValue[name];
-    codeCircleBtn.textContent = code;
-    codeCircleBtn.disabled = false;
+  if (!value) return;
 
-    /* Trigger existing logic safely */
-    toSelect.dispatchEvent(new Event("change"));
-  });
+  toSelect.value = value;
+  codeCircleBtn.textContent = code;
+  codeCircleBtn.disabled = false;
+  toSelect.dispatchEvent(new Event("change"));
+});
 
   /* Fullscreen view */
   codeCircleBtn.addEventListener("click", () => {
