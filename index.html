@@ -718,27 +718,6 @@ Object.entries(toValueToName)
     toCodeSelect.appendChild(opt);
   });
 
-  /* Generate codes */
-  const letterCount = {};
-  const nameToCode = {};
-  const codeToName = {};
-
-  TO_LOCATIONS.forEach(name => {
-    const letter = name.charAt(0).toUpperCase();
-    letterCount[letter] = (letterCount[letter] || 0) + 1;
-    const code = letter + letterCount[letter];
-    nameToCode[name] = code;
-    codeToName[code] = name;
-  });
-
-  /* Populate code dropdown */
-  TO_LOCATIONS.forEach(name => {
-    const opt = document.createElement("option");
-    opt.value = nameToCode[name];
-    opt.textContent = `${name} (${nameToCode[name]})`;
-    toCodeSelect.appendChild(opt);
-  });
-
   /* === SYNC: To location → Code === */
   toSelect.addEventListener("change", () => {
   const value = toSelect.value;
@@ -754,31 +733,30 @@ Object.entries(toValueToName)
   codeCircleBtn.disabled = false;
 });
 
-  /* === SYNC: Code → To location === */
-  toCodeSelect.addEventListener("change", () => {
+  // 1️⃣ Bind location → code circle
+toCodeSelect.addEventListener("change", () => {
   const code = toCodeSelect.value;
-  const value = Object.keys(locationCodes)
-    .find(v => locationCodes[v] === code);
 
-  if (!value) return;
+  if (!code) {
+    codeCircleBtn.textContent = "--";
+    codeCircleBtn.disabled = true;
+    return;
+  }
 
-  toSelect.value = value;
   codeCircleBtn.textContent = code;
   codeCircleBtn.disabled = false;
-  toSelect.dispatchEvent(new Event("change"));
 });
 
-  /* Fullscreen view */
-  codeCircleBtn.addEventListener("click", () => {
-    fullscreenCodeText.textContent = codeCircleBtn.textContent;
-    fullscreenCode.classList.add("active");
-  });
-
-  fullscreenCode.addEventListener("click", () => {
-    fullscreenCode.classList.remove("active");
-  });
-
+// 2️⃣ Fullscreen view
+codeCircleBtn.addEventListener("click", () => {
+  fullscreenCodeText.textContent = codeCircleBtn.textContent;
+  fullscreenCode.classList.add("active");
 });
+
+fullscreenCode.addEventListener("click", () => {
+  fullscreenCode.classList.remove("active");
+});
+    
 </script>
 <script>
 /* ===== BUTTON COOLDOWN + FLASH MESSAGE (10s, MEMORY ONLY) ===== */
