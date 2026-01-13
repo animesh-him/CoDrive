@@ -596,15 +596,16 @@ function restoreStateFromPopularity(data) {
   riderPrefBtn.classList.toggle("active", d.R > 0);
   providerPrefBtn.classList.toggle("active", d.P > 0);
 
-  if (d.R > 0 || d.P > 0) {
-    showCodeBtn.style.display = "block";
-  }
   riderPrefBtn.disabled = false;
-providerPrefBtn.disabled = false;
+  providerPrefBtn.disabled = false;
+
+  // ❗ Show Code ONLY after a fresh vote
+  showCodeBtn.style.display = "none";
 }
   
 async function loadPopularity() {
- riderPrefBtn.disabled = false;
+ const prevSlot = slotSel.value;
+  riderPrefBtn.disabled = false;
 providerPrefBtn.disabled = false;
   popDiv.innerHTML = "";
   slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
@@ -682,6 +683,9 @@ slots.forEach(s => {
   opt.textContent = `${s.label} (${s.code})`;
   slotSel.appendChild(opt);
 });
+  if (prevSlot && slotMap[prevSlot]) {
+  slotSel.value = prevSlot;
+  }
   restoreStateFromPopularity(data);
 }
 
