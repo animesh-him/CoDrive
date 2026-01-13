@@ -712,11 +712,8 @@ async function submitVote() {
   showCodeBtn.style.display = "block";
   loadPopularity();
       }
-slotSel.addEventListener("change", () => {
-  if (selectedRole) {
-    submitVote();
-  }
-});
+riderPrefBtn.addEventListener("click", submitVote);
+providerPrefBtn.addEventListener("click", submitVote);
 </script>
   <script>
 /* ===== WEEKEND MEET LOGIC (SAFE ADDITION) ===== */
@@ -788,7 +785,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const toSelect = document.getElementById("to");           // existing
   const toCodeSelect = document.getElementById("toCodeSelect");
+  
   const codeCircleBtn = document.getElementById("codeCircleBtn");
+  showCodeBtn.addEventListener("click", () => {
+  if (!codeCircleBtn.disabled) {
+    codeCircleBtn.click();
+  }
+});
   const fullscreenCode = document.getElementById("fullscreenCode");
   const fullscreenCodeText = document.getElementById("fullscreenCodeText");
 
@@ -845,22 +848,24 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
+  if (!selectedRole || !lastVotePosition || !slotSel.value) return;
+
   const d = istNow();
-d.setDate(d.getDate() + dayOffset);
+  d.setDate(d.getDate() + dayOffset);
 
-const dateLine = `D-${String(d.getDate()).padStart(2,"0")}-${d.toLocaleString("en-IN",{month:"short"})}-${d.getFullYear()}`;
-const slotObj = slotMap[slotSel.value];
-if (!slotObj) return;
+  const dateLine = `D-${String(d.getDate()).padStart(2,"0")}-${d.toLocaleString("en-IN",{month:"short"})}-${d.getFullYear()}`;
+  const slotObj = slotMap[slotSel.value];
+  if (!slotObj) return;
 
-const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}`;
-const roleLine = selectedRole + lastVotePosition;
+  const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}`;
+  const roleLine = selectedRole + lastVotePosition;
 
-fullscreenCodeText.innerHTML = `
-  <div style="font-size:24px">${dateLine}</div>
-  <div style="font-size:48px">${routeLine}</div>
-  <div style="font-size:48px">${roleLine}</div>
-  <div style="height:80px"></div>
-`;
+  fullscreenCodeText.innerHTML = `
+    <div style="font-size:24px">${dateLine}</div>
+    <div style="font-size:48px">${routeLine}</div>
+    <div style="font-size:48px">${roleLine}</div>
+    <div style="height:80px"></div>
+  `;
   fullscreenCode.classList.add("active");
 });
 
