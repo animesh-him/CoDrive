@@ -88,10 +88,6 @@ h1 {
 
 /* ---------- INPUT SIZE REDUCTION ---------- */
 select, button {
-  width: 70%;
-  margin-left: auto;
-  margin-right: auto;
-  display: block;
   padding: 12px;
   margin-top: 12px;
   border-radius: 10px;
@@ -146,7 +142,7 @@ button {
   border: none;
   font-family: 'Caveat', cursive;
   font-size: 18px;
-  width: 45%;
+  width: 50%;
 }
 
 .pref-btn.active {
@@ -500,7 +496,9 @@ const slotSel = document.getElementById("slotSelect");
 const riderPrefBtn = document.getElementById("riderPrefBtn");
 const providerPrefBtn = document.getElementById("providerPrefBtn");
 const showCodeBtn = document.getElementById("showCodeBtn");
-
+showCodeBtn.onclick = () => {
+  codeCircleBtn.click();
+};
 let selectedRole = null; // "R" or "P"
 let lastVotePosition = null;
 riderPrefBtn.onclick = () => {
