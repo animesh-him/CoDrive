@@ -340,6 +340,11 @@ button {
   .route-row {
   justify-content: space-between;
   }
+  .tabs {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between;
+  }
 </style>
 </head>
 
@@ -531,7 +536,7 @@ let lastVotePosition = null;
   let justVoted = false;
   let hasVotedThisSlot = false;
 
-let slotMap = {};   
+let slotMap = {};  
   
 todayBtn.onclick = () => setDay(0);
 tomorrowBtn.onclick = () => setDay(1);
@@ -705,9 +710,6 @@ slots.forEach(s => {
   restoreStateFromPopularity(data);
 }
 
-async function submitVote() {
-  if (hasVotedThisSlot) return;
-  if (!fromSel.value || !toSel.value || !slotSel.value || !selectedRole) return;
 
   const slotObj = slotMap[slotSel.value];
   if (!slotObj) return;
