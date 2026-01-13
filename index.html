@@ -100,9 +100,9 @@ select, button {
 }
 
 .tabs {
-  background: #000 !important;
-  color: #fff !important;
-  border: none !important;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
 }
   
 button {
@@ -143,7 +143,7 @@ button {
   .pref-btn {
   background: #000;
   color: #fff;
-  border: none
+  border: none;
   font-family: 'Caveat', cursive;
   font-size: 18px;
   width: 45%;
@@ -218,6 +218,7 @@ button {
   background-color: #ffffff;
   color: #000000;
   border: 1px solid #ccc;
+  width: 50%;
 }
 
 /* Active tab (today / tomorrow) */
@@ -679,7 +680,7 @@ async function submitVote() {
   });
 
   const data = await res.json();
-  lastVotePosition = data.position;
+  lastVotePosition = data.value;
 
   showCodeBtn.style.display = "block";
   loadPopularity();
