@@ -496,9 +496,7 @@ const slotSel = document.getElementById("slotSelect");
 const riderPrefBtn = document.getElementById("riderPrefBtn");
 const providerPrefBtn = document.getElementById("providerPrefBtn");
 const showCodeBtn = document.getElementById("showCodeBtn");
-showCodeBtn.onclick = () => {
-  codeCircleBtn.click();
-};
+
 let selectedRole = null; // "R" or "P"
 let lastVotePosition = null;
 riderPrefBtn.onclick = () => {
@@ -587,7 +585,29 @@ function futureSlots() {
   }
   return slots;
 }
+function restoreStateFromPopularity(data) {
+  if (!slotSel.value) return;
 
+  const d = data[slotSel.value];
+  if (!d) return;
+
+  // Restore Rider
+  if (d.R > 0) {
+    selectedRole = "R";
+    riderPrefBtn.classList.add("active");
+    providerPrefBtn.classList.remove("active");
+    showCodeBtn.style.display = "block";
+  }
+
+  // Restore Provider
+  if (d.P > 0) {
+    selectedRole = "P";
+    providerPrefBtn.classList.add("active");
+    riderPrefBtn.classList.remove("active");
+    showCodeBtn.style.display = "block";
+  }
+}
+  
 async function loadPopularity() {
   popDiv.innerHTML = "";
   slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
@@ -665,6 +685,7 @@ slots.forEach(s => {
   opt.textContent = `${s.label} (${s.code})`;
   slotSel.appendChild(opt);
 });
+  restoreStateFromPopularity(data);
 }
 
 async function submitVote() {
