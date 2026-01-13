@@ -320,7 +320,11 @@ button {
   text-align: center;
   font-family: 'Caveat', cursive;
 }
-
+.tabs .pref-btn {
+  background: #000 !important;
+  color: #fff !important;
+  border: none !important;
+}
 </style>
 </head>
 
@@ -689,9 +693,11 @@ async function submitVote() {
   showCodeBtn.style.display = "block";
   loadPopularity();
       }
-
-  riderPrefBtn.addEventListener("click", submitVote);
-  providerPrefBtn.addEventListener("click", submitVote);
+slotSel.addEventListener("change", () => {
+  if (selectedRole) {
+    submitVote();
+  }
+});
 </script>
   <script>
 /* ===== WEEKEND MEET LOGIC (SAFE ADDITION) ===== */
@@ -824,7 +830,10 @@ codeCircleBtn.addEventListener("click", () => {
 d.setDate(d.getDate() + dayOffset);
 
 const dateLine = `D-${String(d.getDate()).padStart(2,"0")}-${d.toLocaleString("en-IN",{month:"short"})}-${d.getFullYear()}`;
-const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotMap[slotSel.value].code}`;
+const slotObj = slotMap[slotSel.value];
+if (!slotObj) return;
+
+const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}`;
 const roleLine = selectedRole + lastVotePosition;
 
 fullscreenCodeText.innerHTML = `
@@ -903,7 +912,7 @@ fullscreenCode.addEventListener("click", () => {
   }
 
   window.addEventListener("load", () => {
-    protect(document.getElementById("voteBtn"));
+    //protect(document.getElementById("voteBtn"));
     protect(document.getElementById("riderBtn"));
     protect(document.getElementById("ownerBtn"));
   });
