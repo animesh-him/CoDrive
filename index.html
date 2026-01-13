@@ -613,21 +613,21 @@ function restoreStateFromPopularity(data) {
   const d = data[slotSel.value];
   if (!d) return;
 
-  riderPrefBtn.classList.remove("active");
-  providerPrefBtn.classList.remove("active");
-
-  riderPrefBtn.disabled = false;
-  providerPrefBtn.disabled = false;
-
-  if (!justVoted) {
-  showCodeBtn.style.display = "none";
-}
+  // If already voted in this session, lock UI
+  if (hasVotedThisSlot) {
+    riderPrefBtn.disabled = true;
+    providerPrefBtn.disabled = true;
+    showCodeBtn.style.display = "block";
+  } else {
+    riderPrefBtn.disabled = false;
+    providerPrefBtn.disabled = false;
+    showCodeBtn.style.display = "none";
+  }
 }
   
 async function loadPopularity() {
  const prevSlot = slotSel.value;
-  riderPrefBtn.disabled = false;
-providerPrefBtn.disabled = false;
+  
   popDiv.innerHTML = "";
   slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
 
@@ -830,9 +830,11 @@ window.addEventListener("DOMContentLoaded", () => {
   
   const codeCircleBtn = document.getElementById("codeCircleBtn");
   showCodeBtn.addEventListener("click", () => {
-  if (!codeCircleBtn.disabled) {
-    codeCircleBtn.click();
+  if (!toSel.value) {
+    alert("Please select destination");
+    return;
   }
+  codeCircleBtn.click();
 });
   const fullscreenCode = document.getElementById("fullscreenCode");
   const fullscreenCodeText = document.getElementById("fullscreenCodeText");
