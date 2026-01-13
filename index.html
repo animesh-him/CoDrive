@@ -711,6 +711,14 @@ slots.forEach(s => {
 }
 
 
+async function submitVote() {
+  if (hasVotedThisSlot) {
+    alert("You have already voted for this slot");
+    return;
+  }
+
+  if (!fromSel.value || !toSel.value || !slotSel.value || !selectedRole) return;
+
   const slotObj = slotMap[slotSel.value];
   if (!slotObj) return;
 
@@ -727,16 +735,18 @@ slots.forEach(s => {
   });
 
   const data = await res.json();
+
   lastVotePosition = data.position;
   hasVotedThisSlot = true;
-riderPrefBtn.disabled = true;
-providerPrefBtn.disabled = true;
   justVoted = true;
-showCodeBtn.style.display = "block";
+
+  riderPrefBtn.disabled = true;
+  providerPrefBtn.disabled = true;
 
   showCodeBtn.style.display = "block";
+
   loadPopularity();
-      }
+}
 riderPrefBtn.addEventListener("click", () => {
   selectedRole = "R";
   submitVote();
