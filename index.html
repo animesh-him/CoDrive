@@ -279,7 +279,7 @@ button {
   /* ===== FULLSCREEN CODE TEXT LAYOUT ===== */
 #fullscreenCode {
   align-items: flex-start;   /* top */
-  padding-top: 12px;
+  padding-top: 4px;
 }
 
 #fullscreenCodeText {
@@ -299,9 +299,11 @@ button {
 
 .fs-route,
 .fs-role {
-  font-size: 3em;   /* 3x bigger */
+  font-size: clamp(32px, 8vw, 64px);
   font-weight: 900;
   margin-bottom: 12px;
+  line-height: 1.1;
+  word-break: break-word;
 }
 
   .ig-link {
@@ -381,6 +383,13 @@ button {
   flex-direction: row !important;
   justify-content: space-between;
   }
+  /* ===== CENTER TIME SLOT DROPDOWN ===== */
+#slotSelect {
+  display: block;
+  margin: 16px auto;
+  text-align: center;
+  max-width: 240px;
+}
 </style>
 </head>
 
