@@ -684,7 +684,7 @@ async function submitVote() {
   });
 
   const data = await res.json();
-  lastVotePosition = data.value;
+  lastVotePosition = data.position;
 
   showCodeBtn.style.display = "block";
   loadPopularity();
