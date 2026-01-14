@@ -1064,9 +1064,12 @@ codeCircleBtn.addEventListener("click", () => {
 // === BIG CODES BELOW CoDrive ===
 const fromCode = locationCodes[fromSel.value];
 const toCode = locationCodes[toSel.value];
+
+const slotObj = slotMap[slotSel.value];
+if (!slotObj) return;
+
 const slotCode = slotObj.code;
 const roleCode = selectedRole + lastVotePosition;
-
 // Route code line (B3-S3-S48)
 ctx.font = "bold 40px Arial";   // 🔧 change size here
 let y = 120;
@@ -1088,11 +1091,7 @@ latestQrPayload.split("\n").forEach(line => {
   // QR
   ctx.drawImage(qrCanvas, 180, y + 20, 240, 240);
 
-  const fromCode = locationCodes[fromSel.value];
-  const toCode = locationCodes[toSel.value];
-  const slotCode = slotMap[slotSel.value].code;
-  const roleCode = selectedRole + lastVotePosition;
-
+  
   const fileName = `CoDrive_${fromCode}-${toCode}-${slotCode}-${roleCode}.png`;
 
   const link = document.createElement("a");
