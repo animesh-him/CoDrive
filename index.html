@@ -6,7 +6,6 @@
 <title>CoDrive</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 /* ---------- EXISTING STYLES (UNCHANGED) ---------- */
@@ -471,7 +470,7 @@ button {
   <button id="providerPrefBtn" class="pref-btn">Provider</button>
 </div>
 
-<div id="codeActionRow" style="display:none; text-align:center; margin-top:16px;">
+<div id="codeActionRow" text-align:center; margin-top:16px;">
   <button id="showCodeBtn">Show Code</button>
   <button id="saveQrBtn">Save QR Code</button>
 </div>
@@ -610,7 +609,7 @@ const showCodeBtn = document.getElementById("showCodeBtn");
 
   riderPrefBtn.disabled = false;
   providerPrefBtn.disabled = false;
-  showCodeBtn.style.display = "none";
+  
 });
 
 let selectedRole = null; // "R" or "P"
@@ -699,11 +698,11 @@ function restoreStateFromPopularity(data) {
   if (hasVotedThisSlot) {
     riderPrefBtn.disabled = true;
     providerPrefBtn.disabled = true;
-    showCodeBtn.style.display = "block";
+    
   } else {
     riderPrefBtn.disabled = false;
     providerPrefBtn.disabled = false;
-    showCodeBtn.style.display = "none";
+    
   }
 }
   
@@ -825,8 +824,14 @@ async function submitVote() {
   riderPrefBtn.disabled = true;
   providerPrefBtn.disabled = true;
 
+  const codeActionRow = document.getElementById("codeActionRow");
+const saveQrBtn = document.getElementById("saveQrBtn");
+
+codeActionRow.style.display = "flex";
+showCodeBtn.disabled = true;
+saveQrBtn.disabled = true;
   function enableCodeActions() {
-  document.getElementById("codeActionRow").style.display = "flex";
+  
   showCodeBtn.disabled = false;
   saveQrBtn.disabled = false;
 }
@@ -998,19 +1003,6 @@ if (!selectedRole || !lastVotePosition) {
   const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}`;
   const roleLine = selectedRole + lastVotePosition;
 
-  const explainLine = qrPayload.replace(/\n/g, " • ");
-fullscreenCodeText.innerHTML = `
-  <div class="fs-line fs-date">${dateLine}</div>
-  <div class="fs-line fs-route">${routeLine}</div>
-  <div class="fs-line fs-role">${roleLine}</div>
-  <div class="fs-line fs-explain">${explainLine}</div>
-
-  <div id="qrWrap">
-    <div id="qr"></div>
-    
-  </div>
-`;
-  const fullDate = d.toLocaleDateString("en-IN", {
   weekday: "long",
   day: "numeric",
   month: "long",
@@ -1031,6 +1023,20 @@ const qrPayload = [
   `Position: ${roleText}`,
   `Powered by CoDrive`
 ].join("\n");
+  const explainLine = qrPayload.replace(/\n/g, " • ");
+fullscreenCodeText.innerHTML = `
+  <div class="fs-line fs-date">${dateLine}</div>
+  <div class="fs-line fs-route">${routeLine}</div>
+  <div class="fs-line fs-role">${roleLine}</div>
+  <div class="fs-line fs-explain">${explainLine}</div>
+
+  <div id="qrWrap">
+    <div id="qr"></div>
+    
+  </div>
+`;
+  const fullDate = d.toLocaleDateString("en-IN", {
+  
 
 const qrDiv = document.getElementById("qr");
 qrDiv.innerHTML = "";
@@ -1069,7 +1075,7 @@ centerPatch.innerHTML = `
   </div>
 `;
 qrDiv.style.position = "relative";
-qrDiv.appendChild(centerPatch);
+
   fullscreenCode.classList.add("active");
 });
   const saveQrBtn = document.getElementById("saveQrBtn");
