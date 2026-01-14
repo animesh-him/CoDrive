@@ -1061,13 +1061,29 @@ codeCircleBtn.addEventListener("click", () => {
   ctx.textAlign = "center";
   ctx.fillText("CoDrive", poster.width / 2, 60);
 
-  // Text
-  ctx.font = "20px system-ui";
-  let y = 120;
-  latestQrPayload.split("\n").forEach(line => {
-    ctx.fillText(line, poster.width / 2, y);
-    y += 30;
-  });
+// === BIG CODES BELOW CoDrive ===
+const fromCode = locationCodes[fromSel.value];
+const toCode = locationCodes[toSel.value];
+const slotCode = slotMap[slotSel.value].code;
+const roleCode = selectedRole + lastVotePosition;
+
+// Route code line (B3-S3-S48)
+ctx.font = "bold 40px Arial";   // 🔧 change size here
+let y = 120;
+ctx.fillText(`${fromCode}-${toCode}-${slotCode}`, poster.width / 2, y);
+
+// Role code line (P5 / R9)
+ctx.font = "bold 40px Arial";   // 🔧 change size here
+y += 50;
+ctx.fillText(roleCode, poster.width / 2, y);
+
+// === Human readable text continues ===
+ctx.font = "20px system-ui";
+y += 50;
+latestQrPayload.split("\n").forEach(line => {
+  ctx.fillText(line, poster.width / 2, y);
+  y += 30;
+});
 
   // QR
   ctx.drawImage(qrCanvas, 180, y + 20, 240, 240);
