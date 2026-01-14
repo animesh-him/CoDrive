@@ -319,26 +319,6 @@ button {
   position:relative;
 }
 
-#qrDiagonal {
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-  transform:rotate(-35deg);
-  font-family:'Caveat', cursive;
-  font-size:14px;
-  opacity:0.25;
-}
-
-#qrDiagonal span {
-  font-size:14px;
-}
-
-#qrDiagonal b {
-  font-size:70px;
-}
   .ig-link {
   text-decoration: none;
   font-weight: 600;
@@ -845,8 +825,13 @@ async function submitVote() {
   riderPrefBtn.disabled = true;
   providerPrefBtn.disabled = true;
 
-  document.getElementById("codeActionRow").style.display = "block";
-  document.getElementById("saveQrBtn").style.display = "inline-block";
+  function enableCodeActions() {
+  document.getElementById("codeActionRow").style.display = "flex";
+  showCodeBtn.disabled = false;
+  saveQrBtn.disabled = false;
+}
+
+enableCodeActions();
 
   loadPopularity();
   
@@ -1013,11 +998,7 @@ if (!selectedRole || !lastVotePosition) {
   const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}`;
   const roleLine = selectedRole + lastVotePosition;
 
-  const explainLine =
-  `${dateLine} = Travel Date, ` +
-  `${routeLine} = From-To-Slot, ` +
-  `${roleLine} = ${selectedRole === "R" ? "Rider" : "Provider"} sequence`;
-
+  const explainLine = qrPayload.replace(/\n/g, " • ");
 fullscreenCodeText.innerHTML = `
   <div class="fs-line fs-date">${dateLine}</div>
   <div class="fs-line fs-route">${routeLine}</div>
@@ -1026,9 +1007,7 @@ fullscreenCodeText.innerHTML = `
 
   <div id="qrWrap">
     <div id="qr"></div>
-    <div id="qrDiagonal">
-      <span>Happy </span><b>CoDrive</b><span>-ing!</span>
-    </div>
+    
   </div>
 `;
   const fullDate = d.toLocaleDateString("en-IN", {
@@ -1044,13 +1023,14 @@ const roleText =
     lastVotePosition === 3 ? "rd" : "th"} ` +
   (selectedRole === "R" ? "Rider" : "Provider");
 
-const qrPayload = `
-${fullDate}
-From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})
-To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})
-Time: ${slotObj.label} (${slotObj.code})
-${roleText}
-`.trim();
+const qrPayload = [
+  `Date: ${fullDate}`,
+  `From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})`,
+  `To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})`,
+  `Time Slot: ${slotObj.label} (${slotObj.code})`,
+  `Position: ${roleText}`,
+  `Powered by CoDrive`
+].join("\n");
 
 const qrDiv = document.getElementById("qr");
 qrDiv.innerHTML = "";
@@ -1080,53 +1060,72 @@ centerPatch.style.fontFamily = "Caveat, cursive";
 centerPatch.style.fontSize = "18px";
 centerPatch.style.fontWeight = "700";
 centerPatch.style.color = "#000";
+  centerPatch.style.opacity = "1";
 
-centerPatch.innerHTML = `Happy<br><b>CoDrive</b>-ing!`;
+centerPatch.innerHTML = `
+  <div style="text-align:center; line-height:1.1;">
+    <div>Happy</div>
+    <div><b>CoDrive</b>-ing</div>
+  </div>
+`;
 qrDiv.style.position = "relative";
 qrDiv.appendChild(centerPatch);
   fullscreenCode.classList.add("active");
+});
+  const saveQrBtn = document.getElementById("saveQrBtn");
+  saveQrBtn.addEventListener("click", () => {
+  const qrCanvas = document.querySelector("#qr canvas");
+  if (!qrCanvas) {
+    alert("Generate QR first");
+    return;
+  }
+
+  const poster = document.createElement("canvas");
+  poster.width = 600;
+  poster.height = 820;
+
+  const ctx = poster.getContext("2d");
+
+  // Background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, poster.width, poster.height);
+
+  // Title
+  ctx.fillStyle = "#000";
+  ctx.font = "48px Caveat";
+  ctx.textAlign = "center";
+  ctx.fillText("CoDrive", poster.width / 2, 60);
+
+  // Text
+  ctx.font = "20px system-ui";
+  let y = 120;
+  qrPayload.split("\n").forEach(line => {
+    ctx.fillText(line, poster.width / 2, y);
+    y += 30;
+  });
+
+  // QR
+  ctx.drawImage(qrCanvas, 180, y + 20, 240, 240);
+
+  const fromCode = locationCodes[fromSel.value];
+  const toCode = locationCodes[toSel.value];
+  const slotCode = slotMap[slotSel.value].code;
+  const roleCode = selectedRole + lastVotePosition;
+
+  const fileName = `CoDrive_${fromCode}-${toCode}-${slotCode}-${roleCode}.png`;
+
+  const link = document.createElement("a");
+  link.download = fileName;
+  link.href = poster.toDataURL("image/png");
+  link.click();
 });
 
 fullscreenCode.addEventListener("click", () => {
   fullscreenCode.classList.remove("active");
 });
   /* ===== CHANGE 6: SAVE FULL CODE + QR AS IMAGE ===== */
-const saveQrBtn = document.getElementById("saveQrBtn");
 
-saveQrBtn.addEventListener("click", async () => {
-  const target = document.getElementById("fullscreenCodeText");
-  if (!target) return;
 
-  // Build filename parts
-  const fromCode = locationCodes[fromSel.value];
-  const toCode = locationCodes[toSel.value];
-  const slotCode = slotMap[slotSel.value].code;
-  const roleCode = selectedRole + lastVotePosition;
-
-  const fileName = `code_QR_${fromCode}-${toCode}-${slotCode}-${roleCode}.png`;
-
-  // Use native browser canvas rendering
- saveQrBtn.addEventListener("click", () => {
-  const qrCanvas = document.querySelector("#qr canvas");
-  if (!qrCanvas) {
-    alert("QR not ready");
-    return;
-  }
-
-  const fromCode = locationCodes[fromSel.value];
-  const toCode = locationCodes[toSel.value];
-  const slotCode = slotMap[slotSel.value].code;
-  const roleCode = selectedRole + lastVotePosition;
-
-  const fileName =
-    `CoDrive_${fromCode}-${toCode}-${slotCode}-${roleCode}.png`;
-
-  const link = document.createElement("a");
-  link.download = fileName;
-  link.href = qrCanvas.toDataURL("image/png");
-  link.click();
-});
-});
  });   
 </script>
 <script>
