@@ -423,14 +423,19 @@ button {
   text-align: center;
   max-width: 240px;
 }
-  #codeActionRow button {
+#codeActionRow {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+#codeActionRow button {
   background:#000;
   color:#fff;
   font-family:'Caveat', cursive;
   font-size:18px;
-  margin:0 8px;
-  padding:12px 16px;
-  }
+  padding:12px 18px;
+}
   #fullscreenCode {
   overflow: auto;
 }
@@ -1026,23 +1031,59 @@ fullscreenCodeText.innerHTML = `
     </div>
   </div>
 `;
-  const qrPayload = `
-Date: ${dateLine}
-From: ${LOCATIONS[fromSel.value].name}
-To: ${LOCATIONS[toSel.value].name}
-Slot: ${slotObj.label}
-Role: ${selectedRole === "R" ? "Rider" : "Provider"} #${lastVotePosition}
-`;
+  const fullDate = d.toLocaleDateString("en-IN", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric"
+});
+
+const roleText =
+  `${lastVotePosition}${lastVotePosition === 1 ? "st" :
+    lastVotePosition === 2 ? "nd" :
+    lastVotePosition === 3 ? "rd" : "th"} ` +
+  (selectedRole === "R" ? "Rider" : "Provider");
+
+const qrPayload = `
+${fullDate}
+From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})
+To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})
+Time: ${slotObj.label} (${slotObj.code})
+${roleText}
+`.trim();
 
 const qrDiv = document.getElementById("qr");
 qrDiv.innerHTML = "";
 
 new QRCode(qrDiv, {
-  text: qrPayload.trim(),
-  width: 220,
-  height: 220,
-  correctLevel: QRCode.CorrectLevel.M
+  text: qrPayload,
+  width: 240,
+  height: 240,
+  colorDark: "#000000",
+  colorLight: "#ffffff",
+  correctLevel: QRCode.CorrectLevel.H
 });
+
+// Create center white patch
+const centerPatch = document.createElement("div");
+centerPatch.style.position = "absolute";
+centerPatch.style.width = "90px";
+centerPatch.style.height = "90px";
+centerPatch.style.background = "#ffffff";
+centerPatch.style.top = "50%";
+centerPatch.style.left = "50%";
+centerPatch.style.transform = "translate(-50%, -50%)";
+centerPatch.style.display = "flex";
+centerPatch.style.alignItems = "center";
+centerPatch.style.justifyContent = "center";
+centerPatch.style.fontFamily = "Caveat, cursive";
+centerPatch.style.fontSize = "18px";
+centerPatch.style.fontWeight = "700";
+centerPatch.style.color = "#000";
+
+centerPatch.innerHTML = `Happy<br><b>CoDrive</b>-ing!`;
+qrDiv.style.position = "relative";
+qrDiv.appendChild(centerPatch);
   fullscreenCode.classList.add("active");
 });
 
@@ -1065,40 +1106,26 @@ saveQrBtn.addEventListener("click", async () => {
   const fileName = `code_QR_${fromCode}-${toCode}-${slotCode}-${roleCode}.png`;
 
   // Use native browser canvas rendering
-  const canvas = document.createElement("canvas");
-  const rect = target.getBoundingClientRect();
+ saveQrBtn.addEventListener("click", () => {
+  const qrCanvas = document.querySelector("#qr canvas");
+  if (!qrCanvas) {
+    alert("QR not ready");
+    return;
+  }
 
-  canvas.width = rect.width;
-  canvas.height = rect.height;
+  const fromCode = locationCodes[fromSel.value];
+  const toCode = locationCodes[toSel.value];
+  const slotCode = slotMap[slotSel.value].code;
+  const roleCode = selectedRole + lastVotePosition;
 
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const fileName =
+    `CoDrive_${fromCode}-${toCode}-${slotCode}-${roleCode}.png`;
 
-  // Draw DOM → canvas using SVG foreignObject (no libs)
-  const data = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-      <foreignObject width="100%" height="100%">
-        ${new XMLSerializer().serializeToString(target)}
-      </foreignObject>
-    </svg>
-  `;
-
-  const img = new Image();
-  const svg = new Blob([data], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(svg);
-
-  img.onload = () => {
-    ctx.drawImage(img, 0, 0);
-    URL.revokeObjectURL(url);
-
-    const link = document.createElement("a");
-    link.download = fileName;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  };
-
-  img.src = url;
+  const link = document.createElement("a");
+  link.download = fileName;
+  link.href = qrCanvas.toDataURL("image/png");
+  link.click();
+});
 });
  });   
 </script>
