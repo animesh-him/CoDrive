@@ -390,11 +390,7 @@ button {
   .route-row select {
   width: 48%;
   }
-  .tabs {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between;
-  }
+
   /* ===== CENTER TIME SLOT DROPDOWN ===== */
 #slotSelect {
   display: block;
@@ -472,7 +468,7 @@ button {
 
 <div id="codeActionRow">
   <button id="showCodeBtn">Show Code</button>
-  <button id="saveQrBtn">Save QR Code</button>
+  <button id="saveQrBtn" disabled>Save QR Code</button>
 </div>
 
 <!-- ===== TO LOCATION CODE SELECT ===== -->
@@ -832,7 +828,7 @@ showCodeBtn.disabled = true;
 saveQrBtn.disabled = true;
   function enableCodeActions() {
   
-  showCodeBtn.disabled = false;
+  showCodeBtn.disabled = !(slotSel.value && selectedRole && lastVotePosition);
   saveQrBtn.disabled = false;
 }
 
@@ -1003,10 +999,12 @@ if (!selectedRole || !lastVotePosition) {
   const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}`;
   const roleLine = selectedRole + lastVotePosition;
 
+  const fullDate = d.toLocaleDateString("en-IN", {
   weekday: "long",
   day: "numeric",
   month: "long",
   year: "numeric"
+});
 });
 
 const roleText =
@@ -1049,6 +1047,7 @@ new QRCode(qrDiv, {
   colorLight: "#ffffff",
   correctLevel: QRCode.CorrectLevel.H
 });
+  saveQrBtn.disabled = false;
 
 // Create center white patch
 const centerPatch = document.createElement("div");
