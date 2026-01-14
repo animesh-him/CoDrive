@@ -1011,10 +1011,17 @@ codeCircleBtn.addEventListener("click", () => {
   fullscreenCodeText.innerHTML = `
   <div class="fs-title">CoDrive</div>
 
-  <div class="fs-line fs-date">${dateLine}</div>
-  <div class="fs-line fs-route">${routeLine}</div>
-  <div class="fs-line fs-role">${roleLine}</div>
-  <div class="fs-line fs-explain">${explainLine}</div>
+  <div class="fs-line fs-route">
+    ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
+  </div>
+
+  <div class="fs-line fs-role">
+    ${selectedRole}${lastVotePosition}
+  </div>
+
+  <div class="fs-line fs-explain">
+    ${explainLine}
+  </div>
 
   <div id="qrWrap">
     <div id="qr"></div>
