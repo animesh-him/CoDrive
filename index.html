@@ -409,6 +409,13 @@ button {
   background: #fff;
   padding-bottom: 20px;
 }
+  .fs-title {
+  font-family: 'Caveat', cursive;
+  font-size: 22px;          /* half-ish of route line */
+  text-align: center;
+  margin-bottom: 6px;
+  opacity: 0.9;
+  }
 </style>
 </head>
 
@@ -1002,16 +1009,17 @@ codeCircleBtn.addEventListener("click", () => {
   const explainLine = qrPayload.replace(/\n/g, " • ");
 
   fullscreenCodeText.innerHTML = `
-    <div class="fs-line fs-date">${fullDate}</div>
-    <div class="fs-line fs-route">
-      ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
-    </div>
-    <div class="fs-line fs-role">
-      ${selectedRole}${lastVotePosition}
-    </div>
-    <div class="fs-line fs-explain">${explainLine}</div>
-    <div id="qrWrap"><div id="qr"></div></div>
-  `;
+  <div class="fs-title">CoDrive</div>
+
+  <div class="fs-line fs-date">${dateLine}</div>
+  <div class="fs-line fs-route">${routeLine}</div>
+  <div class="fs-line fs-role">${roleLine}</div>
+  <div class="fs-line fs-explain">${explainLine}</div>
+
+  <div id="qrWrap">
+    <div id="qr"></div>
+  </div>
+`;
 
   const qrDiv = document.getElementById("qr");
   qrDiv.innerHTML = "";
