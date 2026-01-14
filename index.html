@@ -895,7 +895,7 @@ window.addEventListener("load", loadWeekend);
 
   <script>
 /* ===== TO LOCATION CODE LOGIC (AUTO-SYNC SAFE) ===== */
-
+let latestQrPayload = "";
 window.addEventListener("DOMContentLoaded", () => {
 
   const toSelect = document.getElementById("to");           // existing
@@ -997,6 +997,7 @@ codeCircleBtn.addEventListener("click", () => {
     `Position: ${roleText}`,
     `Powered by CoDrive`
   ].join("\n");
+  latestQrPayload = qrPayload;
 
   const explainLine = qrPayload.replace(/\n/g, " • ");
 
@@ -1028,6 +1029,7 @@ codeCircleBtn.addEventListener("click", () => {
   fullscreenCode.classList.add("active");
 });
   const saveQrBtn = document.getElementById("saveQrBtn");
+  
   saveQrBtn.addEventListener("click", () => {
   const qrCanvas = document.querySelector("#qr canvas");
   if (!qrCanvas) {
@@ -1054,7 +1056,7 @@ codeCircleBtn.addEventListener("click", () => {
   // Text
   ctx.font = "20px system-ui";
   let y = 120;
-  qrPayload.split("\n").forEach(line => {
+  latestQrPayload.split("\n").forEach(line => {
     ctx.fillText(line, poster.width / 2, y);
     y += 30;
   });
