@@ -840,13 +840,11 @@ async function submitVote() {
   riderPrefBtn.disabled = true;
   providerPrefBtn.disabled = true;
 
-  showCodeBtn.style.display = "block";
+  document.getElementById("codeActionRow").style.display = "block";
+  document.getElementById("saveQrBtn").style.display = "inline-block";
 
   loadPopularity();
-  codeCircleBtn.click();
-setTimeout(() => {
-  fullscreenCode.classList.remove("active");
-}, 3000);
+  
 }
 riderPrefBtn.addEventListener("click", () => {
   selectedRole = "R";
