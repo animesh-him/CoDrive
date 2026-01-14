@@ -149,16 +149,6 @@ button {
   background: #333;
 }
 
-#showCodeBtn {
-  background: #000;
-  color: #fff;
-  font-family: 'Caveat', cursive;
-  font-size: 18px;
-  display: block;
-  margin: 16px auto;   /* THIS centers it */
-  text-align: center;
-  max-width: 200px;
-}
 .footer {
   margin-top: 40px;
   text-align: center;
@@ -466,8 +456,8 @@ button {
   <button id="providerPrefBtn" class="pref-btn">Provider</button>
 </div>
 
-<div id="codeActionRow">
-  <button id="showCodeBtn">Show Code</button>
+<div id="codeActionRow" style="display:none;">
+  <button id="showCodeBtn" disabled>Show Code</button>
   <button id="saveQrBtn" disabled>Save QR Code</button>
 </div>
 
@@ -823,16 +813,11 @@ async function submitVote() {
   const codeActionRow = document.getElementById("codeActionRow");
 const saveQrBtn = document.getElementById("saveQrBtn");
 
-codeActionRow.style.display = "flex";
-showCodeBtn.disabled = true;
-saveQrBtn.disabled = true;
-  function enableCodeActions() {
-  
-  showCodeBtn.disabled = !(slotSel.value && selectedRole && lastVotePosition);
-  saveQrBtn.disabled = false;
-}
+const codeActionRow = document.getElementById("codeActionRow");
 
-enableCodeActions();
+codeActionRow.style.display = "flex";
+showCodeBtn.disabled = false;
+saveQrBtn.disabled = true; // only enabled AFTER QR generation
 
   loadPopularity();
   
@@ -1005,7 +990,6 @@ if (!selectedRole || !lastVotePosition) {
   month: "long",
   year: "numeric"
 });
-});
 
 const roleText =
   `${lastVotePosition}${lastVotePosition === 1 ? "st" :
@@ -1058,23 +1042,67 @@ centerPatch.style.background = "#ffffff";
 centerPatch.style.top = "50%";
 centerPatch.style.left = "50%";
 centerPatch.style.transform = "translate(-50%, -50%)";
-centerPatch.style.display = "flex";
-centerPatch.style.alignItems = "center";
-centerPatch.style.justifyContent = "center";
-centerPatch.style.fontFamily = "Caveat, cursive";
-centerPatch.style.fontSize = "18px";
-centerPatch.style.fontWeight = "700";
-centerPatch.style.color = "#000";
-  centerPatch.style.opacity = "1";
+codeCircleBtn.addEventListener("click", () => {
+  if (!slotSel.value || !selectedRole || !lastVotePosition) {
+    alert("Please vote first to generate your code");
+    return;
+  }
 
-centerPatch.innerHTML = `
-  <div style="text-align:center; line-height:1.1;">
-    <div>Happy</div>
-    <div><b>CoDrive</b>-ing</div>
-  </div>
-`;
-qrDiv.style.position = "relative";
+  const d = istNow();
+  d.setDate(d.getDate() + dayOffset);
 
+  const slotObj = slotMap[slotSel.value];
+  if (!slotObj) return;
+
+  const fullDate = d.toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  const roleText =
+    `${lastVotePosition}${lastVotePosition === 1 ? "st" :
+      lastVotePosition === 2 ? "nd" :
+      lastVotePosition === 3 ? "rd" : "th"} ` +
+    (selectedRole === "R" ? "Rider" : "Provider");
+
+  const qrPayload = [
+    `Date: ${fullDate}`,
+    `From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})`,
+    `To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})`,
+    `Time Slot: ${slotObj.label} (${slotObj.code})`,
+    `Position: ${roleText}`,
+    `Powered by CoDrive`
+  ].join("\n");
+
+  const explainLine = qrPayload.replace(/\n/g, " • ");
+
+  fullscreenCodeText.innerHTML = `
+    <div class="fs-line fs-date">${fullDate}</div>
+    <div class="fs-line fs-route">
+      ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
+    </div>
+    <div class="fs-line fs-role">
+      ${selectedRole}${lastVotePosition}
+    </div>
+    <div class="fs-line fs-explain">${explainLine}</div>
+    <div id="qrWrap"><div id="qr"></div></div>
+  `;
+
+  const qrDiv = document.getElementById("qr");
+  qrDiv.innerHTML = "";
+
+  new QRCode(qrDiv, {
+    text: qrPayload,
+    width: 240,
+    height: 240,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  saveQrBtn.disabled = false;
   fullscreenCode.classList.add("active");
 });
   const saveQrBtn = document.getElementById("saveQrBtn");
