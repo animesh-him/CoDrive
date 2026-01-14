@@ -813,8 +813,6 @@ async function submitVote() {
   const codeActionRow = document.getElementById("codeActionRow");
 const saveQrBtn = document.getElementById("saveQrBtn");
 
-const codeActionRow = document.getElementById("codeActionRow");
-
 codeActionRow.style.display = "flex";
 showCodeBtn.disabled = false;
 saveQrBtn.disabled = true; // only enabled AFTER QR generation
@@ -966,82 +964,6 @@ toCodeSelect.addEventListener("change", () => {
 });
 
 // 2️⃣ Fullscreen view
-codeCircleBtn.addEventListener("click", () => {
-  if (!slotSel.value) return;
-
-if (!selectedRole || !lastVotePosition) {
-  alert("Please vote again to generate your code");
-  return;
-}
-
-  const d = istNow();
-  d.setDate(d.getDate() + dayOffset);
-
-  const dateLine = `D-${String(d.getDate()).padStart(2,"0")}-${d.toLocaleString("en-IN",{month:"short"})}-${d.getFullYear()}`;
-  const slotObj = slotMap[slotSel.value];
-  if (!slotObj) return;
-
-  const routeLine = `${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}`;
-  const roleLine = selectedRole + lastVotePosition;
-
-  const fullDate = d.toLocaleDateString("en-IN", {
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-  year: "numeric"
-});
-
-const roleText =
-  `${lastVotePosition}${lastVotePosition === 1 ? "st" :
-    lastVotePosition === 2 ? "nd" :
-    lastVotePosition === 3 ? "rd" : "th"} ` +
-  (selectedRole === "R" ? "Rider" : "Provider");
-
-const qrPayload = [
-  `Date: ${fullDate}`,
-  `From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})`,
-  `To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})`,
-  `Time Slot: ${slotObj.label} (${slotObj.code})`,
-  `Position: ${roleText}`,
-  `Powered by CoDrive`
-].join("\n");
-  const explainLine = qrPayload.replace(/\n/g, " • ");
-fullscreenCodeText.innerHTML = `
-  <div class="fs-line fs-date">${dateLine}</div>
-  <div class="fs-line fs-route">${routeLine}</div>
-  <div class="fs-line fs-role">${roleLine}</div>
-  <div class="fs-line fs-explain">${explainLine}</div>
-
-  <div id="qrWrap">
-    <div id="qr"></div>
-    
-  </div>
-`;
-  const fullDate = d.toLocaleDateString("en-IN", {
-  
-
-const qrDiv = document.getElementById("qr");
-qrDiv.innerHTML = "";
-
-new QRCode(qrDiv, {
-  text: qrPayload,
-  width: 240,
-  height: 240,
-  colorDark: "#000000",
-  colorLight: "#ffffff",
-  correctLevel: QRCode.CorrectLevel.H
-});
-  saveQrBtn.disabled = false;
-
-// Create center white patch
-const centerPatch = document.createElement("div");
-centerPatch.style.position = "absolute";
-centerPatch.style.width = "90px";
-centerPatch.style.height = "90px";
-centerPatch.style.background = "#ffffff";
-centerPatch.style.top = "50%";
-centerPatch.style.left = "50%";
-centerPatch.style.transform = "translate(-50%, -50%)";
 codeCircleBtn.addEventListener("click", () => {
   if (!slotSel.value || !selectedRole || !lastVotePosition) {
     alert("Please vote first to generate your code");
