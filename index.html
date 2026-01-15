@@ -444,6 +444,36 @@ button {
 .role-select button {
   white-space: nowrap;        /* text stays in one line */
 }
+  .video-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-fullscreen-inner {
+  width: 95vw;
+  height: 95vh;
+  position: relative;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #000;
+  border-radius: 12px;
+}
+
+.video-fullscreen.hidden {
+  display: none;
+}
+
+.video-fullscreen-inner .weekend-video-content {
+  position: relative;
+  inset: 0;
+  overflow: hidden;
+}
 </style>
 </head>
 
@@ -1235,6 +1265,34 @@ fullscreenCode.addEventListener("click", () => {
     protect(document.getElementById("ownerBtn"));
   });
 })();
+</script>
+<!-- FULLSCREEN WEEKEND VIDEO CONTENT -->
+<div id="weekendFullscreen" class="video-fullscreen hidden">
+  <div class="video-fullscreen-inner"></div>
+</div>  
+<script>
+/* ===== WEEKEND VIDEO FULLSCREEN AUTOFIT ===== */
+const weekendBox = document.querySelector('.weekend-video-bg');
+
+const fullscreenDiv = document.getElementById('weekendFullscreen');
+const fullscreenInner = fullscreenDiv.querySelector('.video-fullscreen-inner');
+
+weekendBox.addEventListener('click', () => {
+  fullscreenInner.innerHTML = weekendBox.innerHTML;
+  fullscreenDiv.classList.remove('hidden');
+
+  // Re-run autofit
+  const box = fullscreenInner.querySelector('.weekend-video-content');
+  if (box) fitTextToBox(box, 12); // minimum font size 12px
+});
+
+// Close on click outside
+fullscreenDiv.addEventListener('click', (e) => {
+  if (e.target === fullscreenDiv) {
+    fullscreenDiv.classList.add('hidden');
+    fullscreenInner.innerHTML = '';
+  }
+});
 </script>
   
 <div class="footer">
