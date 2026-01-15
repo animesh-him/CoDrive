@@ -193,14 +193,14 @@ button {
   font-size: 18px;
   font-weight: bold;
 }
-
+/*
 .weekend-title {
   font-family: 'Caveat', cursive;
   font-size: 24px;   /* ⬅️ increase this */
-  line-height: 1.15;
+/*  line-height: 1.15;
   font-weight: 600;
 }
-.weekend-meta,
+.weekend-meta,*/
 .circle-label {
   font-family: 'Caveat', cursive;
 }
@@ -344,12 +344,26 @@ button {
   z-index: 0;
   transform: translateZ(0);
 }
-
+/*
 .weekend-video-content {
   position: relative;
   z-index: 1;
   text-align: center;
   font-family: 'Caveat', cursive;
+}*/
+  .weekend-video-content {
+  font-family: 'Caveat', cursive;
+    position: absolute;
+  inset: 0;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.weekend-title,
+.weekend-meta {
+  font-family: 'Caveat', cursive;
+  word-break: break-word;
 }
 .tabs .pref-btn {
   background: #000 !important;
@@ -547,6 +561,25 @@ button {
 </div>
 
 <script>
+  
+function fitTextToBox(container, min = 10) {
+  const textEls = container.querySelectorAll('.weekend-title, .weekend-meta');
+
+  let size = 24; // start size
+  textEls.forEach(el => el.style.fontSize = size + 'px');
+
+  while (container.scrollHeight > container.clientHeight && size > min) {
+    size--;
+    textEls.forEach(el => el.style.fontSize = size + 'px');
+  }
+}
+
+// call after content loads
+window.addEventListener('load', () => {
+  const box = document.querySelector('.weekend-video-content');
+  fitTextToBox(box);
+});
+
 /* ===== CENTRAL LOCATION REGISTRY ==== */
 const LOCATIONS = {
   eldorado: { name: "Brigade Eldorado", includeFrom: true, includeTo: false },
