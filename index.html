@@ -445,6 +445,19 @@ button {
   white-space: nowrap;        /* text stays in one line */
 }
 
+  .architecture-diagram {
+  max-width: 100%;
+  margin: 32px auto; /* spacing above footer */
+  text-align: center;
+}
+
+.architecture-diagram img {
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* ensures image keeps its aspect ratio */
+  border-radius: 12px; /* optional: nice rounded corners */
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3); /* optional: subtle shadow */
+}
 </style>
 </head>
 
@@ -1238,7 +1251,9 @@ fullscreenCode.addEventListener("click", () => {
 })();
 </script>
 
-
+<div class="architecture-diagram">
+  <img src="codrive_architecture_final.png" alt="CoDrive Architecture Diagram" />
+</div>
   
 <div class="footer">
   <div class="muted">
