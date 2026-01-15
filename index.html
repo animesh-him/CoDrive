@@ -416,6 +416,20 @@ button {
   margin-bottom: 6px;
   opacity: 0.9;
   }
+  /* ===== ATTEND AS RIDER / OWNER SAME LINE ===== */
+.role-select {
+  display: flex;
+  font-family: 'Caveat', cursive;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+  flex-wrap: nowrap;          /* prevents line break */
+}
+
+.role-select button {
+  white-space: nowrap;        /* text stays in one line */
+}
 </style>
 </head>
 
@@ -510,9 +524,10 @@ button {
     <option value="eldorado">Brigade Eldorado</option>
   </select>
 
+  <<div class="role-select">
   <button id="riderBtn">Attend as Rider</button>
   <button id="ownerBtn">Attend as Car Owner</button>
-
+  </div>
   <div class="circle-wrap">
     <div>
       <div class="circle" id="riderCount">0</div>
