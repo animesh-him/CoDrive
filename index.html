@@ -444,53 +444,7 @@ button {
 .role-select button {
   white-space: nowrap;        /* text stays in one line */
 }
-  .video-fullscreen {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.95);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.video-fullscreen-inner {
-  width: 95vw;
-  height: 95vh;
-  position: relative;
-  padding: 16px;
-  box-sizing: border-box;
-  overflow: hidden;
-  background: #000;
-  border-radius: 12px;
-}
-
-.video-fullscreen.hidden {
-  display: none;
-}
-
-.video-fullscreen-inner .weekend-video-content {
-  position: relative;
-  inset: 0;
-  overflow: hidden;
-}
-  /* ===== MOBILE TAP HINT FOR WEEKEND VIDEO ===== */
-.weekend-video-bg {
-  position: relative; /* already set, safe */
-  cursor: pointer;    /* indicates tappable */
-}
-
-.weekend-video-bg::after {
-  content: "Tap to expand";
-  position: absolute;
-  bottom: 8px;
-  right: 12px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.7); /* subtle, won't clash */
-  pointer-events: none; /* doesn’t block clicks */
-  font-family: 'Caveat', cursive;
-  z-index: 5; /* above video, below fullscreen overlay */
-}
 </style>
 </head>
 
@@ -1283,34 +1237,8 @@ fullscreenCode.addEventListener("click", () => {
   });
 })();
 </script>
-<!-- FULLSCREEN WEEKEND VIDEO CONTENT -->
-<div id="weekendFullscreen" class="video-fullscreen hidden">
-  <div class="video-fullscreen-inner"></div>
-</div>  
-<script>
-/* ===== WEEKEND VIDEO FULLSCREEN AUTOFIT ===== */
-const weekendBox = document.querySelector('.weekend-video-bg');
 
-const fullscreenDiv = document.getElementById('weekendFullscreen');
-const fullscreenInner = fullscreenDiv.querySelector('.video-fullscreen-inner');
 
-weekendBox.addEventListener('click', () => {
-  fullscreenInner.innerHTML = weekendBox.innerHTML;
-  fullscreenDiv.classList.remove('hidden');
-
-  // Re-run autofit
-  const box = fullscreenInner.querySelector('.weekend-video-content');
-  if (box) fitTextToBox(box, 12); // minimum font size 12px
-});
-
-// Close on click outside
-fullscreenDiv.addEventListener('click', (e) => {
-  if (e.target === fullscreenDiv) {
-    fullscreenDiv.classList.add('hidden');
-    fullscreenInner.innerHTML = '';
-  }
-});
-</script>
   
 <div class="footer">
   <div class="muted">
