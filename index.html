@@ -926,9 +926,25 @@ function nextSaturday() {
   d.setHours(0,0,0,0);
   return d;
 }
+function currentWeekendSaturday() {
+  const d = istNow(); // IST time
+  const day = d.getDay(); // 0 = Sunday, 6 = Saturday
 
+  const saturday = new Date(d);
+
+  if (day === 0) {
+    // Sunday → move back to previous Saturday
+    saturday.setDate(d.getDate() - 1);
+  } else {
+    // Any other day → move back to latest Saturday
+    saturday.setDate(d.getDate() - (day - 6));
+  }
+
+  saturday.setHours(0, 0, 0, 0);
+  return saturday;
+}
 function saturdayKey() {
-  return nextSaturday().toISOString().slice(0,10);
+  return currentWeekendSaturday().toISOString().slice(0, 10);
 }
 
 function formatSaturday(d) {
@@ -941,7 +957,7 @@ function formatSaturday(d) {
 
 async function loadWeekend() {
   const key = saturdayKey();
-  weekendDateEl.textContent = formatSaturday(nextSaturday());
+  weekendDateEl.textContent = formatSaturday(currentWeekendSaturday());
 
   const res = await fetch(WORKER + "/weekend/get", {
     method: "POST",
