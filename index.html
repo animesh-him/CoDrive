@@ -918,14 +918,7 @@ const ownerBtn = document.getElementById("ownerBtn");
 const riderCountEl = document.getElementById("riderCount");
 const ownerCountEl = document.getElementById("ownerCount");
 
-function nextSaturday() {
-  const d = istNow(); // uses existing function
-  const day = d.getDay();
-  const diff = (6 - day + 7) % 7 || 7;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0,0,0,0);
-  return d;
-}
+
 function currentWeekendSaturday() {
   const d = istNow(); // IST time
   const day = d.getDay(); // 0 = Sunday, 6 = Saturday
