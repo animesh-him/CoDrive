@@ -1005,22 +1005,10 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  const code = codeCircleBtn.textContent;
-  if (!code || code === "--") return;
-
-  fullscreenCodeText.innerHTML = `
-    <div style="
-      font-size: min(60vw, 90vh);
-      font-weight: 900;
-      text-align: center;
-      width: 100%;
-    ">
-      ${code}
-    </div>
-  `;
-
-  fullscreenCode.classList.add("active");
-});
+  if (!slotSel.value || !selectedRole || !lastVotePosition) {
+    alert("Please vote first to generate your code");
+    return;
+  }
 
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
