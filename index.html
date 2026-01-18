@@ -1005,10 +1005,10 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  if (!slotSel.value || !selectedRole || !lastVotePosition) {
-    alert("Please vote first to generate your code");
-    return;
-  }
+if (!toSel.value) {
+  alert("Please select destination");
+  return;
+}
 
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
