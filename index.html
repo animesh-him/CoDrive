@@ -458,25 +458,56 @@ button {
   border-radius: 12px; /* optional: nice rounded corners */
   box-shadow: 0 6px 20px rgba(0,0,0,0.3); /* optional: subtle shadow */
 }
-  input[list] {
+  .combo {
+  position: relative;
   width: 48%;
+}
+
+.combo-display {
   padding: 12px;
-  margin-top: 12px;
+  background: #fff;
+  color: #000;
   border-radius: 10px;
-  border: none;
+  cursor: pointer;
   font-size: 15px;
-  }
-  input[list] {
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, #666 50%),
-    linear-gradient(135deg, #666 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 18px,
-    calc(100% - 12px) 18px;
-  background-size: 6px 6px;
-  background-repeat: no-repeat;
-  }
+}
+
+.combo-search {
+  display: none;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  outline: none;
+}
+
+.combo.open .combo-search {
+  display: block;
+}
+
+.combo-list {
+  display: none;
+  position: absolute;
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 10px;
+  z-index: 999;
+}
+
+.combo.open .combo-list {
+  display: block;
+}
+
+.combo-option {
+  padding: 10px;
+  cursor: pointer;
+  color: #000;
+}
+
+.combo-option:hover {
+  background: #eee;
+}
 </style>
 </head>
 
@@ -824,6 +855,58 @@ function restoreStateFromPopularity(data) {
     
   }
 }
+function createCombo(comboId, includeKey, onChange) {
+  const combo = document.getElementById(comboId);
+  const display = combo.querySelector(".combo-display");
+  const search = combo.querySelector(".combo-search");
+  const list = combo.querySelector(".combo-list");
+
+  combo.valueKey = "";
+
+  const items = Object.entries(LOCATIONS)
+    .filter(([, loc]) => loc[includeKey])
+    .map(([key, loc]) => ({
+      key,
+      label: `${loc.name} (${locationCodes[key]})`
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  function render(filter = "") {
+    list.innerHTML = "";
+    items
+      .filter(i => i.label.toLowerCase().includes(filter.toLowerCase()))
+      .forEach(i => {
+        const div = document.createElement("div");
+        div.className = "combo-option";
+        div.textContent = i.label;
+        div.onclick = () => {
+          display.textContent = i.label;
+          combo.valueKey = i.key;
+          combo.classList.remove("open");
+          search.value = "";
+          onChange();
+        };
+        list.appendChild(div);
+      });
+  }
+
+  display.onclick = () => {
+    combo.classList.toggle("open");
+    search.focus();
+    render();
+  };
+
+  search.oninput = () => render(search.value);
+
+  document.addEventListener("click", e => {
+    if (!combo.contains(e.target)) combo.classList.remove("open");
+  });
+    }  
+  const fromCombo = document.getElementById("fromCombo");
+const toCombo = document.getElementById("toCombo");
+
+createCombo("fromCombo", "includeFrom", loadPopularity);
+createCombo("toCombo", "includeTo", loadPopularity);
   
 async function loadPopularity() {
  const prevSlot = slotSel.value;
