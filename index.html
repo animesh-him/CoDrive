@@ -1005,11 +1005,30 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
+
+  // 🔹 PREVIEW MODE (no selections yet)
   if (!slotSel.value || !selectedRole || !lastVotePosition) {
-    alert("Please vote first to generate your code");
-    return;
+    const code = codeCircleBtn.textContent;
+    if (!code || code === "--") return;
+
+    fullscreenCodeText.innerHTML = `
+      <div style="
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:100%;
+        height:100%;
+        font-size:min(70vw,90vh);
+        font-weight:900;
+      ">
+        ${code}
+      </div>
+    `;
+    fullscreenCode.classList.add("active");
+    return; // ⬅️ IMPORTANT: exit before QR logic
   }
 
+  // 🔹 VERIFIED MODE (EXISTING CODE — UNCHANGED)
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
 
@@ -1037,29 +1056,26 @@ codeCircleBtn.addEventListener("click", () => {
     `Position: ${roleText}`,
     `Powered by CoDrive`
   ].join("\n");
+
   latestQrPayload = qrPayload;
 
   const explainLine = qrPayload.replace(/\n/g, " • ");
 
   fullscreenCodeText.innerHTML = `
-  <div class="fs-title">CoDrive</div>
-
-  <div class="fs-line fs-route">
-    ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
-  </div>
-
-  <div class="fs-line fs-role">
-    ${selectedRole}${lastVotePosition}
-  </div>
-
-  <div class="fs-line fs-explain">
-    ${explainLine}
-  </div>
-
-  <div id="qrWrap">
-    <div id="qr"></div>
-  </div>
-`;
+    <div class="fs-title">CoDrive</div>
+    <div class="fs-line fs-route">
+      ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
+    </div>
+    <div class="fs-line fs-role">
+      ${selectedRole}${lastVotePosition}
+    </div>
+    <div class="fs-line fs-explain">
+      ${explainLine}
+    </div>
+    <div id="qrWrap">
+      <div id="qr"></div>
+    </div>
+  `;
 
   const qrDiv = document.getElementById("qr");
   qrDiv.innerHTML = "";
