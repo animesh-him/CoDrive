@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -275,10 +276,6 @@ button {
 #fullscreenCodeText {
   width: 100%;
   text-align: center;
-  align-items: center;  /* center vertically */
-  padding-top: 0;       /* remove extra top padding */
-  display: flex;        /* make flex to respect align-items */
-  justify-content: center;
 }
 
 .fs-line {
@@ -1009,19 +1006,11 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  fullscreenCode.classList.remove("scenario1"); // reset
-
-  // 🔹 SCENARIO 1: No from/to/time/role selected → show only code
   if (!slotSel.value || !selectedRole || !lastVotePosition) {
-    const code = codeCircleBtn.textContent;
-    if (!code || code === "--") return;
-
-    fullscreenCode.innerHTML = `<div>${code}</div>`;
-    fullscreenCode.classList.add("active", "scenario1"); // add scenario1 class
-    return; // exit BEFORE any QR logic
+    alert("Please vote first to generate your code");
+    return;
   }
 
-  // 🔹 SCENARIO 2: All selections made → existing logic (QR + full route info)
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
 
@@ -1049,26 +1038,29 @@ codeCircleBtn.addEventListener("click", () => {
     `Position: ${roleText}`,
     `Powered by CoDrive`
   ].join("\n");
-
   latestQrPayload = qrPayload;
 
   const explainLine = qrPayload.replace(/\n/g, " • ");
 
   fullscreenCodeText.innerHTML = `
-    <div class="fs-title">CoDrive</div>
-    <div class="fs-line fs-route">
-      ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
-    </div>
-    <div class="fs-line fs-role">
-      ${selectedRole}${lastVotePosition}
-    </div>
-    <div class="fs-line fs-explain">
-      ${explainLine}
-    </div>
-    <div id="qrWrap">
-      <div id="qr"></div>
-    </div>
-  `;
+  <div class="fs-title">CoDrive</div>
+
+  <div class="fs-line fs-route">
+    ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
+  </div>
+
+  <div class="fs-line fs-role">
+    ${selectedRole}${lastVotePosition}
+  </div>
+
+  <div class="fs-line fs-explain">
+    ${explainLine}
+  </div>
+
+  <div id="qrWrap">
+    <div id="qr"></div>
+  </div>
+`;
 
   const qrDiv = document.getElementById("qr");
   qrDiv.innerHTML = "";
