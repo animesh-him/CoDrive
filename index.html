@@ -508,6 +508,46 @@ button {
 .combo-option:hover {
   background: #eee;
 }
+  /* Overlay base */
+.combo-overlay {
+  position: fixed;
+  inset: 0;
+  background: #121212;
+  color: #fff;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+.combo-overlay.hidden {
+  display: none;
+}
+
+.combo-overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  font-size: 18px;
+  border-bottom: 1px solid #333;
+}
+
+#comboOverlaySearch {
+  padding: 14px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+#comboOverlayList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.overlay-option {
+  padding: 16px;
+  border-bottom: 1px solid #333;
+}
 </style>
 </head>
 
@@ -850,10 +890,14 @@ function createCombo(comboId, includeKey, onChange) {
   }
 
   display.onclick = () => {
+  if (window.innerWidth <= 768) {
+    openOverlay(combo, items, onChange, display.textContent);
+  } else {
     combo.classList.toggle("open");
     search.focus();
     render();
-  };
+  }
+};
 
   search.oninput = () => render(search.value);
 
@@ -866,6 +910,48 @@ const toCombo = document.getElementById("toCombo");
 
 createCombo("fromCombo", "includeFrom", loadPopularity);
 createCombo("toCombo", "includeTo", loadPopularity);
+
+  const overlay = document.getElementById("comboOverlay");
+const overlayTitle = document.getElementById("comboOverlayTitle");
+const overlaySearch = document.getElementById("comboOverlaySearch");
+const overlayList = document.getElementById("comboOverlayList");
+const overlayClose = document.getElementById("comboOverlayClose");
+
+function openOverlay(combo, items, onChange, title) {
+  overlay.classList.remove("hidden");
+  overlayTitle.textContent = title;
+  overlaySearch.value = "";
+  renderOverlay(items, combo, onChange);
+
+  overlaySearch.oninput = () =>
+    renderOverlay(
+      items.filter(i =>
+        i.label.toLowerCase().includes(overlaySearch.value.toLowerCase())
+      ),
+      combo,
+      onChange
+    );
+}
+
+function renderOverlay(items, combo, onChange) {
+  overlayList.innerHTML = "";
+  items.forEach(i => {
+    const div = document.createElement("div");
+    div.className = "overlay-option";
+    div.textContent = i.label;
+    div.onclick = () => {
+      combo.valueKey = i.key;
+      combo.querySelector(".combo-display").textContent = i.label;
+      overlay.classList.add("hidden");
+      onChange();
+    };
+    overlayList.appendChild(div);
+  });
+}
+
+overlayClose.onclick = () => {
+  overlay.classList.add("hidden");
+};
   
 async function loadPopularity() {
  const prevSlot = slotSel.value;
@@ -1350,7 +1436,14 @@ fullscreenCode.addEventListener("click", () => {
   });
 })();
 </script>
-
+<div id="comboOverlay" class="combo-overlay hidden">
+  <div class="combo-overlay-header">
+    <span id="comboOverlayTitle"></span>
+    <button id="comboOverlayClose">✕</button>
+  </div>
+  <input id="comboOverlaySearch" placeholder="Search..." />
+  <div id="comboOverlayList"></div>
+</div>
   
 
  
