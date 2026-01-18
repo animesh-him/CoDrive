@@ -275,6 +275,10 @@ button {
 #fullscreenCodeText {
   width: 100%;
   text-align: center;
+  align-items: center;  /* center vertically */
+  padding-top: 0;       /* remove extra top padding */
+  display: flex;        /* make flex to respect align-items */
+  justify-content: center;
 }
 
 .fs-line {
