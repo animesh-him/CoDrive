@@ -1012,19 +1012,20 @@ codeCircleBtn.addEventListener("click", () => {
     if (!code || code === "--") return;
 
     fullscreenCodeText.innerHTML = `
-      <div style="
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        width:100%;
-        height:100%;
-        font-size:min(70vw,90vh);
-        font-weight:900;
-      ">
-        ${code}
-      </div>
-    `;
-    fullscreenCode.classList.add("active");
+  <div style="
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    height:100%;
+    font-size:min(60vw, 80vh);
+    font-weight:900;
+    text-align:center;
+  ">
+    ${code}
+  </div>
+`;
+fullscreenCode.classList.add("active");
     return; // ⬅️ IMPORTANT: exit before QR logic
   }
 
