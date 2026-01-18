@@ -535,12 +535,18 @@ button {
   <button id="tomorrowBtn">Tomorrow</button>
 </div>
 
-<div class="to-code-row route-row">
-  <input id="from" list="fromList" placeholder="From" autocomplete="off">
-<datalist id="fromList"></datalist>
+<div class="route-row">
+  <div class="combo" id="fromCombo">
+    <div class="combo-display">From</div>
+    <input class="combo-search" placeholder="Search from location">
+    <div class="combo-list"></div>
+  </div>
 
-<input id="to" list="toList" placeholder="To" autocomplete="off">
-<datalist id="toList"></datalist>
+  <div class="combo" id="toCombo">
+    <div class="combo-display">To</div>
+    <input class="combo-search" placeholder="Search destination">
+    <div class="combo-list"></div>
+  </div>
 </div>
   
 <div id="popularity"></div>
@@ -693,8 +699,7 @@ let dayOffset = 0;
 
 const todayBtn = document.getElementById("todayBtn");
 const tomorrowBtn = document.getElementById("tomorrowBtn");
-const fromSel = document.getElementById("from");
-const toSel = document.getElementById("to");
+
 /* ===== GLOBAL LOCATION CODE MAP ===== */
 const locationCodes = {};
 (() => {
@@ -710,45 +715,7 @@ const locationCodes = {};
   });
 })();
   
-  function populateFromTo() {
-  const fromList = document.getElementById("fromList");
-  const toList = document.getElementById("toList");
-
-  fromList.innerHTML = "";
-  toList.innerHTML = "";
-
-  const sorted = Object.entries(LOCATIONS)
-    .map(([value, loc]) => ({ value, ...loc }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-
-  sorted.forEach(loc => {
-    const label = `${loc.name} (${locationCodes[loc.value]})`;
-
-    if (loc.includeFrom) {
-      const opt = document.createElement("option");
-      opt.value = label;
-      opt.dataset.value = loc.value;
-      fromList.appendChild(opt);
-    }
-
-    if (loc.includeTo) {
-      const opt = document.createElement("option");
-      opt.value = label;
-      opt.dataset.value = loc.value;
-      toList.appendChild(opt);
-    }
-  });
-}
-  function resolveLocation(inputEl, includeKey) {
-  const text = inputEl.value;
-  const match = Object.entries(LOCATIONS).find(
-    ([, loc]) =>
-      loc[includeKey] &&
-      text.startsWith(loc.name)
-  );
-  return match ? match[0] : "";
-  }
-populateFromTo();
+  
   const popDiv = document.getElementById("popularity");
 const slotSel = document.getElementById("slotSelect");
 const riderPrefBtn = document.getElementById("riderPrefBtn");
@@ -775,15 +742,7 @@ let slotMap = {};
 todayBtn.onclick = () => setDay(0);
 tomorrowBtn.onclick = () => setDay(1);
 
-fromSel.addEventListener("input", () => {
-  fromSel.valueKey = resolveLocation(fromSel, "includeFrom");
-  loadPopularity();
-});
 
-toSel.addEventListener("input", () => {
-  toSel.valueKey = resolveLocation(toSel, "includeTo");
-  loadPopularity();
-});
 
 function setDay(d) {
   dayOffset = d;
@@ -914,7 +873,7 @@ async function loadPopularity() {
   popDiv.innerHTML = "";
   slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
 
-  if (!fromSel.valueKey || !toSel.valueKey) return;
+  if (!fromCombo.valueKey || !toCombo.valueKey) return;
 
   const slots = futureSlots();
   if (!slots.length) return;
@@ -1000,7 +959,7 @@ async function submitVote() {
     return;
   }
 
-  if (!fromSel.valueKey || !toSel.valueKey || !slotSel.value || !selectedRole) return;
+  if (!fromCombo.valueKey || !toCombo.valueKey || !slotSel.value || !selectedRole) return;
 
   const slotObj = slotMap[slotSel.value];
   if (!slotObj) return;
@@ -1010,8 +969,8 @@ async function submitVote() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       date: dateStr(),
-      from: fromSel.valueKey,
-      to: toSel.valueKey,
+      from: fromCombo.valueKey,
+      to: toCombo.valueKey,
       slot: slotObj.label,
       role: selectedRole
     })
@@ -1123,7 +1082,7 @@ window.addEventListener("load", loadWeekend);
 let latestQrPayload = "";
 window.addEventListener("DOMContentLoaded", () => {
 
-  const toSelect = document.getElementById("to");           // existing
+  const toSelect = document.getElementById("toCombo");           // existing
   const toCodeSelect = document.getElementById("toCodeSelect");
   
   const codeCircleBtn = document.getElementById("codeCircleBtn");
@@ -1163,19 +1122,7 @@ Object.entries(LOCATIONS)
   });
 
   /* === SYNC: To location → Code === */
-  toSelect.addEventListener("change", () => {
-  const value = toSel.valueKey;
-  if (!value) {
-    codeCircleBtn.textContent = "--";
-    codeCircleBtn.disabled = true;
-    toCodeSelect.value = "";
-    return;
-  }
-  const code = locationCodes[value];
-  toCodeSelect.value = code;
-  codeCircleBtn.textContent = code;
-  codeCircleBtn.disabled = false;
-});
+  
   // 1️⃣ Bind location → code circle
 toCodeSelect.addEventListener("change", () => {
   const code = toCodeSelect.value;
@@ -1218,8 +1165,8 @@ codeCircleBtn.addEventListener("click", () => {
 
   const qrPayload = [
     `Date: ${fullDate}`,
-    `From: ${LOCATIONS[fromSel.valueKey].name} (${locationCodes[fromSel.valueKey]})`,
-    `To: ${LOCATIONS[toSel.valueKey].name} (${locationCodes[toSel.valueKey]})`,
+    `From: ${LOCATIONS[fromCombo.valueKey].name} (${locationCodes[fromCombo.valueKey]})`,
+    `To: ${LOCATIONS[toCombo.valueKey].name} (${locationCodes[toCombo.valueKey]})`,
     `Time Slot: ${slotObj.label} (${slotObj.code})`,
     `Position: ${roleText}`,
     `Powered by CoDrive`
@@ -1232,7 +1179,7 @@ codeCircleBtn.addEventListener("click", () => {
   <div class="fs-title">CoDrive</div>
 
   <div class="fs-line fs-route">
-    ${locationCodes[fromSel.valueKey]}-${locationCodes[toSel.valueKey]}-${slotObj.code}
+    ${locationCodes[fromCombo.valueKey]}-${locationCodes[toCombo.valueKey]}-${slotObj.code}
   </div>
 
   <div class="fs-line fs-role">
@@ -1289,8 +1236,8 @@ codeCircleBtn.addEventListener("click", () => {
   ctx.fillText("CoDrive", poster.width / 2, 60);
 
 // === BIG CODES BELOW CoDrive ===
-const fromCode = locationCodes[fromSel.valueKey];
-const toCode = locationCodes[toSel.valueKey];
+const fromCode = locationCodes[fromCombo.valueKey];
+const toCode = locationCodes[toCombo.valueKey];
 
 const slotObj = slotMap[slotSel.value];
 if (!slotObj) return;
