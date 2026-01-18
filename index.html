@@ -1009,31 +1009,19 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
+  fullscreenCode.classList.remove("scenario1"); // reset
 
-  // 🔹 PREVIEW MODE (no selections yet)
+  // 🔹 SCENARIO 1: No from/to/time/role selected → show only code
   if (!slotSel.value || !selectedRole || !lastVotePosition) {
     const code = codeCircleBtn.textContent;
     if (!code || code === "--") return;
 
-    fullscreenCodeText.innerHTML = `
-  <div style="
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:100%;
-    height:100%;
-    font-size:min(60vw, 80vh);
-    font-weight:900;
-    text-align:center;
-  ">
-    ${code}
-  </div>
-`;
-fullscreenCode.classList.add("active");
-    return; // ⬅️ IMPORTANT: exit before QR logic
+    fullscreenCode.innerHTML = `<div>${code}</div>`;
+    fullscreenCode.classList.add("active", "scenario1"); // add scenario1 class
+    return; // exit BEFORE any QR logic
   }
 
-  // 🔹 VERIFIED MODE (EXISTING CODE — UNCHANGED)
+  // 🔹 SCENARIO 2: All selections made → existing logic (QR + full route info)
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
 
