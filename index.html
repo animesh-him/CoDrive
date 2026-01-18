@@ -458,6 +458,14 @@ button {
   border-radius: 12px; /* optional: nice rounded corners */
   box-shadow: 0 6px 20px rgba(0,0,0,0.3); /* optional: subtle shadow */
 }
+  input[list] {
+  width: 48%;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  }
 </style>
 </head>
 
@@ -486,13 +494,11 @@ button {
 </div>
 
 <div class="to-code-row route-row">
-  <select id="from">
-    <option value="">From</option>
-  </select>
+  <input id="from" list="fromList" placeholder="From" autocomplete="off">
+<datalist id="fromList"></datalist>
 
-  <select id="to">
-    <option value="">To</option>
-  </select>
+<input id="to" list="toList" placeholder="To" autocomplete="off">
+<datalist id="toList"></datalist>
 </div>
   
 <div id="popularity"></div>
@@ -661,9 +667,13 @@ const locationCodes = {};
     locationCodes[loc.value] = letter + letterCount[letter];
   });
 })();
+  
   function populateFromTo() {
-  fromSel.innerHTML = `<option value="">From</option>`;
-  toSel.innerHTML = `<option value="">To</option>`;
+  const fromList = document.getElementById("fromList");
+  const toList = document.getElementById("toList");
+
+  fromList.innerHTML = "";
+  toList.innerHTML = "";
 
   const sorted = Object.entries(LOCATIONS)
     .map(([value, loc]) => ({ value, ...loc }))
@@ -673,13 +683,29 @@ const locationCodes = {};
     const label = `${loc.name} (${locationCodes[loc.value]})`;
 
     if (loc.includeFrom) {
-      fromSel.appendChild(new Option(label, loc.value));
+      const opt = document.createElement("option");
+      opt.value = label;
+      opt.dataset.value = loc.value;
+      fromList.appendChild(opt);
     }
+
     if (loc.includeTo) {
-      toSel.appendChild(new Option(label, loc.value));
+      const opt = document.createElement("option");
+      opt.value = label;
+      opt.dataset.value = loc.value;
+      toList.appendChild(opt);
     }
   });
 }
+  function resolveLocation(inputEl, includeKey) {
+  const text = inputEl.value;
+  const match = Object.entries(LOCATIONS).find(
+    ([, loc]) =>
+      loc[includeKey] &&
+      text.startsWith(loc.name)
+  );
+  return match ? match[0] : "";
+  }
 populateFromTo();
   const popDiv = document.getElementById("popularity");
 const slotSel = document.getElementById("slotSelect");
@@ -707,16 +733,13 @@ let slotMap = {};
 todayBtn.onclick = () => setDay(0);
 tomorrowBtn.onclick = () => setDay(1);
 fromSel.addEventListener("change", () => {
-  [...toSel.options].forEach(o => {
-    o.disabled = o.value === fromSel.value && o.value !== "";
-  });
+fromSel.addEventListener("input", () => {
+  fromSel.valueKey = resolveLocation(fromSel, "includeFrom");
   loadPopularity();
 });
 
-toSel.addEventListener("change", () => {
-  [...fromSel.options].forEach(o => {
-    o.disabled = o.value === toSel.value && o.value !== "";
-  });
+toSel.addEventListener("input", () => {
+  toSel.valueKey = resolveLocation(toSel, "includeTo");
   loadPopularity();
 });
 
@@ -797,7 +820,7 @@ async function loadPopularity() {
   popDiv.innerHTML = "";
   slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
 
-  if (!fromSel.value || !toSel.value) return;
+  if (!fromSel.valueKey || !toSel.valueKey) return;
 
   const slots = futureSlots();
   if (!slots.length) return;
@@ -883,7 +906,7 @@ async function submitVote() {
     return;
   }
 
-  if (!fromSel.value || !toSel.value || !slotSel.value || !selectedRole) return;
+  if (!fromSel.valueKey || !toSel.valueKey || !slotSel.value || !selectedRole) return;
 
   const slotObj = slotMap[slotSel.value];
   if (!slotObj) return;
@@ -893,8 +916,8 @@ async function submitVote() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       date: dateStr(),
-      from: fromSel.value,
-      to: toSel.value,
+      from: fromSel.valueKey,
+      to: toSel.valueKey,
       slot: slotObj.label,
       role: selectedRole
     })
@@ -1075,7 +1098,7 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  if (!slotSel.value || !selectedRole || !lastVotePosition) {
+  if (!slotSel.valuekey || !selectedRole || !lastVotePosition) {
     alert("Please vote first to generate your code");
     return;
   }
@@ -1101,8 +1124,8 @@ codeCircleBtn.addEventListener("click", () => {
 
   const qrPayload = [
     `Date: ${fullDate}`,
-    `From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})`,
-    `To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})`,
+    `From: ${LOCATIONS[fromSel.valuekey].name} (${locationCodes[fromSel.valuekey]})`,
+    `To: ${LOCATIONS[toSel.valuekey].name} (${locationCodes[toSel.valuekey]})`,
     `Time Slot: ${slotObj.label} (${slotObj.code})`,
     `Position: ${roleText}`,
     `Powered by CoDrive`
