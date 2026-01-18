@@ -1005,7 +1005,7 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-if (!toSel.value) {
+if (!toSel.value && !toCodeSelect.value) {
   alert("Please select destination");
   return;
 }
