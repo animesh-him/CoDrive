@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -193,14 +194,14 @@ button {
   font-size: 18px;
   font-weight: bold;
 }
-/*
+
 .weekend-title {
   font-family: 'Caveat', cursive;
   font-size: 24px;   /* ⬅️ increase this */
-/*  line-height: 1.15;
+  line-height: 1.15;
   font-weight: 600;
 }
-.weekend-meta,*/
+.weekend-meta,
 .circle-label {
   font-family: 'Caveat', cursive;
 }
@@ -344,26 +345,12 @@ button {
   z-index: 0;
   transform: translateZ(0);
 }
-/*
+
 .weekend-video-content {
   position: relative;
   z-index: 1;
   text-align: center;
   font-family: 'Caveat', cursive;
-}*/
-  .weekend-video-content {
-  font-family: 'Caveat', cursive;
-    position: absolute;
-  inset: 0;
-  padding: 12px;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.weekend-title,
-.weekend-meta {
-  font-family: 'Caveat', cursive;
-  word-break: break-word;
 }
 .tabs .pref-btn {
   background: #000 !important;
@@ -430,124 +417,6 @@ button {
   margin-bottom: 6px;
   opacity: 0.9;
   }
-  /* ===== ATTEND AS RIDER / OWNER SAME LINE ===== */
-.role-select {
-  display: flex;
-  font-family: 'Caveat', cursive;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 14px;
-  flex-wrap: nowrap;          /* prevents line break */
-}
-
-.role-select button {
-  white-space: nowrap;        /* text stays in one line */
-}
-
-  .architecture-diagram {
-  max-width: 100%;
-  margin: 32px auto; /* spacing above footer */
-  text-align: center;
-}
-
-.architecture-diagram img {
-  width: 100%;
-  height: auto;
-  object-fit: contain; /* ensures image keeps its aspect ratio */
-  border-radius: 12px; /* optional: nice rounded corners */
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3); /* optional: subtle shadow */
-}
-  .combo {
-  position: relative;
-  width: 48%;
-}
-
-.combo-display {
-  padding: 12px;
-  background: #fff;
-  color: #000;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 15px;
-}
-
-.combo-search {
-  display: none;
-  width: 100%;
-  padding: 10px;
-  border: none;
-  outline: none;
-}
-
-.combo.open .combo-search {
-  display: block;
-}
-
-.combo-list {
-  display: none;
-  position: absolute;
-  width: 100%;
-  max-height: 240px;
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 10px;
-  z-index: 999;
-}
-
-.combo.open .combo-list {
-  display: block;
-}
-
-.combo-option {
-  padding: 10px;
-  cursor: pointer;
-  color: #000;
-}
-
-.combo-option:hover {
-  background: #eee;
-}
-  /* Overlay base */
-.combo-overlay {
-  position: fixed;
-  inset: 0;
-  background: #121212;
-  color: #fff;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-}
-
-.combo-overlay.hidden {
-  display: none;
-}
-
-.combo-overlay-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  font-size: 18px;
-  border-bottom: 1px solid #333;
-}
-
-#comboOverlaySearch {
-  padding: 14px;
-  border: none;
-  outline: none;
-  font-size: 16px;
-}
-
-#comboOverlayList {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.overlay-option {
-  padding: 16px;
-  border-bottom: 1px solid #333;
-}
 </style>
 </head>
 
@@ -575,18 +444,14 @@ button {
   <button id="tomorrowBtn">Tomorrow</button>
 </div>
 
-<div class="route-row">
-  <div class="combo" id="fromCombo">
-    <div class="combo-display">From</div>
-    <input class="combo-search" placeholder="Search from location">
-    <div class="combo-list"></div>
-  </div>
+<div class="to-code-row route-row">
+  <select id="from">
+    <option value="">From</option>
+  </select>
 
-  <div class="combo" id="toCombo">
-    <div class="combo-display">To</div>
-    <input class="combo-search" placeholder="Search destination">
-    <div class="combo-list"></div>
-  </div>
+  <select id="to">
+    <option value="">To</option>
+  </select>
 </div>
   
 <div id="popularity"></div>
@@ -624,47 +489,31 @@ button {
 </div>
 
  <!-- 🆕 WEEKEND COMMUNITY MEET-->
-<!--
-  <div class="weekend-box">
+<div class="weekend-box">
   <div class="weekend-video-bg">
   <video autoplay muted loop playsinline preload="metadata"
     poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
     <source src="https://animesh-him.github.io/CoDrive/footerfinal.mp4" type="video/mp4">
   </video>
--->
-  <!--
-<div class="weekend-video-content">
-  <div class="weekend-title">CoDrive Weekend Community Meet</div>
-  <div class="weekend-meta">
-    <span id="weekendDate"></span><br>
-    Time: 5:00 PM – 5:30 PM<br>
-    Location: Brigade Eldorado Amphitheatre.<br>
-    46 Riders and 35 Car Owners= Total 81 voted to attend.<br>
-    None attended.
-    Step 1: Upon arrival at the venue, please select your nearest To Location code.<br>
-    Step 2: Tap the code to display it in full-screen mode on your mobile device. Kindly show this code to others nearby. Attendees with the same code may gather, discuss preferred slot frequency, and decide whether to join an available provider or co-drive together.<br>
-    Step 3: Join the WhatsApp community link provided at the end of the app page, followed by the relevant To Location groups listed beneath it, ensuring you remain connected and can coordinate at your convenience.<br>
-    Time: 5:30 PM – 6:00 PM<br>
-    Music enthusiasts are warmly invited to play or sing along—an informal jam reminiscent of carefree classroom backbenchers. There will be no electronic accompaniment; the session shall be a pure symphony of the human voice.<br>
-    Kindly bring along your guitar and vocal cords should you wish to sound truly accomplished.<br>
-    Do not hesitate-<em>Kise pata Kal Ho Na Ho!</em><br>
-    The jam session will feature the following track, accompanied by a simple four-note looping chorus that I shall share on the spot—ideal even for non-singers.<br>
-    <a href="https://youtu.be/EJYGC_raxwM?si=dS01AYvmmW3__88e" target="_blank" rel="noopener">
-      Pehla Nasha &amp; Gazab Ka Hai Din
-    </a><br>
-    Melody itni chocolaty kaise? Melody khao khud jaan jao!
- 
+
+  <div class="weekend-video-content">
+    <div class="weekend-title">CoDrive Weekend Community Meet</div>
+    <div class="weekend-meta">
+      <span id="weekendDate"></span><br>
+      Time- 5:00 PM – 5:30 PM<br>
+      Location- Brigade Eldorado Amphithetre.<br>
+      Post 5:30 pm to 6 pm, Music Enthusiasts can play / sing along, jam like the backbenchers of class. There isn't any electronic arrangements, it would be purely a symphony of human voice.<br>
+      Bring your Guitar and Vocal Cords, if you wish to sound professional!
+    </div>
   </div>
 </div>
-  </div>
   <select id="societySelect">
     <option value="eldorado">Brigade Eldorado</option>
   </select>
 
-  <div class="role-select">
   <button id="riderBtn">Attend as Rider</button>
-  <button id="ownerBtn">Attend as Car Owner & Provider</button>
-  </div>
+  <button id="ownerBtn">Attend as Car Owner</button>
+
   <div class="circle-wrap">
     <div>
       <div class="circle" id="riderCount">0</div>
@@ -675,30 +524,11 @@ button {
       <div class="circle-label">Owners</div>
     </div>
   </div>
- -->
-
+ 
+</div> 
 </div>
 
 <script>
-  
-function fitTextToBox(container, min = 10) {
-  const textEls = container.querySelectorAll('.weekend-title, .weekend-meta');
-
-  let size = 24; // start size
-  textEls.forEach(el => el.style.fontSize = size + 'px');
-
-  while (container.scrollHeight > container.clientHeight && size > min) {
-    size--;
-    textEls.forEach(el => el.style.fontSize = size + 'px');
-  }
-}
-
-// call after content loads
-window.addEventListener('load', () => {
-  const box = document.querySelector('.weekend-video-content');
-  fitTextToBox(box);
-});
-
 /* ===== CENTRAL LOCATION REGISTRY ==== */
 const LOCATIONS = {
   eldorado: { name: "Brigade Eldorado", includeFrom: true, includeTo: false },
@@ -713,33 +543,22 @@ const LOCATIONS = {
   electronic_city: { name: "Electronic City", includeFrom: false, includeTo: true },
   itpl: { name: "ITPL (Whitefield)", includeFrom: false, includeTo: true },
   karle_sez: { name: "KARLE SEZ", includeFrom: false, includeTo: true },
-  kia_t1: { name: "Kempegowda International Airport T1", includeFrom: true, includeTo: true },
-  kia_t2: { name: "Kempegowda International Airport T2", includeFrom: true, includeTo: true },
+  kia_t1: { name: "Kempegowda International Airport T1", includeFrom: false, includeTo: true },
+  kia_t2: { name: "Kempegowda International Airport T2", includeFrom: false, includeTo: true },
   koramangala: { name: "Koramangala", includeFrom: false, includeTo: true },
   mg_road: { name: "MG Road", includeFrom: false, includeTo: true },
   manyata: { name: "Manyata Tech Park", includeFrom: false, includeTo: true },
   sap_labs: { name: "SAP Labs (North Bangalore)", includeFrom: false, includeTo: true },
   sarjapur: { name: "Sarjapur", includeFrom: false, includeTo: true },
-  shell: { name: "Shell Technology Center (North Bangalore)", includeFrom: false, includeTo: true },
-  hsr: { name: "HSR layout", includeFrom: false, includeTo: true },
-  bannerghatta: { name: "Bannerghatta Road", includeFrom: false, includeTo: true },
-  silkboard: { name: "Silk Board", includeFrom: false, includeTo: true },
-  jpnagar: { name: "JP Nagar", includeFrom: false, includeTo: true },
-  jayanagar: { name: "Jayanagar", includeFrom: false, includeTo: true },
-  kanakapura: { name: "Kanakapura", includeFrom: false, includeTo: true },
-  marathahalli: { name: "Marathahalli", includeFrom: false, includeTo: true },
-  hebbal: { name: "Hebbal", includeFrom: false, includeTo: true },
-  ulsoor: { name: "Ulsoor", includeFrom: false, includeTo: true },
-  rtnagar: { name: "RT Nagar", includeFrom: false, includeTo: true },
-  hoskote: { name: "Hoskote", includeFrom: false, includeTo: true },
-  aerospacepark: { name: "Aerospace Park", includeFrom: false, includeTo: true }
+  shell: { name: "Shell Technology Center (North Bangalore)", includeFrom: false, includeTo: true }
 };
   const WORKER = "https://codrive-api.animesh-him.workers.dev";
 let dayOffset = 0;
 
 const todayBtn = document.getElementById("todayBtn");
 const tomorrowBtn = document.getElementById("tomorrowBtn");
-
+const fromSel = document.getElementById("from");
+const toSel = document.getElementById("to");
 /* ===== GLOBAL LOCATION CODE MAP ===== */
 const locationCodes = {};
 (() => {
@@ -754,8 +573,23 @@ const locationCodes = {};
     locationCodes[loc.value] = letter + letterCount[letter];
   });
 })();
-  
-  
+  function populateFromTo() {
+  fromSel.innerHTML = `<option value="">From</option>`;
+  toSel.innerHTML = `<option value="">To</option>`;
+
+  Object.entries(LOCATIONS).forEach(([value, loc]) => {
+    const label = `${loc.name} (${locationCodes[value]})`;
+
+    if (loc.includeFrom) {
+      fromSel.appendChild(new Option(label, value));
+    }
+    if (loc.includeTo) {
+      toSel.appendChild(new Option(label, value));
+    }
+  });
+}
+
+populateFromTo();
   const popDiv = document.getElementById("popularity");
 const slotSel = document.getElementById("slotSelect");
 const riderPrefBtn = document.getElementById("riderPrefBtn");
@@ -781,8 +615,19 @@ let slotMap = {};
   
 todayBtn.onclick = () => setDay(0);
 tomorrowBtn.onclick = () => setDay(1);
+fromSel.addEventListener("change", () => {
+  [...toSel.options].forEach(o => {
+    o.disabled = o.value === fromSel.value && o.value !== "";
+  });
+  loadPopularity();
+});
 
-
+toSel.addEventListener("change", () => {
+  [...fromSel.options].forEach(o => {
+    o.disabled = o.value === toSel.value && o.value !== "";
+  });
+  loadPopularity();
+});
 
 function setDay(d) {
   dayOffset = d;
@@ -854,104 +699,6 @@ function restoreStateFromPopularity(data) {
     
   }
 }
-function createCombo(comboId, includeKey, onChange) {
-  const combo = document.getElementById(comboId);
-  const display = combo.querySelector(".combo-display");
-  const search = combo.querySelector(".combo-search");
-  const list = combo.querySelector(".combo-list");
-
-  combo.valueKey = "";
-
-  const items = Object.entries(LOCATIONS)
-    .filter(([, loc]) => loc[includeKey])
-    .map(([key, loc]) => ({
-      key,
-      label: `${loc.name} (${locationCodes[key]})`
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
-
-  function render(filter = "") {
-    list.innerHTML = "";
-    items
-      .filter(i => i.label.toLowerCase().includes(filter.toLowerCase()))
-      .forEach(i => {
-        const div = document.createElement("div");
-        div.className = "combo-option";
-        div.textContent = i.label;
-        div.onclick = () => {
-          display.textContent = i.label;
-          combo.valueKey = i.key;
-          combo.classList.remove("open");
-          search.value = "";
-          onChange();
-        };
-        list.appendChild(div);
-      });
-  }
-
-  display.onclick = () => {
-  if (window.innerWidth <= 768) {
-    openOverlay(combo, items, onChange, display.textContent);
-  } else {
-    combo.classList.toggle("open");
-    search.focus();
-    render();
-  }
-};
-
-  search.oninput = () => render(search.value);
-
-  document.addEventListener("click", e => {
-    if (!combo.contains(e.target)) combo.classList.remove("open");
-  });
-    }  
-  const fromCombo = document.getElementById("fromCombo");
-const toCombo = document.getElementById("toCombo");
-
-createCombo("fromCombo", "includeFrom", loadPopularity);
-createCombo("toCombo", "includeTo", loadPopularity);
-
-  const overlay = document.getElementById("comboOverlay");
-const overlayTitle = document.getElementById("comboOverlayTitle");
-const overlaySearch = document.getElementById("comboOverlaySearch");
-const overlayList = document.getElementById("comboOverlayList");
-const overlayClose = document.getElementById("comboOverlayClose");
-
-function openOverlay(combo, items, onChange, title) {
-  overlay.classList.remove("hidden");
-  overlayTitle.textContent = title;
-  overlaySearch.value = "";
-  renderOverlay(items, combo, onChange);
-
-  overlaySearch.oninput = () =>
-    renderOverlay(
-      items.filter(i =>
-        i.label.toLowerCase().includes(overlaySearch.value.toLowerCase())
-      ),
-      combo,
-      onChange
-    );
-}
-
-function renderOverlay(items, combo, onChange) {
-  overlayList.innerHTML = "";
-  items.forEach(i => {
-    const div = document.createElement("div");
-    div.className = "overlay-option";
-    div.textContent = i.label;
-    div.onclick = () => {
-      combo.valueKey = i.key;
-      combo.querySelector(".combo-display").textContent = i.label;
-      overlay.classList.add("hidden");
-      onChange();
-    };
-    overlayList.appendChild(div);
-  });
-}
-
-overlayClose.onclick = () => {
-  overlay.classList.add("hidden");
-};
   
 async function loadPopularity() {
  const prevSlot = slotSel.value;
@@ -959,7 +706,7 @@ async function loadPopularity() {
   popDiv.innerHTML = "";
   slotSel.innerHTML = `<option value="" disabled selected>Time slot</option>`;
 
-  if (!fromCombo.valueKey || !toCombo.valueKey) return;
+  if (!fromSel.value || !toSel.value) return;
 
   const slots = futureSlots();
   if (!slots.length) return;
@@ -971,8 +718,8 @@ async function loadPopularity() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         date: dateStr(),
-        from: fromSel.valueKey,
-        to: toSel.valueKey,
+        from: fromSel.value,
+        to: toSel.value,
         slots: slots.map(s => s.label)
       })
     });
@@ -1045,7 +792,7 @@ async function submitVote() {
     return;
   }
 
-  if (!fromCombo.valueKey || !toCombo.valueKey || !slotSel.value || !selectedRole) return;
+  if (!fromSel.value || !toSel.value || !slotSel.value || !selectedRole) return;
 
   const slotObj = slotMap[slotSel.value];
   if (!slotObj) return;
@@ -1055,8 +802,8 @@ async function submitVote() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       date: dateStr(),
-      from: fromCombo.valueKey,
-      to: toCombo.valueKey,
+      from: fromSel.value,
+      to: toSel.value,
       slot: slotObj.label,
       role: selectedRole
     })
@@ -1100,26 +847,17 @@ const ownerBtn = document.getElementById("ownerBtn");
 const riderCountEl = document.getElementById("riderCount");
 const ownerCountEl = document.getElementById("ownerCount");
 
-
-function currentWeekendSaturday() {
-  const d = istNow(); // IST time
-  const day = d.getDay(); // 0 = Sunday, 6 = Saturday
-
-  const saturday = new Date(d);
-
-  if (day === 0) {
-    // Sunday → move back to previous Saturday
-    saturday.setDate(d.getDate() - 1);
-  } else {
-    // Any other day → move back to latest Saturday
-    saturday.setDate(d.getDate() - (day - 6));
-  }
-
-  saturday.setHours(0, 0, 0, 0);
-  return saturday;
+function nextSaturday() {
+  const d = istNow(); // uses existing function
+  const day = d.getDay();
+  const diff = (6 - day + 7) % 7 || 7;
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
 }
+
 function saturdayKey() {
-  return currentWeekendSaturday().toISOString().slice(0, 10);
+  return nextSaturday().toISOString().slice(0,10);
 }
 
 function formatSaturday(d) {
@@ -1132,7 +870,7 @@ function formatSaturday(d) {
 
 async function loadWeekend() {
   const key = saturdayKey();
-  weekendDateEl.textContent = formatSaturday(currentWeekendSaturday());
+  weekendDateEl.textContent = formatSaturday(nextSaturday());
 
   const res = await fetch(WORKER + "/weekend/get", {
     method: "POST",
@@ -1168,12 +906,12 @@ window.addEventListener("load", loadWeekend);
 let latestQrPayload = "";
 window.addEventListener("DOMContentLoaded", () => {
 
-  const toSelect = document.getElementById("toCombo");           // existing
+  const toSelect = document.getElementById("to");           // existing
   const toCodeSelect = document.getElementById("toCodeSelect");
   
   const codeCircleBtn = document.getElementById("codeCircleBtn");
   showCodeBtn.addEventListener("click", () => {
-  if (!toSel.valueKey) {
+  if (!toSel.value) {
     alert("Please select destination");
     return;
   }
@@ -1196,11 +934,9 @@ Object.entries(LOCATIONS).forEach(([value, loc]) => {
 });
 
 /* Populate To-Code dropdown */
-Object.entries(LOCATIONS)
-  .filter(([, loc]) => loc.includeTo)
-  .map(([value, loc]) => ({ value, name: loc.name }))
-  .sort((a, b) => a.name.localeCompare(b.name))
-  .forEach(({ value, name }) => {
+Object.entries(toValueToName)
+  .sort((a, b) => a[1].localeCompare(b[1]))
+  .forEach(([value, name]) => {
     const opt = document.createElement("option");
     opt.value = locationCodes[value];
     opt.textContent = `${name} (${locationCodes[value]})`;
@@ -1208,7 +944,19 @@ Object.entries(LOCATIONS)
   });
 
   /* === SYNC: To location → Code === */
-  
+  toSelect.addEventListener("change", () => {
+  const value = toSelect.value;
+  if (!value) {
+    codeCircleBtn.textContent = "--";
+    codeCircleBtn.disabled = true;
+    toCodeSelect.value = "";
+    return;
+  }
+  const code = locationCodes[value];
+  toCodeSelect.value = code;
+  codeCircleBtn.textContent = code;
+  codeCircleBtn.disabled = false;
+});
   // 1️⃣ Bind location → code circle
 toCodeSelect.addEventListener("change", () => {
   const code = toCodeSelect.value;
@@ -1251,8 +999,8 @@ codeCircleBtn.addEventListener("click", () => {
 
   const qrPayload = [
     `Date: ${fullDate}`,
-    `From: ${LOCATIONS[fromCombo.valueKey].name} (${locationCodes[fromCombo.valueKey]})`,
-    `To: ${LOCATIONS[toCombo.valueKey].name} (${locationCodes[toCombo.valueKey]})`,
+    `From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})`,
+    `To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})`,
     `Time Slot: ${slotObj.label} (${slotObj.code})`,
     `Position: ${roleText}`,
     `Powered by CoDrive`
@@ -1265,7 +1013,7 @@ codeCircleBtn.addEventListener("click", () => {
   <div class="fs-title">CoDrive</div>
 
   <div class="fs-line fs-route">
-    ${locationCodes[fromCombo.valueKey]}-${locationCodes[toCombo.valueKey]}-${slotObj.code}
+    ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
   </div>
 
   <div class="fs-line fs-role">
@@ -1322,8 +1070,8 @@ codeCircleBtn.addEventListener("click", () => {
   ctx.fillText("CoDrive", poster.width / 2, 60);
 
 // === BIG CODES BELOW CoDrive ===
-const fromCode = locationCodes[fromCombo.valueKey];
-const toCode = locationCodes[toCombo.valueKey];
+const fromCode = locationCodes[fromSel.value];
+const toCode = locationCodes[toSel.value];
 
 const slotObj = slotMap[slotSel.value];
 if (!slotObj) return;
@@ -1436,17 +1184,7 @@ fullscreenCode.addEventListener("click", () => {
   });
 })();
 </script>
-<div id="comboOverlay" class="combo-overlay hidden">
-  <div class="combo-overlay-header">
-    <span id="comboOverlayTitle"></span>
-    <button id="comboOverlayClose">✕</button>
-  </div>
-  <input id="comboOverlaySearch" placeholder="Search..." />
-  <div id="comboOverlayList"></div>
-</div>
   
-
- 
 <div class="footer">
   <div class="muted">
   Follow this link to join CoDrive WhatsApp community:
@@ -1457,7 +1195,7 @@ fullscreenCode.addEventListener("click", () => {
     <div class="muted">
    @Copyleft Licensed under GNU GPLv3.0
   </div>
-  <div class="credit">“Thoughtfully crafted!”</div>
+  <div class="credit">Created by Animesh</div>
 </div>
   
 </body>
