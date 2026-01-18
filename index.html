@@ -1034,7 +1034,7 @@ window.addEventListener("DOMContentLoaded", () => {
   
   const codeCircleBtn = document.getElementById("codeCircleBtn");
   showCodeBtn.addEventListener("click", () => {
-  if (!toSel.value) {
+  if (!toSel.valueKey) {
     alert("Please select destination");
     return;
   }
@@ -1098,7 +1098,7 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  if (!slotSel.valueKey || !selectedRole || !lastVotePosition) {
+  if (!slotSel.value || !selectedRole || !lastVotePosition) {
     alert("Please vote first to generate your code");
     return;
   }
