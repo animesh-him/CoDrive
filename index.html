@@ -732,7 +732,7 @@ let slotMap = {};
   
 todayBtn.onclick = () => setDay(0);
 tomorrowBtn.onclick = () => setDay(1);
-fromSel.addEventListener("change", () => {
+
 fromSel.addEventListener("input", () => {
   fromSel.valueKey = resolveLocation(fromSel, "includeFrom");
   loadPopularity();
@@ -832,8 +832,8 @@ async function loadPopularity() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         date: dateStr(),
-        from: fromSel.value,
-        to: toSel.value,
+        from: fromSel.valueKey,
+        to: toSel.valueKey,
         slots: slots.map(s => s.label)
       })
     });
@@ -1070,7 +1070,7 @@ Object.entries(LOCATIONS)
 
   /* === SYNC: To location → Code === */
   toSelect.addEventListener("change", () => {
-  const value = toSelect.value;
+  const value = toSel.valueKey;
   if (!value) {
     codeCircleBtn.textContent = "--";
     codeCircleBtn.disabled = true;
@@ -1098,7 +1098,7 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  if (!slotSel.valuekey || !selectedRole || !lastVotePosition) {
+  if (!slotSel.valueKey || !selectedRole || !lastVotePosition) {
     alert("Please vote first to generate your code");
     return;
   }
@@ -1124,8 +1124,8 @@ codeCircleBtn.addEventListener("click", () => {
 
   const qrPayload = [
     `Date: ${fullDate}`,
-    `From: ${LOCATIONS[fromSel.valuekey].name} (${locationCodes[fromSel.valuekey]})`,
-    `To: ${LOCATIONS[toSel.valuekey].name} (${locationCodes[toSel.valuekey]})`,
+    `From: ${LOCATIONS[fromSel.valueKey].name} (${locationCodes[fromSel.valueKey]})`,
+    `To: ${LOCATIONS[toSel.valueKey].name} (${locationCodes[toSel.valueKey]})`,
     `Time Slot: ${slotObj.label} (${slotObj.code})`,
     `Position: ${roleText}`,
     `Powered by CoDrive`
@@ -1138,7 +1138,7 @@ codeCircleBtn.addEventListener("click", () => {
   <div class="fs-title">CoDrive</div>
 
   <div class="fs-line fs-route">
-    ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
+    ${locationCodes[fromSel.valueKey]}-${locationCodes[toSel.valueKey]}-${slotObj.code}
   </div>
 
   <div class="fs-line fs-role">
@@ -1195,8 +1195,8 @@ codeCircleBtn.addEventListener("click", () => {
   ctx.fillText("CoDrive", poster.width / 2, 60);
 
 // === BIG CODES BELOW CoDrive ===
-const fromCode = locationCodes[fromSel.value];
-const toCode = locationCodes[toSel.value];
+const fromCode = locationCodes[fromSel.valueKey];
+const toCode = locationCodes[toSel.valueKey];
 
 const slotObj = slotMap[slotSel.value];
 if (!slotObj) return;
