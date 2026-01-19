@@ -1012,14 +1012,15 @@ codeCircleBtn.addEventListener("click", () => {
     alert("Please vote first to generate your code");
     return;
   }*/
-const toCode = codeCircleBtn.textContent.trim();
+const toCode = codeCircleBtn.dataset.code || "";
 
   // 🔵 MODE: CIRCLE TAP → show only destination code
-  if (showMode === "circle") {
-    if (!toCode || toCode === "--") {
+
+   
+  if (toCode) {
       alert("Please select destination");
       return;
-    }
+  
     
 
     fullscreenCodeText.innerHTML = `
