@@ -946,8 +946,77 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
     showMode = "full";
-  codeCircleBtn.click();
+  //codeCircleBtn.click();
+    
+  /* upto this */
+  const d = istNow();
+  d.setDate(d.getDate() + dayOffset);
+
+  const slotObj = slotMap[slotSel.value];
+  if (!slotObj) return;
+
+  const fullDate = d.toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+
+  const roleText =
+    `${lastVotePosition}${lastVotePosition === 1 ? "st" :
+      lastVotePosition === 2 ? "nd" :
+      lastVotePosition === 3 ? "rd" : "th"} ` +
+    (selectedRole === "R" ? "Rider" : "Provider");
+
+  const qrPayload = [
+    `Date: ${fullDate}`,
+    `From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})`,
+    `To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})`,
+    `Time Slot: ${slotObj.label} (${slotObj.code})`,
+    `Position: ${roleText}`,
+    `Powered by CoDrive`
+  ].join("\n");
+  latestQrPayload = qrPayload;
+
+  const explainLine = qrPayload.replace(/\n/g, " • ");
+
+  fullscreenCodeText.innerHTML = `
+  <div class="fs-title">CoDrive</div>
+
+  <div class="fs-line fs-route">
+    ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
+  </div>
+
+  <div class="fs-line fs-role">
+    ${selectedRole}${lastVotePosition}
+  </div>
+
+  <div class="fs-line fs-explain">
+    ${explainLine}
+  </div>
+
+  <div id="qrWrap">
+    <div id="qr"></div>
+  </div>
+`;
+
+  const qrDiv = document.getElementById("qr");
+  qrDiv.innerHTML = "";
+
+  new QRCode(qrDiv, {
+    text: qrPayload,
+    width: 240,
+    height: 240,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  saveQrBtn.disabled = false;
+  fullscreenCode.classList.add("active");
 });
+
+  
   const fullscreenCode = document.getElementById("fullscreenCode");
   const fullscreenCodeText = document.getElementById("fullscreenCodeText");
 
@@ -1039,7 +1108,7 @@ const toCode = codeCircleBtn.textContent.trim();
   return;
 }
   /* upto this */
-  const d = istNow();
+/*  const d = istNow();
   d.setDate(d.getDate() + dayOffset);
 
   const slotObj = slotMap[slotSel.value];
@@ -1103,7 +1172,7 @@ const toCode = codeCircleBtn.textContent.trim();
   });
 
   saveQrBtn.disabled = false;
-  fullscreenCode.classList.add("active");
+  fullscreenCode.classList.add("active");*/
 });
   const saveQrBtn = document.getElementById("saveQrBtn");
   
