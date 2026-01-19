@@ -1012,16 +1012,14 @@ codeCircleBtn.addEventListener("click", () => {
     alert("Please vote first to generate your code");
     return;
   }*/
-const toCode = codeCircleBtn.dataset.code || "";
+const toCode = codeCircleBtn.textContent.trim();
 
   // 🔵 MODE: CIRCLE TAP → show only destination code
-
-   
-  if (toCode) {
+  if (showMode === "circle") {
+    if (!toCode || toCode === "--") {
       alert("Please select destination");
       return;
-  
-    
+    }
 
     fullscreenCodeText.innerHTML = `
       <div class="fs-title">CoDrive</div>
@@ -1030,7 +1028,7 @@ const toCode = codeCircleBtn.dataset.code || "";
         align-items:center;
         justify-content:center;
         height:100%;
-        font-size: min(64vw, 70vh);
+        font-size: min(64vw, 70vw);
         font-weight:900;
       ">
         ${toCode}
