@@ -529,6 +529,8 @@ button {
 </div>
 
 <script>
+  let showMode = "circle"; 
+// possible values: "circle" | "full"
 /* ===== CENTRAL LOCATION REGISTRY ==== */
 const LOCATIONS = {
   eldorado: { name: "Brigade Eldorado", includeFrom: true, includeTo: false },
@@ -943,6 +945,7 @@ window.addEventListener("DOMContentLoaded", () => {
     alert("Please select destination");
     return;
   }
+    showMode = "full";
   codeCircleBtn.click();
 });
   const fullscreenCode = document.getElementById("fullscreenCode");
@@ -1011,20 +1014,26 @@ codeCircleBtn.addEventListener("click", () => {
   }*/
 const toCode = codeCircleBtn.textContent.trim();
 
-if (toCode && toCode !== "--") {
-  fullscreenCodeText.innerHTML = `
-    <div class="fs-title">CoDrive</div>
-    <div style="
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      height:100%;
-      font-size:35vw;
-      font-weight:900;
-    ">
-      ${toCode}
-    </div>
-  `;
+  // 🔵 MODE: CIRCLE TAP → show only destination code
+  if (showMode === "circle") {
+    if (!toCode || toCode === "--") {
+      alert("Please select destination");
+      return;
+    }
+
+    fullscreenCodeText.innerHTML = `
+      <div class="fs-title">CoDrive</div>
+      <div style="
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        height:100%;
+        font-size:35vw;
+        font-weight:900;
+      ">
+        ${toCode}
+      </div>
+    `;
 
   fullscreenCode.classList.add("active");
   return;
