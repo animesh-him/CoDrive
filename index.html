@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -489,7 +488,8 @@ button {
 </div>
 
  <!-- 🆕 WEEKEND COMMUNITY MEET-->
-<div class="weekend-box">
+<!--
+  <div class="weekend-box">
   <div class="weekend-video-bg">
   <video autoplay muted loop playsinline preload="metadata"
     poster="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
@@ -525,7 +525,7 @@ button {
     </div>
   </div>
  
-</div> 
+</div> -->
 </div>
 
 <script>
@@ -602,18 +602,21 @@ const locationCodes = {};
   fromSel.innerHTML = `<option value="">From</option>`;
   toSel.innerHTML = `<option value="">To</option>`;
 
-  Object.entries(LOCATIONS).forEach(([value, loc]) => {
-    const label = `${loc.name} (${locationCodes[value]})`;
+  const sorted = Object.entries(LOCATIONS)
+    .map(([value, loc]) => ({ value, ...loc }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  sorted.forEach(loc => {
+    const label = `${loc.name} (${locationCodes[loc.value]})`;
 
     if (loc.includeFrom) {
-      fromSel.appendChild(new Option(label, value));
+      fromSel.appendChild(new Option(label, loc.value));
     }
     if (loc.includeTo) {
-      toSel.appendChild(new Option(label, value));
+      toSel.appendChild(new Option(label, loc.value));
     }
   });
 }
-
 populateFromTo();
   const popDiv = document.getElementById("popularity");
 const slotSel = document.getElementById("slotSelect");
@@ -951,12 +954,16 @@ window.addEventListener("DOMContentLoaded", () => {
 const toValueToName = {};
 const toNameToValue = {};
 
-Object.entries(LOCATIONS).forEach(([value, loc]) => {
-  if (loc.includeTo) {
-    toValueToName[value] = loc.name;
-    toNameToValue[loc.name] = value;
-  }
-});
+Object.entries(LOCATIONS)
+  .filter(([, loc]) => loc.includeTo)
+  .map(([value, loc]) => ({ value, name: loc.name }))
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .forEach(({ value, name }) => {
+    const opt = document.createElement("option");
+    opt.value = locationCodes[value];
+    opt.textContent = `${name} (${locationCodes[value]})`;
+    toCodeSelect.appendChild(opt);
+  });
 
 /* Populate To-Code dropdown */
 Object.entries(toValueToName)
