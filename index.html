@@ -1015,11 +1015,11 @@ codeCircleBtn.addEventListener("click", () => {
 const toCode = codeCircleBtn.textContent.trim();
 
   // 🔵 MODE: CIRCLE TAP → show only destination code
-  if (showMode === "circle") {
+  
     if (!toCode || toCode === "--") {
       alert("Please select destination");
       return;
-    }
+    
 
     fullscreenCodeText.innerHTML = `
       <div class="fs-title">CoDrive</div>
