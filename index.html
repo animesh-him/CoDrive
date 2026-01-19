@@ -938,131 +938,13 @@ window.addEventListener("DOMContentLoaded", () => {
   const toCodeSelect = document.getElementById("toCodeSelect");
   
   const codeCircleBtn = document.getElementById("codeCircleBtn");
- /* showCodeBtn.addEventListener("click", () => {
+  showCodeBtn.addEventListener("click", () => {
   if (!toSel.value) {
     alert("Please select destination");
     return;
   }
   codeCircleBtn.click();
-});*/
-
-  showCodeBtn.addEventListener("click", () => {
-/*if (!toSel.value && !toCodeSelect.value) {
-  alert("Please select destination");
-  return;
-}
-*/
-      if (!fromSel.value || !toSel.value || !slotSel.value || !selectedRole || !lastVotePosition) {
-    alert("Please complete selections first");
-    return;
-      }
-  const d = istNow();
-  d.setDate(d.getDate() + dayOffset);
-
-  const slotObj = slotMap[slotSel.value];
-  if (!slotObj) return;
-
-  const fullDate = d.toLocaleDateString("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  });
-
-  const roleText =
-    `${lastVotePosition}${lastVotePosition === 1 ? "st" :
-      lastVotePosition === 2 ? "nd" :
-      lastVotePosition === 3 ? "rd" : "th"} ` +
-    (selectedRole === "R" ? "Rider" : "Provider");
-
-  const qrPayload = [
-    `Date: ${fullDate}`,
-    `From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})`,
-    `To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})`,
-    `Time Slot: ${slotObj.label} (${slotObj.code})`,
-    `Position: ${roleText}`,
-    `Powered by CoDrive`
-  ].join("\n");
-  latestQrPayload = qrPayload;
-
-  const explainLine = qrPayload.replace(/\n/g, " • ");
-
-  fullscreenCodeText.innerHTML = `
-  <div class="fs-title">CoDrive</div>
-
-  <div class="fs-line fs-route">
-    ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
-  </div>
-
-  <div class="fs-line fs-role">
-    ${selectedRole}${lastVotePosition}
-  </div>
-
-  <div class="fs-line fs-explain">
-    ${explainLine}
-  </div>
-
-  <div id="qrWrap">
-    <div id="qr"></div>
-  </div>
-`;
-
-  const qrDiv = document.getElementById("qr");
-  qrDiv.innerHTML = "";
-
-  new QRCode(qrDiv, {
-    text: qrPayload,
-    width: 240,
-    height: 240,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
-  });
-
-  saveQrBtn.disabled = false;
-  fullscreenCode.classList.add("active");
 });
- /* showCodeBtn.addEventListener("click", () => {
-  if (!fromSel.value || !toSel.value || !slotSel.value || !selectedRole || !lastVotePosition) {
-    alert("Please complete selections first");
-    return;
-  }
-
-  const d = istNow();
-  d.setDate(d.getDate() + dayOffset);
-
-  const slotObj = slotMap[slotSel.value];
-  if (!slotObj) return;
-
-  const qrPayload = [
-    `Date: ${d.toLocaleDateString("en-IN")}`,
-    `From: ${LOCATIONS[fromSel.value].name} (${locationCodes[fromSel.value]})`,
-    `To: ${LOCATIONS[toSel.value].name} (${locationCodes[toSel.value]})`,
-    `Time Slot: ${slotObj.label} (${slotObj.code})`,
-    `Position: ${selectedRole}${lastVotePosition}`,
-    `Powered by CoDrive`
-  ].join("\n");
-
-  latestQrPayload = qrPayload;
-
-  fullscreenCodeText.innerHTML = `
-    <div class="fs-title">CoDrive</div>
-    <div class="fs-line fs-route">
-      ${locationCodes[fromSel.value]}-${locationCodes[toSel.value]}-${slotObj.code}
-    </div>
-    <div class="fs-line fs-role">
-      ${selectedRole}${lastVotePosition}
-    </div>
-    <div id="qrWrap"><div id="qr"></div></div>
-  `;
-
-  const qrDiv = document.getElementById("qr");
-  qrDiv.innerHTML = "";
-  new QRCode(qrDiv, { text: qrPayload, width: 240, height: 240 });
-
-  saveQrBtn.disabled = false;
-  fullscreenCode.classList.add("active");
-});*/
   const fullscreenCode = document.getElementById("fullscreenCode");
   const fullscreenCodeText = document.getElementById("fullscreenCodeText");
 
@@ -1122,11 +1004,11 @@ toCodeSelect.addEventListener("change", () => {
 });
 
 // 2️⃣ Fullscreen view
-/*codeCircleBtn.addEventListener("click", () => {
-if (!toSel.value && !toCodeSelect.value) {
-  alert("Please select destination");
-  return;
-}
+codeCircleBtn.addEventListener("click", () => {
+  if (!slotSel.value || !selectedRole || !lastVotePosition) {
+    alert("Please vote first to generate your code");
+    return;
+  }
 
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
@@ -1192,30 +1074,6 @@ if (!toSel.value && !toCodeSelect.value) {
   });
 
   saveQrBtn.disabled = false;
-  fullscreenCode.classList.add("active");
-});*/
-  codeCircleBtn.addEventListener("click", () => {
-  const toIndex = toSel.value || toCodeSelect.value;
-
-  if (!toIndex) {
-    alert("Please select destination");
-    return;
-  }
-
-  const toCode = locationCodes[toIndex];
-
-  fullscreenCodeText.innerHTML = `
-    <div class="fs-title">CoDrive</div>
-
-    <div class="fs-line fs-route" style="font-size: 48vw; line-height: 1;">
-      ${toCode}
-    </div>
-  `;
-
-  // 🔒 IMPORTANT: do NOT touch QR state
-  // latestQrPayload remains unchanged
-  // saveQrBtn remains disabled
-  
   fullscreenCode.classList.add("active");
 });
   const saveQrBtn = document.getElementById("saveQrBtn");
