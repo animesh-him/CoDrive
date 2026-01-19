@@ -1005,11 +1005,31 @@ toCodeSelect.addEventListener("change", () => {
 
 // 2️⃣ Fullscreen view
 codeCircleBtn.addEventListener("click", () => {
-  if (!slotSel.value || !selectedRole || !lastVotePosition) {
+  /*if (!slotSel.value || !selectedRole || !lastVotePosition) {
     alert("Please vote first to generate your code");
     return;
-  }
+  }*/
+const toCode = codeCircleBtn.textContent.trim();
 
+if (toCode && toCode !== "--") {
+  fullscreenCodeText.innerHTML = `
+    <div class="fs-title">CoDrive</div>
+    <div style="
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100%;
+      font-size:35vw;
+      font-weight:900;
+    ">
+      ${toCode}
+    </div>
+  `;
+
+  fullscreenCode.classList.add("active");
+  return;
+}
+  /* upto this */
   const d = istNow();
   d.setDate(d.getDate() + dayOffset);
 
