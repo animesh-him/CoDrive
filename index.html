@@ -945,7 +945,7 @@ window.addEventListener("DOMContentLoaded", () => {
     alert("Please select destination");
     return;
   }
-    showMode = "full";
+    //showMode = "full";
   //codeCircleBtn.click();
     
   /* upto this */
@@ -1081,11 +1081,11 @@ codeCircleBtn.addEventListener("click", () => {
     alert("Please vote first to generate your code");
     return;
   }*/
-  showMode = "circle";  // 🔹 force circle mode for this click
+  //showMode = "circle";  // 🔹 force circle mode for this click
   const toCode = codeCircleBtn.textContent.trim();
 
   // 🔵 MODE: CIRCLE TAP → show only destination code
-  if (showMode === "circle") {
+  //if (showMode === "circle") {
     if (!toCode || toCode === "--") {
       alert("Please select destination");
       return;
