@@ -1081,7 +1081,8 @@ codeCircleBtn.addEventListener("click", () => {
     alert("Please vote first to generate your code");
     return;
   }*/
-const toCode = codeCircleBtn.textContent.trim();
+  showMode = "circle";  // 🔹 force circle mode for this click
+  const toCode = codeCircleBtn.textContent.trim();
 
   // 🔵 MODE: CIRCLE TAP → show only destination code
   if (showMode === "circle") {
